@@ -1,0 +1,47 @@
+version: '2'
+services:
+  mysql:
+    image: mysql:8.0.34-debian
+    container_name: database
+    restart: always
+    ports:
+      - "3306:3306"
+    volumes:
+      -   .\.docker\mysql:/var/lib/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
+      MYSQL_DATABASE: fashion-shop
+      TZ: Asia/Ho_Chi_Minh
+  mysql-admin:
+    image: phpmyadmin:5.2.1-apache
+    container_name: mysql-admin
+    environment:
+      MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
+      PMA_HOST: mysql
+    ports:
+      - "80:80"
+    depends_on:
+      - mysql
+  tomcat:
+    image: tomcat:9.0-slim
+    container_name: server
+    command: /bin/bash -c "
+      rm -rf /etc/localtime;
+      ln -s /usr/share/zoneinfo/Asia/Ho_Chi_Minh /etc/localtime;
+      cp /usr/local/tomcat/webapps.dist/* /usr/local/tomcat/webapps;
+      cp /usr/local/tomcat/conf/context.xml /usr/local/tomcat/webapps/manager/META-INF/context.xml;
+      catalina.sh run"
+    volumes:
+      - .\.docker\tomcat\tomcat-users.xml:/usr/local/tomcat/conf/tomcat-users.xml
+      - .\.docker\tomcat\context.xml:/usr/local/tomcat/conf/context.xml
+      - .\.docker\dest\shop:/usr/local/tomcat/webapps/shop
+    environment:
+      CATALINA_OPTS: "-Duser.timezone=Asia/Ho_Chi_Minh"
+      paypal.client-id: ${PAYPAL_CLIENT_ID}
+      paypal.client-secret: ${PAYPAL_CLIENT_SECRET}
+      exchangerate.access-token: ${EXCHANGE_RATE_ACCESS_TOKEN}
+      exchangerate.currency: EUR
+    ports:
+      - '8080:8080'
+
+

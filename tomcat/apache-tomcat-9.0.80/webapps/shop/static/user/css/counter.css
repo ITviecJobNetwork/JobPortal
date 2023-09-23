@@ -1,0 +1,49 @@
+
+
+/*---------------------
+  Counter
+-----------------------*/
+
+.counter {
+    padding-bottom: 0;
+}
+
+.counter .container {
+    border-bottom: 1px solid #e5e5e5;
+    padding-bottom: 70px;
+}
+
+.counter__item {
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.counter__item .counter__item__number {
+    float: left;
+    margin-right: 15px;
+}
+
+.counter__item .counter__item__number h2 {
+    color: #111111;
+    font-weight: 700;
+    font-size: 60px;
+    line-height: 50px;
+    display: inline-block;
+}
+
+.counter__item .counter__item__number strong {
+    color: #111111;
+    font-weight: 700;
+    font-size: 60px;
+    line-height: 50px;
+    display: inline-block;
+}
+
+.counter__item span {
+    display: block;
+    color: #3d3d3d;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 25px;
+    overflow: hidden;
+}

@@ -1,0 +1,32 @@
+.user-action > div:after {
+    content: '';
+    position: absolute;
+    width: 32px;
+    height: 33px;
+    right: 20px;
+}
+
+.user-action > div:hover > i {
+    color: var(--blue);
+}
+
+.user-action > div:hover > ul {
+    display: block !important;
+}
+
+.user-action ul {
+    position: absolute;
+    width: 140px;
+    list-style: none;
+    right: 37px;
+    z-index: 10000;
+}
+
+.user-action ul > li:hover {
+    background: var(--gray-dark);
+    color: white;
+}
+
+.user-action ul > li:hover a {
+    color: white !important;
+}

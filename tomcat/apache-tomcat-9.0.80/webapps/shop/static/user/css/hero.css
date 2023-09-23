@@ -1,0 +1,116 @@
+
+/*---------------------
+  Hero
+-----------------------*/
+
+.hero__slider.owl-carousel .owl-item.active .hero__text h6 {
+    top: 0;
+    opacity: 1;
+}
+
+.hero__slider.owl-carousel .owl-item.active .hero__text h2 {
+    top: 0;
+    opacity: 1;
+}
+
+.hero__slider.owl-carousel .owl-item.active .hero__text p {
+    top: 0;
+    opacity: 1;
+}
+
+.hero__slider.owl-carousel .owl-item.active .hero__text .primary-btn {
+    top: 0;
+    opacity: 1;
+}
+
+.hero__slider.owl-carousel .owl-nav button {
+    font-size: 36px;
+    color: #333333;
+    position: absolute;
+    left: 75px;
+    top: 50%;
+    margin-top: -18px;
+    line-height: 29px;
+}
+
+.hero__slider.owl-carousel .owl-nav button.owl-next {
+    left: auto;
+    right: 75px;
+}
+
+.hero__items {
+    height: 800px;
+    padding-top: 230px;
+}
+
+.hero__text h6 {
+    color: #e53637;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 28px;
+    position: relative;
+    top: 100px;
+    opacity: 0;
+    -webkit-transition: all, 0.3s;
+    -o-transition: all, 0.3s;
+    transition: all, 0.3s;
+}
+
+.hero__text h2 {
+    color: #111111;
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 58px;
+    margin-bottom: 30px;
+    position: relative;
+    top: 100px;
+    opacity: 0;
+    -webkit-transition: all, 0.6s;
+    -o-transition: all, 0.6s;
+    transition: all, 0.6s;
+}
+
+.hero__text p {
+    font-size: 16px;
+    line-height: 28px;
+    margin-bottom: 35px;
+    position: relative;
+    top: 100px;
+    opacity: 0;
+    -webkit-transition: all, 0.9s;
+    -o-transition: all, 0.9s;
+    transition: all, 0.9s;
+}
+
+.hero__text .primary-btn {
+    position: relative;
+    top: 100px;
+    opacity: 0;
+    -webkit-transition: all, 1.1s;
+    -o-transition: all, 1.1s;
+    transition: all, 1.1s;
+}
+
+.hero__text .primary-btn span {
+    font-size: 20px;
+    position: relative;
+    top: 4px;
+    font-weight: 700;
+}
+
+.hero__social {
+    margin-top: 190px;
+}
+
+.hero__social a {
+    font-size: 16px;
+    color: #3d3d3d;
+    display: inline-block;
+    margin-right: 32px;
+}
+
+.hero__social a:last-child {
+    margin-right: 0;
+}

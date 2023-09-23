@@ -1,0 +1,28 @@
+/*---------------------
+  Testimonial
+-----------------------*/
+
+.team {
+    padding-bottom: 70px;
+}
+
+.team__item {
+    margin-bottom: 30px;
+}
+
+.team__item img {
+    min-width: 100%;
+    margin-bottom: 25px;
+}
+
+.team__item h4 {
+    color: #111111;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.team__item span {
+    font-size: 15px;
+    display: block;
+    color: #b7b7b7;
+}

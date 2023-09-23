@@ -1,0 +1,29 @@
+/*---------------------
+  About
+-----------------------*/
+
+.about {
+    padding-bottom: 70px;
+}
+
+.about__pic {
+    margin-bottom: 35px;
+}
+
+.about__pic img {
+    min-width: 100%;
+}
+
+.about__item {
+    margin-bottom: 30px;
+}
+
+.about__item h4 {
+    color: #111111;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.about__item p {
+    margin-bottom: 0;
+}

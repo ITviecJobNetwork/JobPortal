@@ -1,0 +1,28 @@
+- Trang Chủ và Danh Mục Sản Phẩm.
+- Hiển thị danh sách sản phẩm.
+- Trang Sản Phẩm
+ + Hiển thị thông tin chi tiết sản phẩm
+ + Mô tả và bình luận
+ + Người dùng có thể thêm sản phẩm vào giỏ hàng, hiện sản phẩm liên quan
+
+- Đăng Nhập và Đăng Ký:
+ + Đăng nhập bằng email và password
+ + Đăng ký bao gồm tên người dùng, email, password
+ + Sau khi đăng ký gửi mã code qua gmail người dùng
+
+- Thông Tin Người Dùng:
+ + Người dùng có thể cập nhật thông tin cá nhân.
+
+- Giỏ Hàng:
+ + Xem danh sách sản phẩm đã chọn (tên sản phẩm, số lượng, giá cả)
+ + Tính toán tổng cộng và có thể cập nhật số lượng và giá
+
+- Thanh Toán:
+ + Tích hợp tính năng thanh toán qua PayPal
+
+- Trang Quản Trị (Admin):
+ + Quản lý danh muc
+ + Quản lý sản phẩm
+ + Quản lý khách hàng
+ + Quản lý hóa đơn
+ + Dashboard bao gồm 2 bảng: Thống kê đơn hàng và giao dịch gần đây

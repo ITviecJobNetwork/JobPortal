@@ -1,0 +1,9 @@
+.collapsed > i {
+    transform: rotate(-90deg);
+    transition: transform .3s;
+}
+
+.delete:hover {
+    background: var(--danger);
+    color: white;
+}
