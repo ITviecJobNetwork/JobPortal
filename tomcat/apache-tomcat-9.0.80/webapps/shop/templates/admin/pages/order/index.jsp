@@ -9,9 +9,9 @@
 
 </jsp:include>
 
-<jsp:include page="../../common/modal.jsp">
+<jsp:include page="../../../common/modal.jsp">
     <jsp:param name="id" value="order-detail"/>
     <jsp:param name="_title" value="Chi tiết đơn hàng" />
-    <jsp:param name="bodyComponent" value="order/order-detail.jsp"/>
+    <jsp:param name="bodyComponent" value="/admin/pages/order/order-detail.jsp"/>
     <jsp:param name="_sz" value="modal-xl"/>
 </jsp:include>

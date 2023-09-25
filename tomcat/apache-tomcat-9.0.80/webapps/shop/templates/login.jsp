@@ -22,7 +22,7 @@
 </head>
 
 <body>
-
+    <jsp:include page="./common/notifier.jsp" />
     <div class="container">
 
         <!-- Outer Row -->
@@ -38,25 +38,38 @@
                             <div class="col-lg-6">
                                 <div class="p-5">
                                     <div class="text-center">
-                                        <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
+                                        <h1 class="h4 text-gray-900 mb-4">Xin chào mừng!</h1>
                                     </div>
-                                    <form class="user">
+                                    <form method="post" class="user">
                                         <div class="form-group">
-                                            <input type="email" class="form-control form-control-user"
-                                                id="exampleInputEmail" aria-describedby="emailHelp"
-                                                placeholder="Enter Email Address...">
+                                            <input
+                                                id="exampleInputEmail"
+                                                type="email"
+                                                class="form-control form-control-user"
+                                                placeholder="Nhập địa chỉ email..."
+                                                name="email"
+                                                value="${ _data.email }"
+                                                required
+                                            >
                                         </div>
                                         <div class="form-group">
-                                            <input type="password" class="form-control form-control-user"
-                                                id="exampleInputPassword" placeholder="Password">
+                                            <input
+                                                id="exampleInputPassword"
+                                                type="password"
+                                                class="form-control form-control-user"
+                                                placeholder="Password"
+                                                name="password"
+                                                value="${ _data.password }"
+                                                required
+                                            >
                                         </div>
-                                        <a href="index.html" class="btn btn-primary btn-user btn-block">
-                                            Login
-                                        </a>
+                                        <button class="btn btn-primary btn-user btn-block">
+                                            Đăng nhập
+                                        </button>
                                     </form>
                                     <hr>
                                     <div class="text-center">
-                                        <a class="small" href="${pageContext.request.contextPath}/auth/register">Create an Account!</a>
+                                        <a class="small" href="${pageContext.request.contextPath}/auth/register">Tạo tài khoản!</a>
                                     </div>
                                 </div>
                             </div>
@@ -73,6 +86,8 @@
     <!-- Bootstrap core JavaScript-->
     <script src="${pageContext.request.contextPath}/static/common/js/jquery-3.3.1.min.js"></script>
     <script src="${pageContext.request.contextPath}/static/common/js/bootstrap.min.js"></script>
+    <script src="${pageContext.request.contextPath}/static/common/js/sweetalert2.js"></script>
+    <script src="${pageContext.request.contextPath}/static/common/js/notifier.js"></script>
 
 <%--    <!-- Core plugin JavaScript-->--%>
 <%--    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>--%>

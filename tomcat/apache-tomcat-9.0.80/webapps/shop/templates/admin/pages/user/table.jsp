@@ -37,10 +37,10 @@
                 </td>
             </tr>
 
-            <jsp:include page="../../common/modal.jsp">
+            <jsp:include page="../../../common/modal.jsp">
                 <jsp:param name="id" value="update-user-${ requestScope._item.id }"/>
                 <jsp:param name="_title" value="Cập nhật người dùng" />
-                <jsp:param name="bodyComponent" value="user/form.jsp"/>
+                <jsp:param name="bodyComponent" value="/admin/pages/user/form.jsp"/>
                 <jsp:param name="name" value="_item" />
             </jsp:include>
         </c:forEach>

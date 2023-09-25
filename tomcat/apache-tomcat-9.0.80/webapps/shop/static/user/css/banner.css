@@ -38,6 +38,8 @@
 
 .banner__item__pic {
     float: right;
+    width: 440px;
+    height: 440px;
 }
 
 .banner__item__text {

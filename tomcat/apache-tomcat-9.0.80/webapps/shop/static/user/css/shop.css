@@ -130,6 +130,7 @@
     padding-top: 15px;
 }
 
+.shop__sidebar__size a,
 .shop__sidebar__size label {
     color: #111111;
     font-size: 15px;
@@ -314,39 +315,4 @@
 
 .shop__product__option__right .nice-select .list {
     border-radius: 0;
-}
-
-.product__pagination {
-    padding-top: 25px;
-    text-align: center;
-}
-
-.product__pagination a {
-    display: inline-block;
-    font-size: 16px;
-    font-weight: 700;
-    color: #111111;
-    height: 30px;
-    width: 30px;
-    border: 1px solid transparent;
-    border-radius: 50%;
-    line-height: 30px;
-    text-align: center;
-}
-
-.product__pagination a.active {
-    border-color: #111111;
-}
-
-.product__pagination a:hover {
-    border-color: #111111;
-}
-
-.product__pagination span {
-    display: inline-block;
-    font-size: 16px;
-    font-weight: 700;
-    color: #111111;
-    padding-left: 10px;
-    padding-right: 15px;
 }

@@ -13,11 +13,8 @@
                 <option value="${ false }" ${ param.active eq 'false' ? 'selected' : '' }>Không hoạt động</option>
             </select>
         </div>
-
         <div class="d-flex align-items-end">
             <button class="btn btn-primary">Tìm kiếm</button>
         </div>
     </div>
-
-
 </form>

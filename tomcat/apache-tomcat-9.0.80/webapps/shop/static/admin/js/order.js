@@ -1,10 +1,6 @@
 const showDetailOrders = document.querySelectorAll('.show-detail-order');
 const orderDetailContainer = document.getElementById('order-detail');
 const tbody = orderDetailContainer.querySelector('tbody');
-const formatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'VND',
-});
 
 showDetailOrders?.forEach(showDetailOrder => {
     showDetailOrder.addEventListener('click', e => {
@@ -27,10 +23,10 @@ showDetailOrders?.forEach(showDetailOrder => {
                         <td>${ od.color }</td>
                         <td>${ od.size }</td>
                         <td>${ od.quantity }</td>
-                        <td>${ formatter.format(od.cost) }</td>
-                        <td>${ formatter.format(od.price) }</td>
+                        <td>${ $formatter.format(od.cost) }</td>
+                        <td>${ $formatter.format(od.price) }</td>
                         <td>${ od.discount ?? 0 }</td>
-                        <td>${ formatter.format( (od.price * od.quantity) * ( 100 - (od.discount ?? 0) ) / 100 ) }</td>
+                        <td>${ $formatter.format( (od.price * od.quantity) * ( 100 - (od.discount ?? 0) ) / 100 ) }</td>
                     </tr>
                 `)).join('');
                 tbody.setHTML(html);

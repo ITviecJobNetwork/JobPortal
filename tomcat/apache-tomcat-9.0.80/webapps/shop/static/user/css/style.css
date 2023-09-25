@@ -60,8 +60,10 @@ button:focus,
 textarea:focus {
 	outline: none;
 }
-
-a:hover,
+a:hover {
+	text-decoration: none;
+	outline: none;
+}
 a:focus {
 	text-decoration: none;
 	outline: none;
@@ -314,6 +316,18 @@ ol {
 	font-size: 15px;
 	color: #b7b7b7;
 	display: inline-block;
+}
+
+.disabled {
+	opacity: .5;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+.dots {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
 }
 
 /*--------------------------------- Responsive Media Quaries -----------------------------*/

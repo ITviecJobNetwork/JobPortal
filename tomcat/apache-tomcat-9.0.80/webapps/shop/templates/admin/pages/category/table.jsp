@@ -23,10 +23,10 @@
                         <i class="fa fa-pencil-square-o text-white" aria-hidden="true"></i>
                     </button>
                     <c:set var="_item" value="${ item }" scope="request"  />
-                    <jsp:include page="../../common/modal.jsp">
+                    <jsp:include page="../../../common/modal.jsp">
                         <jsp:param name="id" value="update-${ item.code }"/>
                         <jsp:param name="_title" value="Cập nhật danh mục"/>
-                        <jsp:param name="bodyComponent" value="category/form.jsp" />
+                        <jsp:param name="bodyComponent" value="/admin/pages/category/form.jsp" />
                         <jsp:param name="name" value="_item" />
                     </jsp:include>
 
@@ -42,7 +42,7 @@
                         </button>
                     </c:if>
 
-                    <jsp:include page="../../common/modal.jsp">
+                    <jsp:include page="../../../common/modal.jsp">
                         <jsp:param name="id" value="delete-${ item.code }"/>
                         <jsp:param name="_title" value="${ item.active ? 'Xác nhận xóa danh mục' : 'Xác nhận mở danh mục'}"/>
                         <jsp:param name="content" value="Bạn có chắc chắn muốn ${ item.active ? 'xóa' : 'mở' } danh mục ${ item.code } không?"/>

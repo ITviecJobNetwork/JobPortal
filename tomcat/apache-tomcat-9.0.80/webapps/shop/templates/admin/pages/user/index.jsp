@@ -7,9 +7,9 @@
     <jsp:param name="isPagination" value="true"/>
 </jsp:include>
 
-<jsp:include page="../../common/modal.jsp">
+<jsp:include page="../../../common/modal.jsp">
     <jsp:param name="id" value="update-user-fail"/>
     <jsp:param name="_title" value="Cập nhật người dùng" />
-    <jsp:param name="bodyComponent" value="user/form.jsp"/>
+    <jsp:param name="bodyComponent" value="/admin/pages/user/form.jsp"/>
     <jsp:param name="name" value="_dataFail" />
 </jsp:include>

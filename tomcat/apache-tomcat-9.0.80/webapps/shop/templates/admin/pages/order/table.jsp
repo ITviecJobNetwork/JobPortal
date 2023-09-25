@@ -31,34 +31,17 @@
                     <fmt:formatDate value="${ item.createdDate }" pattern="dd/MM/YYYY HH:mm"/>
                 </td>
                 <td data-col="method">
-                    <h6>
-                        <c:if test="${ item.methodPayment eq 'PAYPAL'}">
-                            <i class="fa fa-paypal text-primary mr-2" aria-hidden="true"></i>
-                            PayPal
-                        </c:if>
-
-                        <c:if test="${ item.methodPayment eq 'COD'}">
-                            <i class="fa fa-money text-success mr-2" aria-hidden="true"></i>
-                            COD
-                        </c:if>
-                    </h6>
+                    <jsp:include page="../../../common/method-payment-icon.jsp">
+                        <jsp:param name="_value" value="${ item.methodPayment }"/>
+                    </jsp:include>
                 </td>
                 <td data-col="userNote">${ item.userNote }</td>
                 <td data-col="adminNote">${ item.adminNote }</td>
                 <td data-col="status">
-                    <c:if test="${ item.status eq 'PENDING' or item.status eq 'APPROVED'}">
-                        <c:set var="classStatus" value="text-primary" scope="page"/>
-                    </c:if>
-                    <c:if test="${ item.status eq 'CANCEL' or item.status eq 'REJECT' }">
-                        <c:set var="classStatus" value="text-danger" scope="page"/>
-                    </c:if>
-                    <c:if test="${ item.status eq 'DELIVERING' }">
-                        <c:set var="classStatus" value="text-warning" scope="page"/>
-                    </c:if>
-                    <c:if test="${ item.status eq 'DONE' }">
-                        <c:set var="classStatus" value="text-success" scope="page"/>
-                    </c:if>
-                    <strong class="${ classStatus }">${ item.status.value }</strong>
+                    <jsp:include page="../../../common/status-order.jsp">
+                        <jsp:param name="_value" value="${ item.status }"/>
+                        <jsp:param name="_label" value="${ item.status.value }" />
+                    </jsp:include>
                 </td>
                 <td data-col="total">
                     <jsp:include page="../../../common/currency.jsp">
@@ -74,10 +57,10 @@
                 </td>
             </tr>
 
-            <jsp:include page="../../common/modal.jsp">
+            <jsp:include page="../../../common/modal.jsp">
                 <jsp:param name="id" value="reject-user-${ _item.code }"/>
                 <jsp:param name="_title" value="Từ chối đơn hàng-${ _item.code }"/>
-                <jsp:param name="bodyComponent" value="order/reject-form.jsp"/>
+                <jsp:param name="bodyComponent" value="/admin/pages/order/reject-form.jsp"/>
             </jsp:include>
         </c:forEach>
         </tbody>

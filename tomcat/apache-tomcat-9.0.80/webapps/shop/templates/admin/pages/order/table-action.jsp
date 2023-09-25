@@ -5,7 +5,7 @@
     <li class="border-bottom">
         <div class="p-2 d-flex align-items-center">
             <i class="fa fa-search mr-2" aria-hidden="true"></i>
-            <a href="#" class="show-detail-order" data-orderId="${ _item.code }" data-urlData="${ contextPath }/admin/rest/order">Chi tiết</a>
+            <a href="#" class="show-detail-order" data-orderId="${ _item.code }" data-urlData="${ contextPath }/rest/order">Chi tiết</a>
         </div>
     </li>
 

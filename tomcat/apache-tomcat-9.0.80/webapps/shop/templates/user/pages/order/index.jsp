@@ -1,136 +1,124 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <jsp:include page="../../common/breadcrumb.jsp">
     <jsp:param name="bc1" value="Order"/>
 </jsp:include>
 <!-- Shopping Cart Section Begin -->
-<section class="shopping-cart spad">
+<section class="shopping-cart spad pt-5">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="shopping__cart__table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Quantity</th>
-                                <th>Total</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="product__cart__item">
-                                    <div class="product__cart__item__pic">
-                                        <img src="img/shopping-cart/cart-1.jpg" alt="">
-                                    </div>
-                                    <div class="product__cart__item__text">
-                                        <h6>T-shirt Contrast Pocket</h6>
-                                        <h5>$98.49</h5>
-                                    </div>
-                                </td>
-                                <td class="quantity__item">
-                                    <div class="quantity">
-                                        <div class="pro-qty-2">
-                                            <input type="text" value="1">
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="cart__price">$ 30.00</td>
-                                <td class="cart__close"><i class="fa fa-close"></i></td>
-                            </tr>
-                            <tr>
-                                <td class="product__cart__item">
-                                    <div class="product__cart__item__pic">
-                                        <img src="img/shopping-cart/cart-2.jpg" alt="">
-                                    </div>
-                                    <div class="product__cart__item__text">
-                                        <h6>Diagonal Textured Cap</h6>
-                                        <h5>$98.49</h5>
-                                    </div>
-                                </td>
-                                <td class="quantity__item">
-                                    <div class="quantity">
-                                        <div class="pro-qty-2">
-                                            <input type="text" value="1">
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="cart__price">$ 32.50</td>
-                                <td class="cart__close"><i class="fa fa-close"></i></td>
-                            </tr>
-                            <tr>
-                                <td class="product__cart__item">
-                                    <div class="product__cart__item__pic">
-                                        <img src="img/shopping-cart/cart-3.jpg" alt="">
-                                    </div>
-                                    <div class="product__cart__item__text">
-                                        <h6>Basic Flowing Scarf</h6>
-                                        <h5>$98.49</h5>
-                                    </div>
-                                </td>
-                                <td class="quantity__item">
-                                    <div class="quantity">
-                                        <div class="pro-qty-2">
-                                            <input type="text" value="1">
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="cart__price">$ 47.00</td>
-                                <td class="cart__close"><i class="fa fa-close"></i></td>
-                            </tr>
-                            <tr>
-                                <td class="product__cart__item">
-                                    <div class="product__cart__item__pic">
-                                        <img src="img/shopping-cart/cart-4.jpg" alt="">
-                                    </div>
-                                    <div class="product__cart__item__text">
-                                        <h6>Basic Flowing Scarf</h6>
-                                        <h5>$98.49</h5>
-                                    </div>
-                                </td>
-                                <td class="quantity__item">
-                                    <div class="quantity">
-                                        <div class="pro-qty-2">
-                                            <input type="text" value="1">
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="cart__price">$ 30.00</td>
-                                <td class="cart__close"><i class="fa fa-close"></i></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+        <div class="row mb-4">
+            <form method="get" class="w-100">
                 <div class="row">
-                    <div class="col-lg-6 col-md-6 col-sm-6">
-                        <div class="continue__btn">
-                            <a href="#">Continue Shopping</a>
-                        </div>
+                    <div class="col-md-3 d-flex align-items-center">
+                        <label class="col-md-3">Mã</label>
+                        <input class="form-control" name="code" value="${ param.code }"/>
                     </div>
-                    <div class="col-lg-6 col-md-6 col-sm-6">
-                        <div class="continue__btn update__btn">
-                            <a href="#"><i class="fa fa-spinner"></i> Update cart</a>
-                        </div>
+                    <div class="col-md-3 d-flex align-items-center">
+                        <label class="col-md-3">Từ ngày</label>
+                        <input type="date" class="form-control" name="fromDate" value="${ param.fromDate }"/>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-center">
+                        <label class="col-md-4">Đến ngày</label>
+                        <input type="date" class="form-control" name="toDate" value="${ param.toDate }"/>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-primary">Tìm kiếm</button>
                     </div>
                 </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="cart__discount">
-                    <h6>Discount codes</h6>
-                    <form action="#">
-                        <input type="text" placeholder="Coupon code">
-                        <button type="submit">Apply</button>
-                    </form>
-                </div>
-                <div class="cart__total">
-                    <h6>Cart total</h6>
-                    <ul>
-                        <li>Subtotal <span>$ 169.50</span></li>
-                        <li>Total <span>$ 169.50</span></li>
-                    </ul>
-                    <a href="#" class="primary-btn">Proceed to checkout</a>
-                </div>
-            </div>
+            </form>
         </div>
+        <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Mã hóa đơn</th>
+                        <th>Số điện thoại</th>
+                        <th>Địa chỉ</th>
+                        <th>Ngày mua</th>
+                        <th>Tổng tiền</th>
+                        <th>Thông tin</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <c:forEach var="item" items="${ paging.items }">
+                        <tr>
+                            <td>
+                                <div style="max-width: 200px">${ item.code }</div>
+                            </td>
+                            <td>${ item.phone }</td>
+                            <td>
+                                <div style="max-width: 150px">
+                                    ${ item.address }
+                                </div>
+                            </td>
+                            <td>
+                                <fmt:formatDate value="${ item.createdDate }" pattern="dd/MM/yyyy HH:mm" />
+                            </td>
+                            <td>
+                                <jsp:include page="../../../common/currency.jsp">
+                                    <jsp:param name="_value" value="${ item.total }"/>
+                                </jsp:include>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column" style="gap: 5px">
+                                    <div class="d-flex" style="gap: 5px">
+                                        <b>Hình thức:</b>
+                                        <jsp:include page="../../../common/method-payment-icon.jsp">
+                                            <jsp:param name="_value" value="${ item.methodPayment }"/>
+                                        </jsp:include>
+                                    </div>
+                                    <div class="d-flex" style="gap: 5px">
+                                        <b>Trạng thái:</b>
+                                        <jsp:include page="../../../common/status-order.jsp">
+                                            <jsp:param name="_value" value="${ item.status }"/>
+                                            <jsp:param name="_label" value="${ item.status.value }" />
+                                        </jsp:include>
+                                    </div>
+                                    <c:if test="${ item.adminNote ne null }">
+                                        <div class="d-flex" style="gap: 5px">
+                                            <b>Admin hủy:</b>
+                                            <span class="dots" style="max-width: 100px;" title="${ item.adminNote }">${ item.adminNote }</span>
+                                        </div>
+                                    </c:if>
+                                    <c:if test="${ item.userNote ne null }">
+                                        <div class="d-flex" style="gap: 5px">
+                                            <b>User hủy:</b>
+                                            <span class="dots" style="max-width: 100px" title="${ item.userNote }">${ item.userNote }</span>
+                                        </div>
+                                    </c:if>
+                                </div>
+                            </td>
+                            <td class="user-action">
+                                <div>
+                                    <i class="fa fa-ellipsis-v cursor-pointer" aria-hidden="true"></i>
+                                    <c:set var="_item" value="${ item }" scope="request"/>
+                                    <jsp:include page="table-action.jsp"/>
+                                </div>
+                            </td>
+
+                        </tr>
+
+                        <c:if test="${  item.status eq 'PENDING' }">
+                            <jsp:include page="../../../common/modal-cancel.jsp">
+                                <jsp:param name="id" value="order-${ item.code }"/>
+                                <jsp:param name="_title" value="Hủy đơn hàng"/>
+                                <jsp:param name="_methodSubmit" value="post"/>
+                                <jsp:param name="_urlSubmit" value="${ contextPath }/order/cancel?oCode=${ item.code }"/>
+                            </jsp:include>
+                        </c:if>
+                    </c:forEach>
+                    </tbody>
+                </table>
+            </div>
+        <jsp:include page="../../common/paging.jsp" />
     </div>
 </section>
 <!-- Shopping Cart Section End -->
+
+<jsp:include page="../../../common/modal.jsp">
+    <jsp:param name="id" value="order-detail"/>
+    <jsp:param name="_title" value="Chi tiết đơn hàng" />
+    <jsp:param name="bodyComponent" value="/admin/pages/order/order-detail.jsp"/>
+    <jsp:param name="_sz" value="modal-xl"/>
+</jsp:include>

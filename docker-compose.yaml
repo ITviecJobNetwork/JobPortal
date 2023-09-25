@@ -5,7 +5,7 @@ services:
     container_name: database
     restart: always
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       -   .\.docker\mysql:/var/lib/mysql:/var/lib/mysql
     environment:

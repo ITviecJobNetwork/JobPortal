@@ -5,6 +5,9 @@
 
 .header {
     background: #ffffff;
+    position: sticky;
+    top: -45px;
+    z-index: 9999;
 }
 
 .header__top {
@@ -230,4 +233,26 @@
 
 .canvas__open {
     display: none;
+}
+
+.user-info:hover ul {
+    display: block !important;
+}
+
+.user-info ul {
+    list-style: none;
+    text-align: left;
+    z-index: 9999;
+    border-radius: 8px;
+    width: 200px;
+}
+
+.user-info ul li p {
+    padding: 10px 5px;
+    font-size: 15px;
+    color: #111111 !important;
+    display: block;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 0;
 }

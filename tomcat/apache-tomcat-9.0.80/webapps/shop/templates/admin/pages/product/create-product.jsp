@@ -12,6 +12,12 @@
             </a>
             <div class="collapse show mt-2 card p-3" id="basicInfo">
                 <div class="row">
+                    <div class="col-md-12">
+                        <label for="isShowHome">Hiển thị home page</label>
+                        <input id="isShowHome" type="checkbox" name="isShowHome" value="true" ${ _data.isShowHome ? 'checked' : '' } />
+                    </div>
+                </div>
+                <div class="row mt-3">
                     <div class="col-md-6">
                         <label class="required">Mã sản phẩm</label>
                         <input class="form-control" placeholder="Nhập mã sản phẩm" name="code" value="${ _data.code }" ${ currentUri eq contextPath += '/admin/product/update' ? 'readonly' : ''} required/>
@@ -35,6 +41,13 @@
                                 <option value="${ item.id }" ${ _data.categoryId eq item.id ? 'selected' : '' }>${ item.code } - ${ item.name }</option>
                             </c:forEach>
                         </select>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <label class="required">Mô tả ngắn</label>
+                        <textarea class="form-control" name="shortDescription" rows="5" maxlength="200">${ _data.shortDescription }</textarea>
                     </div>
                 </div>
 
