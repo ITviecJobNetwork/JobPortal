@@ -16,6 +16,7 @@ import com.fashion.exception.BusinessException;
 import com.fashion.service.CategoryService;
 import com.fashion.service.ProductDetailService;
 import com.fashion.service.ProductService;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import javax.servlet.annotation.MultipartConfig;
