@@ -42,6 +42,6 @@ services:
       exchangerate.access-token: ${EXCHANGE_RATE_ACCESS_TOKEN}
       exchangerate.currency: EUR
     ports:
-      - '8080:8080'
+      - '8082:8080'
 
 

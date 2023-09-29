@@ -41,6 +41,7 @@ public class ObjectUtil {
             if (List.class.equals(field.getType())) {
                 String[] parameterValues = request.getParameterValues(field.getName());
                 Class<?> genericType = getGenericOfField(field);
+                if (Objects.isNull(parameterValues)) return new ArrayList<>();
                 return Arrays.stream(parameterValues)
                         .map(v -> convertValue(v, genericType))
                         .collect(Collectors.toList());

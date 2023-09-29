@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Survey Form</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 6rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-image: url("bg.jpg");
+      background-size: cover;
+      background-repeat: no-repeat, repeat;
+    }
+    .container {
+      max-width: 500px;
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 5px;
+    }
+    h3 {
+      font-family: Arial, sans-serif;
+      color: teal;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    h4 {
+      color: teal;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .footer {
+      margin-top: 2rem;
+      text-align: center;
+    }
+    .footer-submit button {
+      margin-top: 1rem;
+      text-align: center;
+      background-color: teal;
+      border: 1px solid #cccccc;
+      color:white;
+      cursor: pointer;
+      font-size: 20px;
+      border-radius: 5px;
+    }
+
+    img{
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+  </style>
+</head>
+<body>
+<div class="container">
+  <img src="images.jpg" alt="Murach Logo" width="225">
+  <h3>Survey</h3>
+  <p>If you have a moment, we'd appreciate it if you would fill out this survey</p>
+  <h4>Your information:</h4>
+  <form action="mailList" method="post" id="survey-form">
+    <input type="hidden" name="action" value="add">
+    <div class="form-group">
+      <label for="firstName"><strong>First Name:</strong></label>
+      <input type="text" class="form-control" id="firstName" name="firstName" required>
+    </div>
+    <div class="form-group">
+      <label for="lastName"><strong>Last Name:</strong></label>
+      <input type="text" class="form-control" id="lastName" name="lastName" required>
+    </div>
+    <div class="form-group">
+      <label for="email"><strong>Email address:</strong></label>
+      <input type="email" class="form-control" id="email" name="email" required>
+    </div>
+    <div class="form-group">
+      <label for="dateOfBirth"><strong>Date of Birth:</strong></label>
+      <input type="text" class="form-control" id="dateOfBirth" name="dateOfBirth" required>
+    </div>
+
+    <h4>How did you hear about us?</h4>
+    <div class="form-group">
+      <input type="radio" id="SearchEngine" name="howHeard" value="Search Engine" checked>
+      <label for="SearchEngine">Search Engine</label>
+
+      <input type="radio" id="wordOfMouth" name="howHeard" value="Word of Mouth">
+      <label for="wordOfMouth">Word of mouth</label>
+
+      <input type="radio" id="social" name="howHeard" value="Social Media">
+      <label for="social">Social Media</label>
+
+      <input type="radio" id="other" name="howHeard" value="Other">
+      <label for="other">Other:</label>
+    </div>
+
+    <h4>Would you like to receive announcements about the new CDs and special offers?</h4>
+    <div class="form-group">
+      <input type="checkbox" id="option1" name="announcements" value="Yes, I'd like that">
+      <label for="option1">YES, I'd like that</label>
+    </div>
+    <div class="form-group">
+      <input type="checkbox" id="option2" name="emailAnnouncements" value="Yes, please send me email announcements">
+      <label for="option2">YES, please send me email announcements</label>
+    </div>
+
+    <div class="footer">
+      <p>Please contact me by:
+        <select class="select-contact" name="contactMethod">
+          <option value="Email or postal mail">Email or postal mail</option>
+          <option value="Phone number">Phone number</option>
+        </select>
+      </p>
+      <div class="footer-submit">
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </div>
+    </div>
+  </form>
+</div>
+</body>
+</html>

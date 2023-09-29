@@ -1,7 +1,44 @@
-<div xmlns:th="http://www.thymeleaf.org">
-    <h4>Mã đơn hàng: [[${ order.code }]]</h4>
-    <b>Trạng thái đơn hàng: [[${ order.status.value }]]</b>
-    <p th:if="${ order.adminNote != null }">
-        Cửa hàng: [[${ order.adminNote }]]
-    </p>
+<!--<div xmlns:th="http://www.thymeleaf.org">-->
+<!--    <h4>Mã đơn hàng: [[${ order.code }]]</h4>-->
+<!--    <b>Trạng thái đơn hàng: [[${ order.status.value }]]</b>-->
+<!--    <p th:if="${ order.adminNote != null }">-->
+<!--        Cửa hàng: [[${ order.adminNote }]]-->
+<!--    </p>-->
+<!--</div>-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thông tin đơn hàng</title>
+    <link rel="stylesheet" href="path/to/your/css/styles.css">
+</head>
+<body>
+    <div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
+        <div style="margin:50px auto;width:70%;padding:20px 0">
+            <div style="border-bottom:1px solid #eee">
+                <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">Fashion Shop</a>
+            </div>
+        <p style="font-size:2em">Hi,</p>
+            <p>Thank you for choosing my brand</p>
+            <div class="order-details">
+                <h1>Thông tin đơn hàng</h1>
+                <div class="order-info">
+                    <h4>Mã đơn hàng: <span th:text="${order.code}"></span></h4>
+                    <b>Trạng thái đơn hàng: <span th:text="${order.status.value}"></span></b>
+                </div>
+                <div th:if="${order.adminNote != null}" class="admin-note">
+                    <p>Cửa hàng: <span th:text="${order.adminNote}"></span></p>
+                </div>
+            </div>
+        <p style="font-size:0.9em;">Regards,<br />Fashion Shop</p>
+        <hr style="border:none;border-top:1px solid #eee" />
+        <div style="float:right;padding:8px 0;color:#aaa;font-size:0.8em;line-height:1;font-weight:300">
+            <p>Fashion Shop Inc</p>
+            <p>HCMUTE</p>
+            <p>Thu Duc</p>
+        </div>
+    </div>
+
 </div>
+</body>
+</html>
