@@ -34,15 +34,7 @@
     <li><p><b>Email:</b>
         <%= request.getParameter("email")%>
     </p></li>
-    <li><p><b>Date of birth:</b>
-        <%= request.getParameter("dateOfBirth")%>
-    </p></li>
-    <li><p><b>HeardFrom:</b>
-        <%= request.getParameter("heardFrom")%>
-    </p></li>
-    <li><p><b>Announce:</b>
-        <%= request.getParameter("announce")%>
-    </p></li>
+
 </ul>
 <p>To enter another email address, click on back button in your browser or the return button show below </p>
 <form action="5.1.html" method="get">

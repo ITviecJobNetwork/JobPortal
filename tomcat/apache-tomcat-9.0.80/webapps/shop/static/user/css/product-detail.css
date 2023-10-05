@@ -219,7 +219,10 @@
     color: #ffffff;
     border-color: #111111;
 }
-
+.product__details__option__color > .option-color-input:checked + label.option-color.disabled {
+    opacity: .7;
+    cursor: not-allowed;
+}
 .product__details__option__color > input.option-color-input {
     position: absolute;
     visibility: hidden;
@@ -423,4 +426,8 @@
     font-weight: 700;
     margin-bottom: 45px;
     text-align: center;
+}
+#btn-add-cart:disabled {
+    opacity: .7;
+    cursor: not-allowed;
 }

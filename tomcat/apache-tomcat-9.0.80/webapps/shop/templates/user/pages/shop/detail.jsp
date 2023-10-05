@@ -73,6 +73,7 @@
                                             data-qty="${ size.quantity }"
                                             data-price="${ size.price }"
                                             data-discount="${ size.discount }"
+                                            data-active="${ size.active }"
                                             data-id="${ size.id }"
                                         />
                                     </c:forEach>
@@ -99,7 +100,7 @@
                                     <input id="input-id" type="hidden" name="productDetailId" readonly />
                                 </div>
                             </div>
-                            <button class="primary-btn">Thêm giỏ hàng</button>
+                            <button id="btn-add-cart" class="primary-btn">Thêm giỏ hàng</button>
                         </div>
                         <div class="product__details__last__option">
                             <ul>

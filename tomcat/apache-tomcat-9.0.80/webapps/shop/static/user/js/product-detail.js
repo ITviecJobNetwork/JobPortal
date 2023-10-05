@@ -6,17 +6,31 @@ const radioOptionInputDOM = document.querySelectorAll('input[name^=option][type=
 const inputIdDOM = document.getElementById('input-id');
 const commentProductDOM = document.getElementById('comment-product');
 const commentLengthDOM = document.getElementById('comment-length');
+const btnAddCart = document.getElementById('btn-add-cart');
+
+let preSelectedColor = null;
 
 function getSelectedSizeColor() {
     const selectedColor = document.querySelector('input[name=optionColor][type=radio]:checked');
     const selectedSize = document.querySelector('input[name=optionSize][type=radio]:checked');
-    return document.querySelector(`input[type=hidden]#${selectedColor.value}-${selectedSize.value}`);
+    return {
+        selectedSizeColor: document.querySelector(`input[type=hidden]#${selectedColor.value}-${selectedSize.value}`),
+        lblSelectedColor: document.querySelector(`label[for=${selectedColor.id}]`)
+    };
 }
 
 function updateDetailInfo() {
-    const selectedSizeColor = getSelectedSizeColor();
-    const { qty, price, discount: discountPercent, id } = selectedSizeColor.dataset;
+    const { selectedSizeColor, lblSelectedColor } = getSelectedSizeColor();
+    const { qty, price, discount: discountPercent, id, active } = selectedSizeColor.dataset;
     const newPrice = price * ( (100 - discountPercent) / 100 );
+    if (preSelectedColor) preSelectedColor.classList.remove('disabled');
+    if (active == 'false') {
+        lblSelectedColor.classList.add('disabled');
+        btnAddCart.disabled = true;
+    } else {
+        lblSelectedColor.classList.remove('disabled');
+        btnAddCart.disabled = false;
+    }
     if (newPrice == price) {
         oldPriceDOM.classList.add('d-none')
     } else {
@@ -26,6 +40,7 @@ function updateDetailInfo() {
     qtyDOM.textContent = qty;
     newPriceDOM.textContent = $formatter.format(+newPrice);
     oldPriceDOM.textContent = $formatter.format(+price);
+    preSelectedColor = lblSelectedColor;
 }
 
 function quantityChange() {
@@ -50,7 +65,7 @@ function quantityChange() {
 }
 
 function updateCommentContentLength() {
-    commentProductDOM.addEventListener('keyup', e => {
+    commentProductDOM?.addEventListener('keyup', e => {
         commentLengthDOM.textContent = e.target.value.length;
     })
 }

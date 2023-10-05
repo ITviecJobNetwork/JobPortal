@@ -10,11 +10,31 @@
 
     <servlet-class>mailList</servlet-class>
   </servlet>
+  <servlet>
+  	<servlet-name>EmailList</servlet-name>
+  	<display-name>EmailList</display-name>
+  	<servlet-class>EmailList</servlet-class>
+  </servlet>
+  <servlet>
+  	<servlet-name>TestServlet</servlet-name>
+  	<display-name>TestServlet</display-name>
+  	<description></description>
+  	<servlet-class>TestServlet</servlet-class>
+  </servlet>
 
   <servlet-mapping>
     <servlet-name>mailList</servlet-name>
     <url-pattern>/mailList</url-pattern>
   </servlet-mapping>
+  <servlet-mapping>
+  	<servlet-name>EmailList</servlet-name>
+  	<url-pattern>/emailList</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+  	<servlet-name>TestServlet</servlet-name>
+  	<url-pattern>/test</url-pattern>
+  </servlet-mapping>
+
   <welcome-file-list>
     <welcome-file>index.html</welcome-file>
   </welcome-file-list>

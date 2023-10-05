@@ -88,7 +88,13 @@ public  abstract class AbstractPaymentService extends BaseService implements IPa
                     .map(cart -> {
                         ProductDetail productDetail = productDetailMap.get(cart.getProductDetailId());
                         Product product = this.productDao.findById(productDetail.getProductId(), session).orElseThrow();
+                        if (!product.getActive()) {
+                            return String.format("%s không còn hỗ trợ", product.getName());
+                        }
                         ColorProduct cp = this.colorProductDao.findById(productDetail.getColorProductId(), session).orElseThrow();
+                        if (!productDetail.getActive()) {
+                            return String.format("%s-%s-%s không còn hỗ trợ", product.getName(), cp.getName(), productDetail.getSize());
+                        }
                         return String.format("%s-%s-%s không đủ số lượng", product.getName(), cp.getName(), productDetail.getSize());
                     })
                     .collect(Collectors.joining("</br>"));

@@ -96,35 +96,37 @@
 
     <h4>How did you hear about us?</h4>
     <div class="form-group">
-      <input type="radio" id="SearchEngine" name="howHeard" value="Search Engine" checked>
+      <input type="radio" id="SearchEngine" name="heardFrom" value="Search Engine" checked>
       <label for="SearchEngine">Search Engine</label>
 
-      <input type="radio" id="wordOfMouth" name="howHeard" value="Word of Mouth">
+      <input type="radio" id="wordOfMouth" name="heardFrom" value="Word of Mouth">
       <label for="wordOfMouth">Word of mouth</label>
 
-      <input type="radio" id="social" name="howHeard" value="Social Media">
+      <input type="radio" id="social" name="heardFrom" value="Social Media">
       <label for="social">Social Media</label>
 
-      <input type="radio" id="other" name="howHeard" value="Other">
+      <input type="radio" id="other" name="heardFrom" value="Other">
       <label for="other">Other:</label>
     </div>
 
     <h4>Would you like to receive announcements about the new CDs and special offers?</h4>
     <div class="form-group">
-      <input type="checkbox" id="option1" name="announcements" value="Yes, I'd like that">
+      <input type="checkbox" id="option1" name="announce" value="Yes, I'd like that">
       <label for="option1">YES, I'd like that</label>
     </div>
     <div class="form-group">
-      <input type="checkbox" id="option2" name="emailAnnouncements" value="Yes, please send me email announcements">
+      <input type="checkbox" id="option2" name="announce" value="Yes, please send me email announcements">
       <label for="option2">YES, please send me email announcements</label>
     </div>
 
     <div class="footer">
       <p>Please contact me by:
-        <select class="select-contact" name="contactMethod">
-          <option value="Email or postal mail">Email or postal mail</option>
-          <option value="Phone number">Phone number</option>
-        </select>
+        <label>
+          <select class="select-contact" name="contactMethod">
+            <option value="Email or postal mail">Email or postal mail</option>
+            <option value="Phone number">Phone number</option>
+          </select>
+        </label>
       </p>
       <div class="footer-submit">
         <button type="submit" class="btn btn-primary">Submit</button>

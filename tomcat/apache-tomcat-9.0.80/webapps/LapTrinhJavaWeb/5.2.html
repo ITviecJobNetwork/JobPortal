@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Exercise 5.2</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap/dist/js/bootstrap.min.js"></script>
+</head>
+<style>
+
+  h1{
+    color:teal;
+  }
+  button{
+    margin-top: 2rem;
+  }
+  a{
+    margin-top: 2rem;
+  }
+</style>
+<body>
+<div class="container">
+  <h1 class="mt-5">Join our email list</h1>
+  <p>To join our email list, enter your name and email address below.</p>
+
+  <form action="test" method="post">
+    <input type="hidden" name="action" value="add">
+    <input type="hidden" name="myExercise" value="ch05ex1View">
+    <div class="form-group">
+      <label>Email:</label>
+      <input type="email" class="form-control" name="email" value="">
+    </div>
+    <div class="form-group">
+      <label>First Name:</label>
+      <input type="text" class="form-control" name="firstName" value="">
+    </div>
+    <div class="form-group">
+      <label>Last Name:</label>
+      <input type="text" class="form-control" name="lastName" value="">
+    </div>
+    <button type="submit" class="btn btn-primary">Join Now</button>
+    <a href="index.html" class="btn btn-secondary ml-2">Back Home</a>
+  </form>
+</div>
+
+</body>
+</html>
