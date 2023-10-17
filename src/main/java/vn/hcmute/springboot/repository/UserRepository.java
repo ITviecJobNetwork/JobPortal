@@ -6,7 +6,7 @@ import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.model.UserStatus;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
-  User findByEmail(String email);
+  Optional<User> findByEmail(String email);
   boolean existsByUsername(String username);
   Optional<User>findByUsernameIgnoreCase(String username);
   boolean existsByEmail(String email);

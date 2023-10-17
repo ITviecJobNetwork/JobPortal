@@ -1,22 +1,23 @@
 package vn.hcmute.springboot.request;
 
 import jakarta.validation.constraints.NotBlank;
+import vn.hcmute.springboot.valid.ValidEmail;
 
 public class LoginRequest {
   @NotBlank
-  private String username;
+  @ValidEmail
+  private String email;
 
   @NotBlank
   private String password;
 
 
-
-  public String getUsername() {
-    return username;
+  public String getEmail() {
+    return email;
   }
 
-  public void setUsername(String username) {
-    this.username = username;
+  public void setEmail(String email) {
+    this.email = email;
   }
 
   public String getPassword() {

@@ -1,36 +1,25 @@
 package vn.hcmute.springboot.dto;
 
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import vn.hcmute.springboot.model.Role;
-import vn.hcmute.springboot.model.RoleName;
-import vn.hcmute.springboot.model.User;
-import vn.hcmute.springboot.model.UserStatus;
+import vn.hcmute.springboot.valid.ValidEmail;
 
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class UserDTO extends User {
+public class UserDTO {
 
-  private Integer userid;
-  private String email;
+  @NotBlank(message = "Username is mandatory")
+  private String username;
+
+  @NotEmpty
   private String password;
-  private Role role;
-  private UserStatus status;
 
-  public UserDTO(User user) {
-    this.setId(user.getId());
-    this.setEmail(user.getEmail());
-    this.setPassword(user.getPassword());
-    this.setRole(user.getRole());
-    if (UserStatus.ACTIVE == user.getStatus()) {
-      this.setStatus(UserStatus.valueOf("Tài khoản đã kích hoạt"));
-    } else {
-      this.setStatus(UserStatus.valueOf("Tài khoản chưa kích hoạt"));
-    }
+  @NotBlank(message = "Email is mandatory")
+  @ValidEmail
+  private String email;
 
-  }
+  // standard getters and setters
 }

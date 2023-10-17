@@ -1,27 +1,22 @@
 package vn.hcmute.springboot.security;
 
 
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
 
 @Configuration
 @EnableWebSecurity
@@ -29,19 +24,24 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableMethodSecurity
 public class WebSecurityConfig {
 
-  private final UserDetailsServiceImpl userDetailsService;
-  private final JwtAuthEntryPoint unauthorizedHandler;
-  private final WebConfigProperties webConfigProperties;
-
-  @Bean
-  public JwtAuthTokenFilter authenticationJwtTokenFilter() {
-    return new JwtAuthTokenFilter();
-  }
+  private static final String[] WHITE_LIST_URL = {"/api/v1/auth/**",
+      "/v2/api-docs",
+      "/v3/api-docs",
+      "/v3/api-docs/**",
+      "/swagger-resources",
+      "/swagger-resources/**",
+      "/configuration/ui",
+      "/configuration/security",
+      "/swagger-ui/**",
+      "/webjars/**",
+      "/swagger-ui.html"};
+  private final JwtAuthenticationFilter jwtAuthFilter;
+  private final AuthenticationProvider authenticationProvider;
+  private final LogoutHandler logoutHandler;
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
     httpSecurity.csrf(AbstractHttpConfigurer::disable)
-        .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests((authorize) -> authorize
@@ -68,55 +68,14 @@ public class WebSecurityConfig {
             ).permitAll()
             .anyRequest().authenticated()
         );
-
-    httpSecurity.addFilterBefore(authenticationJwtTokenFilter(),
-        UsernamePasswordAuthenticationFilter.class);
+    httpSecurity.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+        .logout(logout ->
+            logout.logoutUrl("/api/v1/auth/logout")
+                .addLogoutHandler(logoutHandler)
+                .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
+        );
     httpSecurity.cors(Customizer.withDefaults());
 
     return httpSecurity.build();
   }
-
-  @Bean
-  public WebMvcConfigurer corsMappingConfigurer() {
-    return new WebMvcConfigurer() {
-      @Override
-      public void addCorsMappings(@NotNull CorsRegistry registry) {
-        var cors = webConfigProperties.getCors();
-        registry.addMapping("/**")
-            .allowedOrigins(cors.getAllowedOrigins())
-            .allowedMethods(cors.getAllowedMethods())
-            .maxAge(cors.getMaxAge())
-            .allowedHeaders(cors.getAllowedHeaders())
-            .exposedHeaders(cors.getExposedHeaders());
-      }
-    };
-  }
-
-  @Bean
-  public DaoAuthenticationProvider authenticationProvider() {
-    var authProvider = new DaoAuthenticationProvider();
-
-    authProvider.setUserDetailsService(userDetailsService);
-    authProvider.setPasswordEncoder(passwordEncoder());
-
-    return authProvider;
-  }
-
-  @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfiguration)
-      throws Exception {
-    return authConfiguration.getAuthenticationManager();
-  }
-
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
-
-  @Bean
-  public GrantedAuthorityDefaults grantedAuthorityDefaults() {
-    // remove the ROLE_ prefix
-    return new GrantedAuthorityDefaults("");
-  }
-
 }
