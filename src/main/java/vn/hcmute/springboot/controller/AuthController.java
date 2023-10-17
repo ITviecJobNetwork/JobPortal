@@ -1,14 +1,17 @@
 package vn.hcmute.springboot.controller;
 
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.request.LoginRequest;
-import vn.hcmute.springboot.response.LoginResponse;
+import vn.hcmute.springboot.request.SignUpRequest;
+import vn.hcmute.springboot.response.JwtResponse;
 import vn.hcmute.springboot.service.UserService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -23,8 +26,13 @@ public class AuthController {
   }
   @CrossOrigin
   @PostMapping("/sign-in")
-  public ResponseEntity<LoginResponse> login(@RequestBody LoginResponse userLogin){
-    LoginResponse response = userService.login(userLogin);
+  public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest userLogin) throws Exception {
+    JwtResponse response = userService.login(userLogin);
     return ResponseEntity.ok(response);
+  }
+  @CrossOrigin
+  @PostMapping("/register")
+  public ResponseEntity<User> register(@RequestBody SignUpRequest request){
+    return new ResponseEntity<>(userService.registerUser(request), HttpStatus.OK);
   }
 }
