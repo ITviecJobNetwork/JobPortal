@@ -1,38 +1,38 @@
 package vn.hcmute.springboot.response;
 
-import jakarta.persistence.criteria.CriteriaBuilder.In;
 import java.util.List;
-import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import vn.hcmute.springboot.model.RoleName;
+import vn.hcmute.springboot.model.Role;
 
 
+@Data
+@Builder
+@NoArgsConstructor
 @Getter
 @Setter
 public class JwtResponse {
 
   private String accessToken;
   private String refreshToken;
-  private String type = "Bearer";
   private Integer id;
-  private String firstName;
-  private String lastName;
   private String username;
-  private RoleName role;
+  private Role role;
   private List<String> authorities;
-
-  public JwtResponse(String accessToken, String refreshToken, Integer id, String firstName,
-      String lastName, String username, RoleName role,
-      List<String> authorities) {
+  private String password;
+  public JwtResponse(String accessToken, String refreshToken, Integer id, String username, Role role,
+      List<String> authorities,String password) {
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
     this.id = id;
     this.role = role;
-    this.firstName = firstName;
-    this.lastName = lastName;
     this.username = username;
     this.authorities = authorities;
+    this.password = password;
 
   }
 

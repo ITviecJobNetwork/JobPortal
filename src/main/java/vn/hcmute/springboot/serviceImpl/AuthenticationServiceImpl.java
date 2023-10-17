@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import vn.hcmute.springboot.repository.UserRepository;
 import vn.hcmute.springboot.request.LoginRequest;
 import vn.hcmute.springboot.request.RegisterRequest;
 import vn.hcmute.springboot.response.AuthenticationResponse;
+import vn.hcmute.springboot.response.JwtResponse;
 import vn.hcmute.springboot.security.JwtService;
 import vn.hcmute.springboot.service.AuthenticationService;
 
@@ -34,24 +36,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
   @Override
-  public AuthenticationResponse register(RegisterRequest request) {
+  public User register(RegisterRequest request) {
     var user = User.builder()
         .email(request.getEmail())
         .password(passwordEncoder.encode(request.getPassword()))
+        .username(request.getUsername())
+        .phoneNumber(request.getPhoneNumber())
+        .role(request.getRole())
         .build();
     var savedUser = repository.save(user);
     savedUser.setStatus(UserStatus.ACTIVE);
-    var jwtToken = jwtService.generateToken((UserDetails) user);
-    var refreshToken = jwtService.generateRefreshToken((UserDetails) user);
-    saveUserToken(savedUser, jwtToken);
-    return AuthenticationResponse.builder()
-        .accessToken(jwtToken)
-        .refreshToken(refreshToken)
-        .build();
+    return repository.save(savedUser);
+
   }
 
   @Override
-  public AuthenticationResponse authenticate(LoginRequest request) {
+  public JwtResponse authenticate(LoginRequest request) {
     authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(
             request.getEmail(),
@@ -64,9 +64,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     var refreshToken = jwtService.generateRefreshToken((UserDetails) user);
     revokeAllUserTokens(user);
     saveUserToken(user, jwtToken);
-    return AuthenticationResponse.builder()
+    return JwtResponse.builder()
         .accessToken(jwtToken)
         .refreshToken(refreshToken)
+        .id(user.getId())
+        .password(user.getPassword())
+        .role(user.getRole())
+        .username(user.getEmail())
+        .authorities(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
         .build();
   }
 

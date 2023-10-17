@@ -1,6 +1,19 @@
 package vn.hcmute.springboot.model;
 
 
+import static vn.hcmute.springboot.model.Permission.ADMIN_CREATE;
+import static vn.hcmute.springboot.model.Permission.ADMIN_DELETE;
+import static vn.hcmute.springboot.model.Permission.ADMIN_READ;
+import static vn.hcmute.springboot.model.Permission.ADMIN_UPDATE;
+import static vn.hcmute.springboot.model.Permission.CANDIDATE_CREATE;
+import static vn.hcmute.springboot.model.Permission.CANDIDATE_DELETE;
+import static vn.hcmute.springboot.model.Permission.CANDIDATE_READ;
+import static vn.hcmute.springboot.model.Permission.CANDIDATE_UPDATE;
+import static vn.hcmute.springboot.model.Permission.RECRUITER_CREATE;
+import static vn.hcmute.springboot.model.Permission.RECRUITER_DELETE;
+import static vn.hcmute.springboot.model.Permission.RECRUITER_READ;
+import static vn.hcmute.springboot.model.Permission.RECRUITER_UPDATE;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,11 +27,16 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
@@ -28,55 +46,37 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.ToString.Exclude;
 import org.hibernate.proxy.HibernateProxy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 
 @Entity
 @Table(name = "users")
 @Getter(AccessLevel.PUBLIC)
 @Setter(AccessLevel.PUBLIC)
-@ToString
 @Builder
 @NoArgsConstructor
+@AllArgsConstructor
 
-public class  User {
+public class  User implements UserDetails {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
-
-  @Column(nullable = false)
   private String username;
-
   private String password;
-
   private String email;
   private String phoneNumber;
 
   @Enumerated(EnumType.STRING)
   private UserStatus status = UserStatus.INACTIVE;
 
-
-  @ManyToOne
-  @JoinColumn(name = "role_id")
+  @Enumerated(EnumType.STRING)
   private Role role;
 
-  @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-  @JoinTable(name = "user_privilege",
-      joinColumns = @JoinColumn(name = "user_id"),
-      inverseJoinColumns = @JoinColumn(name = "privilege_id"))
-  @Exclude
-  private Set<Privilege> privileges = new HashSet<>();
 
-  public User(Integer id, String username, String password, String email, String phoneNumber,
-      UserStatus status, Role role, Set<Privilege> privileges) {
-    this.id = id;
-    this.username = username;
-    this.password = password;
-    this.email = email;
-    this.phoneNumber = phoneNumber;
-    this.status = status;
-    this.role = role;
-    this.privileges = privileges;
-  }
+  @OneToMany(mappedBy = "user")
+  private List<Token> tokens;
 
   @Override
   public final boolean equals(Object o) {
@@ -103,5 +103,65 @@ public class  User {
   public final int hashCode() {
     return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer()
         .getPersistentClass().hashCode() : getClass().hashCode();
+  }
+
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    if(role.name().equals("ADMIN")){
+      return Set.of(
+          ADMIN_READ,
+          ADMIN_UPDATE,
+          ADMIN_DELETE,
+          ADMIN_CREATE,
+          RECRUITER_READ,
+          RECRUITER_UPDATE,
+          RECRUITER_CREATE,
+          RECRUITER_DELETE,
+          CANDIDATE_READ,
+          CANDIDATE_UPDATE,
+          CANDIDATE_CREATE,
+          CANDIDATE_DELETE
+      ).stream().map(permission -> new SimpleGrantedAuthority(permission.getPermission()))
+          .toList();
+    }
+    if (role.name().equals("RECRUITER")){
+      return Set.of(
+          RECRUITER_READ,
+          RECRUITER_UPDATE,
+          RECRUITER_CREATE,
+          RECRUITER_DELETE
+      ).stream().map(permission -> new SimpleGrantedAuthority(permission.getPermission()))
+          .toList();
+    }
+    if (role.name().equals("CANDIDATE")){
+      return Set.of(
+          CANDIDATE_READ,
+          CANDIDATE_UPDATE,
+          CANDIDATE_CREATE,
+          CANDIDATE_DELETE
+      ).stream().map(permission -> new SimpleGrantedAuthority(permission.getPermission()))
+          .toList();
+    }
+    return Collections.emptyList();
+  }
+
+  @Override
+  public boolean isAccountNonExpired() {
+    return true;
+  }
+
+  @Override
+  public boolean isAccountNonLocked() {
+    return true;
+  }
+
+  @Override
+  public boolean isCredentialsNonExpired() {
+    return true;
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return true;
   }
 }

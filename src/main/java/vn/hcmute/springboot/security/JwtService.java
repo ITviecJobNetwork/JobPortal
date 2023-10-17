@@ -3,7 +3,6 @@ package vn.hcmute.springboot.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.impl.crypto.MacProvider;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
@@ -23,10 +22,10 @@ public class JwtService {
   private String jwtSecret;
 
   @Value("${application.security.jwt.expiration}")
-  private int accessTokenExpirationMs;
+  private long accessTokenExpirationMs;
 
   @Value("${application.security.jwt.refresh-token.expiration}")
-  private int refreshTokenExpirationMs;
+  private long refreshTokenExpirationMs;
 
   public String extractUsername(String token) {
     return extractClaim(token, Claims::getSubject);
@@ -53,7 +52,6 @@ public class JwtService {
   ) {
     return buildToken(new HashMap<>(), userDetails, refreshTokenExpirationMs);
   }
-
   private String buildToken(
       Map<String, Object> extraClaims,
       UserDetails userDetails,
@@ -92,8 +90,7 @@ public class JwtService {
   }
 
   private Key getSignInKey() {
-    SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
-    byte[] keyBytes = Keys.secretKeyFor(signatureAlgorithm).getEncoded();
+    byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
     return Keys.hmacShaKeyFor(keyBytes);
   }
 }

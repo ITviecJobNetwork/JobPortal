@@ -17,6 +17,11 @@ public class RegisterRequest {
 
   private String username;
   @ValidEmail
+  @Email
+  @NotBlank(message = "Email is required")
   private String email;
+
   private String password;
+  private String phoneNumber;
+  private Role role;
 }

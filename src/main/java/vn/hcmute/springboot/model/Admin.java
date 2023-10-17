@@ -1,6 +1,9 @@
 package vn.hcmute.springboot.model;
 
+import jakarta.persistence.Basic;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,9 +37,7 @@ public class Admin {
   private String phoneNumber;
   private Timestamp birthDate;
 
-
-  @ManyToOne
-  @JoinColumn(name = "role_id")
+  @Enumerated(EnumType.STRING)
   private Role role;
 
   // Getters and setters

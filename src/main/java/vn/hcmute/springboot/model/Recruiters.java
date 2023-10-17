@@ -3,6 +3,8 @@ package vn.hcmute.springboot.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -63,8 +65,6 @@ public class Recruiters {
   @Column(name = "linkedin_url")
   private String linkedInUrl;
 
-  @ManyToOne
-  @JoinColumn(name = "role_id")
+  @Enumerated(EnumType.STRING)
   private Role role;
-
 }
