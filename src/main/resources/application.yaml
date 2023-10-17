@@ -1,0 +1,53 @@
+
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  profiles:
+    active: ${activatedSpringProfile}
+  datasource:
+    url: jdbc:postgresql://localhost:5434/jobSeeker?useSSL=false&useUnicode=yes&characterEncoding=UTF-8
+    username: postgres
+    password: WaPpys6c4nGJGR6n
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+  servlet:
+    multipart:
+      enabled: 'true'
+      max-request-size: 25MB
+      max-file-size: 25MB
+
+
+jwt:
+  secret: M1l3ajloTjlEWmpYOTc5VnY0U3M3UFVCbUVoc2p6RTRQZlJoS0o5RUEzWm03VlVLREJ1eUxKbWdFWTRkTnZ1eQ==
+  accessTokenExpirationMs: 900000 # 15 minutes
+  refreshTokenExpirationMs: 259200000 #  3 days
+  cookieName: "JWT"
+
+
+
+
+web:
+  cors:
+    allowed-origins: "http://localhost:8080, http://localhost:3000, http://localhost:5173"
+    allowed-methods: GET, POST, PATCH, PUT, DELETE, OPTIONS, HEAD
+    max-age: 3600
+    allowed-headers: "*"
+    exposed-headers: "*"
+
+springdoc:
+  packagesToScan: vn.hcmute.springboot
+  swagger-ui:
+    enabled: true
