@@ -1,17 +1,20 @@
 package vn.hcmute.springboot.serviceImpl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 import vn.hcmute.springboot.model.Token;
 import vn.hcmute.springboot.model.TokenType;
 import vn.hcmute.springboot.model.User;
@@ -25,7 +28,7 @@ import vn.hcmute.springboot.response.JwtResponse;
 import vn.hcmute.springboot.security.JwtService;
 import vn.hcmute.springboot.service.AuthenticationService;
 
-@Service
+@org.springframework.stereotype.Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
   private final UserRepository repository;
@@ -33,44 +36,63 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final AuthenticationManager authenticationManager;
-
-
+  private final EmailServiceImpl emailService;
+  private final OtpServiceImpl otpService;
   @Override
-  public User register(RegisterRequest request) {
+  public String register(RegisterRequest request) {
+    String otp = String.valueOf(otpService.generateOtp());
+    try {
+      emailService.sendOtpToEmail(request.getUsername(), otp);
+    } catch (MessagingException e) {
+      throw new RuntimeException("Unable to send otp please try again");
+    }
     var user = User.builder()
-        .email(request.getEmail())
+        .username(request.getUsername())
         .password(passwordEncoder.encode(request.getPassword()))
         .username(request.getUsername())
+        .firstname(request.getFirstName())
+        .lastname(request.getLastName())
+        .gender(request.getGender())
         .phoneNumber(request.getPhoneNumber())
+        .birthDate(request.getBirthDate())
+        .lastSignInTime(null)
         .role(request.getRole())
+        .otp(otp)
+        .otpGeneratedTime(LocalDateTime.now())
         .build();
     var savedUser = repository.save(user);
-    savedUser.setStatus(UserStatus.ACTIVE);
-    return repository.save(savedUser);
+    savedUser.setStatus(UserStatus.INACTIVE);
+    return "user-registered-successfully";
 
   }
+
 
   @Override
   public JwtResponse authenticate(LoginRequest request) {
     authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(
-            request.getEmail(),
+            request.getUsername(),
             request.getPassword()
         )
     );
-    var user = repository.findByEmail(request.getEmail())
+    var user = repository.findByUsername(request.getUsername())
         .orElseThrow();
-    var jwtToken = jwtService.generateToken((UserDetails) user);
-    var refreshToken = jwtService.generateRefreshToken((UserDetails) user);
+    user.setLastSignInTime(LocalDateTime.now());
+    repository.save(user);
+    var jwtToken = jwtService.generateToken(user);
+    var refreshToken = jwtService.generateRefreshToken(user);
     revokeAllUserTokens(user);
     saveUserToken(user, jwtToken);
     return JwtResponse.builder()
         .accessToken(jwtToken)
         .refreshToken(refreshToken)
+        .firstName(user.getFirstname())
+        .lastName(user.getLastname())
         .id(user.getId())
         .password(user.getPassword())
         .role(user.getRole())
-        .username(user.getEmail())
+        .username(user.getUsername())
+        .lastSignInTime(LocalDateTime.now())
         .authorities(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
         .build();
   }
@@ -87,6 +109,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     tokenRepository.save(jwtToken);
   }
 
+
+
   @Override
   public void revokeAllUserTokens(User user) {
     var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
@@ -98,6 +122,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     });
     tokenRepository.saveAll(validUserTokens);
   }
+
+
 
   public void refreshToken(
       HttpServletRequest request,
@@ -112,10 +138,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     refreshToken = authHeader.substring(7);
     userEmail = jwtService.extractUsername(refreshToken);
     if (userEmail != null) {
-      var user = this.repository.findByEmail(userEmail)
+      var user = this.repository.findByUsername(userEmail)
           .orElseThrow();
-      if (jwtService.isTokenValid(refreshToken, (UserDetails) user)) {
-        var accessToken = jwtService.generateToken((UserDetails) user);
+      if (jwtService.isTokenValid(refreshToken, user)) {
+        var accessToken = jwtService.generateToken(user);
         revokeAllUserTokens(user);
         saveUserToken(user, accessToken);
         var authResponse = AuthenticationResponse.builder()
@@ -125,5 +151,37 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
       }
     }
+  }
+
+  @Override
+  public String verifyAccount(String email, String otp) {
+    User user=repository.findByUsernameIgnoreCase(email)
+        .orElseThrow(()->new UsernameNotFoundException("User not found with email: "+email));
+    if(user.getOtp().equals(otp)&& Duration.between(user.getOtpGeneratedTime(),
+        LocalDateTime.now()).getSeconds() < (120)){
+      user.setStatus(UserStatus.ACTIVE);
+      repository.save(user);
+      return "Account verified successfully";
+
+
+    }
+    return "Please regenerate otp and try again";
+
+  }
+
+  @Override
+  public String regenerateOtp(String email) {
+    User user = repository.findByUsername(email)
+        .orElseThrow(() -> new RuntimeException("User not found with this email: " + email));
+    String otp = String.valueOf(otpService.generateOtp());
+    try {
+      emailService.sendOtpToEmail(email, otp);
+    } catch (MessagingException e) {
+      throw new RuntimeException("Unable to send otp please try again");
+    }
+    user.setOtp(otp);
+    user.setOtpGeneratedTime(LocalDateTime.now());
+    repository.save(user);
+    return "Email sent... please verify account within 2 minute";
   }
 }

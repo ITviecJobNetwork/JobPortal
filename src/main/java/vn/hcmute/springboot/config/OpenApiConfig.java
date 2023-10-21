@@ -18,7 +18,7 @@ public class OpenApiConfig {
   @Bean
   public GroupedOpenApi api() {
     return GroupedOpenApi.builder()
-        .group("spring-boot-3-starter")
+        .group("spring-boot-job-seeker-starter")
         .pathsToMatch("/api/**")
         .build();
   }

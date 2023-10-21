@@ -1,13 +1,9 @@
 package vn.hcmute.springboot.service;
 
-
-import vn.hcmute.springboot.dto.UserDTO;
-import vn.hcmute.springboot.model.User;
-import vn.hcmute.springboot.request.LoginRequest;
-import vn.hcmute.springboot.response.JwtResponse;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public interface UserService {
-  JwtResponse login(LoginRequest userLogin) throws Exception;
-  User registerUser(UserDTO userDto);
+  String sendNewPasswordToEmail(String email);
+  String changePassword(String currentPassword, String newPassword, String confirmPassword);
 
 }

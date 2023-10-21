@@ -53,7 +53,9 @@ public class WebSecurityConfig {
             // others
             .requestMatchers(
                 new AntPathRequestMatcher("/api/auth/**"),
-                new AntPathRequestMatcher("/api/test/**")
+                new AntPathRequestMatcher("/api/test/**"),
+                new AntPathRequestMatcher("/api/v1/sms/**"),
+                new AntPathRequestMatcher("/api/users/**")
             ).permitAll()
             .anyRequest().authenticated()
         );

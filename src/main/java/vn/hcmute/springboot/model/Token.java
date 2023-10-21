@@ -12,7 +12,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,6 +32,7 @@ import org.hibernate.proxy.HibernateProxy;
 @Builder
 @NoArgsConstructor
 @Entity
+@Table(name = "token")
 public class Token {
 
   @Id
@@ -49,6 +52,7 @@ public class Token {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id")
   public User user;
+
 
   @Override
   public final boolean equals(Object o) {

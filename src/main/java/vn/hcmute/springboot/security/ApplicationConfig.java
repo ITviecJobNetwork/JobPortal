@@ -1,5 +1,6 @@
 package vn.hcmute.springboot.security;
 
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,8 +25,8 @@ public class ApplicationConfig {
 
   @Bean
   public UserDetailsService userDetailsService() {
-    return username -> (UserDetails) repository.findByEmail(username)
-        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    return email -> repository.findByUsername(email)
+        .orElseThrow(() -> new UsernameNotFoundException("user-not-found"));
   }
 
   @Bean

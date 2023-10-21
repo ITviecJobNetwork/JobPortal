@@ -1,5 +1,7 @@
 package vn.hcmute.springboot.response;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,33 +10,27 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.hcmute.springboot.model.Role;
-
+import java.util.Date;
 
 @Data
-@Builder
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 public class JwtResponse {
 
   private String accessToken;
   private String refreshToken;
   private Integer id;
   private String username;
+  private String firstName;
+  private String lastName;
   private Role role;
   private List<String> authorities;
   private String password;
-  public JwtResponse(String accessToken, String refreshToken, Integer id, String username, Role role,
-      List<String> authorities,String password) {
-    this.accessToken = accessToken;
-    this.refreshToken = refreshToken;
-    this.id = id;
-    this.role = role;
-    this.username = username;
-    this.authorities = authorities;
-    this.password = password;
+  private LocalDateTime lastSignInTime;
 
-  }
 
   public JwtResponse(String token) {
     this.accessToken = token;

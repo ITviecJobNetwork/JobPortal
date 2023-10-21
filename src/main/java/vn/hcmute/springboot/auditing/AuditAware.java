@@ -2,6 +2,8 @@
 package vn.hcmute.springboot.auditing;
 
 import java.util.Optional;
+import java.util.UUID;
+import lombok.NonNull;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -11,6 +13,7 @@ public class AuditAware implements AuditorAware<Integer> {
 
 
   @Override
+  @NonNull
   public Optional<Integer> getCurrentAuditor() {
     Authentication authentication =
         SecurityContextHolder
