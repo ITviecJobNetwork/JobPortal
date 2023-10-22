@@ -31,19 +31,5 @@ public class RegisterRequest {
   @Size(min = 6,max = 20, message = "length-must-be-greater-than-or-equal-6-or-less-than-or-equal-20")
   private String password;
 
-  private String phoneNumber;
-  @NotBlank
-  private String firstName;
-
-  @NotBlank
-  private String lastName;
-
-  @NotBlank
-  private LocalDate birthDate;
-
-  @NotBlank
-  private Gender gender;
-  @NotBlank
-  private Role role;
 
 }

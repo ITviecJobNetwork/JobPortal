@@ -1,73 +1,83 @@
 package vn.hcmute.springboot.model;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
 @Entity
 @Table(name = "jobs")
-@NoArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
 @AllArgsConstructor
 public class Job {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id",nullable = false,unique = true)
   private Integer id;
 
-  @Column(name = "title")
+  @Column(name = "title", length = 255)
   private String title;
 
-  @Column(name = "company_id")
-  private Integer companyId;
+  @ManyToOne
+  @JoinColumn(name = "company_id")
+  private Company company;
 
-  @Column(name = "job_type_id")
-  private Integer jobTypeId;
+  @ManyToOne
+  @JoinColumn(name = "job_type_id")
+  private JobType jobType;
 
-  @Column(name = "location_id")
-  private Integer locationId;
+  @ManyToOne
+  @JoinColumn(name = "location_id")
+  private Location location;
 
   @Column(name = "min_salary")
   private Double minSalary;
 
+
   @Column(name = "max_salary")
   private Double maxSalary;
 
-  @Column(name = "candidate_level_id")
-  private Integer candidateLevelId;
+  @ManyToMany(fetch = FetchType.EAGER)
+  @JoinTable(
+      name = "job_skills",
+      joinColumns = @JoinColumn(name = "jobs_id"),
+      inverseJoinColumns = @JoinColumn(name = "skill_id")
+  )
+  private Set<Skill> skills = new HashSet<>();
+  @ManyToOne
+  @JoinColumn(name = "candidate_level_id", unique = true)
+  private CandidateLevel candidateLevel;
 
-  @Column(name = "description")
+  @Column(name = "description", length = 255)
   private String description;
 
-  @Column(name = "requirements")
+  @Column(name = "requirements", length = 255)
   private String requirements;
+
+  @Column(name = "created_by", length = 255)
+  private String createdBy;
+
+  @Column(name = "created_at")
+  private Date createdAt;
 
   @Column(name = "expire_at")
   private Date expireAt;
 
-  @Column(name = "created_date")
-  private Date createdDate;
-
-  @Column(name = "created_by")
-  private String createdBy;
-
-  @Column(name = "last_modified_date")
-  private Date lastModifiedDate;
-
-  @Column(name = "last_modified_by")
-  private String lastModifiedBy;
-
 }
-

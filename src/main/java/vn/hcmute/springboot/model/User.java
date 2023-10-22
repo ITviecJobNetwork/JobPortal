@@ -21,6 +21,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
@@ -87,11 +89,13 @@ public class  User implements UserDetails {
   @Column(name = "about_me")
   private String aboutMe; // Use camelCase for Java property names
 
-  @Column(name = "work_experience_id", unique = true)
-  private Integer workExperienceId;
+  @ManyToOne
+  @JoinColumn(name = "work_experience_id", unique = true)
+  private CandidateExperience workExperienceId;
 
-  @Column(name = "education_id", unique = true)
-  private Integer educationId;
+  @ManyToOne
+  @JoinColumn(name = "education_id", unique = true)
+  private CandidateEducation educationId;
 
   @Column(name = "status")
   private UserStatus status = UserStatus.INACTIVE;
@@ -128,6 +132,9 @@ public class  User implements UserDetails {
 
   @OneToMany(mappedBy = "user")
   private List<Token> tokens;
+
+  @OneToMany(mappedBy = "candidate")
+  private List<CandidateSkill> skills;
 
   @Override
   public final boolean equals(Object o) {

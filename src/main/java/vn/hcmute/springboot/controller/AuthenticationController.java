@@ -17,13 +17,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import vn.hcmute.springboot.exception.BadRequestException;
-import vn.hcmute.springboot.model.User;
-import vn.hcmute.springboot.model.UserStatus;
-import vn.hcmute.springboot.repository.RecruiterRepository;
 import vn.hcmute.springboot.repository.UserRepository;
 import vn.hcmute.springboot.request.LoginRequest;
 import vn.hcmute.springboot.request.RegisterRequest;
 import vn.hcmute.springboot.response.JwtResponse;
+import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.service.AuthenticationService;
 
 
@@ -35,17 +33,14 @@ public class AuthenticationController {
   private final AuthenticationService service;
   private final UserRepository userRepository;
   @PostMapping("/register")
-  public ResponseEntity<String> register(
+  public ResponseEntity<MessageResponse> register(
       @RequestBody RegisterRequest request
   ) {
-    var user= userRepository.existsByUsername(request.getUsername());
-    if(user){
-      throw new BadRequestException("email-is-already-used");
-    }
+
 
     return ResponseEntity.ok(service.register(request));
   }
-  @PostMapping("/authenticate")
+  @PostMapping("/sign-in")
   public ResponseEntity<JwtResponse> authenticate(
       @RequestBody LoginRequest request
   ) {
@@ -60,13 +55,14 @@ public class AuthenticationController {
     service.refreshToken(request, response);
   }
   @PutMapping("/verify-account")
-  public ResponseEntity<String> verifyAccount(@RequestParam String email,
+  public ResponseEntity<MessageResponse> verifyAccount(@RequestParam String email,
       @RequestParam String otp) {
-    return new ResponseEntity<>(service.verifyAccount(email, otp), HttpStatus.OK);
+    return ResponseEntity.ok(service.verifyAccount(email, otp));
   }
+
   @PutMapping("/regenerate-otp")
-  public ResponseEntity<String> regenerateOtp(@RequestParam String email) {
-    return new ResponseEntity<>(service.regenerateOtp(email), HttpStatus.OK);
+  public ResponseEntity<MessageResponse> regenerateOtp(@RequestParam String email) {
+    return ResponseEntity.ok(service.regenerateOtp(email));
   }
 
 

@@ -15,6 +15,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import vn.hcmute.springboot.exception.BadRequestException;
+import vn.hcmute.springboot.model.Role;
 import vn.hcmute.springboot.model.Token;
 import vn.hcmute.springboot.model.TokenType;
 import vn.hcmute.springboot.model.User;
@@ -25,6 +27,7 @@ import vn.hcmute.springboot.request.LoginRequest;
 import vn.hcmute.springboot.request.RegisterRequest;
 import vn.hcmute.springboot.response.AuthenticationResponse;
 import vn.hcmute.springboot.response.JwtResponse;
+import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.security.JwtService;
 import vn.hcmute.springboot.service.AuthenticationService;
 
@@ -39,7 +42,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final EmailServiceImpl emailService;
   private final OtpServiceImpl otpService;
   @Override
-  public String register(RegisterRequest request) {
+  public MessageResponse register(RegisterRequest request) {
+    var nickName=repository.existsByNickname(request.getNickname());
+    if(nickName){
+      throw new RuntimeException("nickname-is-already-used");
+    }
+    var userName= repository.existsByUsername(request.getUsername());
+    if(userName){
+      throw new RuntimeException("email-is-already-used");
+    }
     String otp = String.valueOf(otpService.generateOtp());
     try {
       emailService.sendOtpToEmail(request.getUsername(), otp);
@@ -47,22 +58,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       throw new RuntimeException("Unable to send otp please try again");
     }
     var user = User.builder()
-        .username(request.getUsername())
+        .nickname(request.getNickname())
         .password(passwordEncoder.encode(request.getPassword()))
         .username(request.getUsername())
-        .firstname(request.getFirstName())
-        .lastname(request.getLastName())
-        .gender(request.getGender())
-        .phoneNumber(request.getPhoneNumber())
-        .birthDate(request.getBirthDate())
-        .lastSignInTime(null)
-        .role(request.getRole())
+        .role(Role.USER)
         .otp(otp)
         .otpGeneratedTime(LocalDateTime.now())
         .build();
     var savedUser = repository.save(user);
     savedUser.setStatus(UserStatus.INACTIVE);
-    return "user-registered-successfully";
+    String message = "user-registered-successfully";
+    return MessageResponse.builder()
+        .message(message)
+        .build();
 
   }
 
@@ -154,23 +162,29 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   }
 
   @Override
-  public String verifyAccount(String email, String otp) {
+  public MessageResponse verifyAccount(String email, String otp) {
     User user=repository.findByUsernameIgnoreCase(email)
         .orElseThrow(()->new UsernameNotFoundException("User not found with email: "+email));
     if(user.getOtp().equals(otp)&& Duration.between(user.getOtpGeneratedTime(),
         LocalDateTime.now()).getSeconds() < (120)){
       user.setStatus(UserStatus.ACTIVE);
+      String message = "Account verified successfully";
       repository.save(user);
-      return "Account verified successfully";
+      return MessageResponse.builder()
+          .message(message)
+          .build();
 
 
     }
-    return "Please regenerate otp and try again";
+    String messageError="Your otp is expired or incorrect.Please regenerate otp and try again";
+    return MessageResponse.builder()
+        .message(messageError)
+        .build();
 
   }
 
   @Override
-  public String regenerateOtp(String email) {
+  public MessageResponse regenerateOtp(String email) {
     User user = repository.findByUsername(email)
         .orElseThrow(() -> new RuntimeException("User not found with this email: " + email));
     String otp = String.valueOf(otpService.generateOtp());
@@ -182,6 +196,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     user.setOtp(otp);
     user.setOtpGeneratedTime(LocalDateTime.now());
     repository.save(user);
-    return "Email sent... please verify account within 2 minute";
+    String message="Email sent... please verify account within 2 minute";
+    return MessageResponse.builder()
+        .message(message)
+        .build()
+        ;
   }
 }

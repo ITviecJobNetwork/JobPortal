@@ -7,9 +7,10 @@ import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.request.LoginRequest;
 import vn.hcmute.springboot.request.RegisterRequest;
 import vn.hcmute.springboot.response.JwtResponse;
+import vn.hcmute.springboot.response.MessageResponse;
 
 public interface AuthenticationService {
-  String register(RegisterRequest request);
+  MessageResponse register(RegisterRequest request);
   JwtResponse authenticate(LoginRequest request);
   void saveUserToken(User user, String token);
 
@@ -17,7 +18,7 @@ public interface AuthenticationService {
   void refreshToken(HttpServletRequest request,
       HttpServletResponse response) throws IOException;
 
-  String verifyAccount(String email, String otp);
-  String regenerateOtp(String email);
+  MessageResponse verifyAccount(String email, String otp);
+  MessageResponse regenerateOtp(String email);
 
 }
