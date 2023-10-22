@@ -13,7 +13,4 @@ import lombok.Setter;
 @Builder
 public class MessageResponse {
   private String message;
-
-
-
 }

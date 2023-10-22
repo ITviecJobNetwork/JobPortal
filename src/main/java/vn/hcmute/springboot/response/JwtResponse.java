@@ -30,9 +30,4 @@ public class JwtResponse {
   private List<String> authorities;
   private String password;
   private LocalDateTime lastSignInTime;
-
-
-  public JwtResponse(String token) {
-    this.accessToken = token;
-  }
 }
