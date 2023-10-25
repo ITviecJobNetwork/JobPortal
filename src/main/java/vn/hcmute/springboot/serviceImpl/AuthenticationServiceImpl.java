@@ -9,13 +9,13 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import vn.hcmute.springboot.exception.BadRequestException;
 import vn.hcmute.springboot.model.Role;
 import vn.hcmute.springboot.model.Token;
 import vn.hcmute.springboot.model.TokenType;
@@ -34,6 +34,7 @@ import vn.hcmute.springboot.service.AuthenticationService;
 @org.springframework.stereotype.Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
+
   private final UserRepository repository;
   private final TokenRepository tokenRepository;
   private final PasswordEncoder passwordEncoder;
@@ -41,21 +42,31 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final AuthenticationManager authenticationManager;
   private final EmailServiceImpl emailService;
   private final OtpServiceImpl otpService;
+
   @Override
   public MessageResponse register(RegisterRequest request) {
-    var nickName=repository.existsByNickname(request.getNickname());
-    if(nickName){
-      throw new RuntimeException("nickname-is-already-used");
+    var nickName = repository.existsByNickname(request.getNickname());
+    if (nickName) {
+      return MessageResponse.builder()
+          .message("nickname-đã-có-người-sử-dụng-vui-lòng-chọn-nickname-khác")
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
     }
-    var userName= repository.existsByUsername(request.getUsername());
-    if(userName){
-      throw new RuntimeException("email-is-already-used");
+    var userName = repository.existsByUsername(request.getUsername());
+    if (userName) {
+      return MessageResponse.builder()
+          .message("email-đã-có-người-sử-dụng-vui-lòng-chọn-email-khác")
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
     }
     String otp = String.valueOf(otpService.generateOtp());
     try {
       emailService.sendOtpToEmail(request.getUsername(), otp);
     } catch (MessagingException e) {
-      throw new RuntimeException("Unable to send otp please try again");
+      return MessageResponse.builder()
+          .message("không-thể-gửi-mã-OTP-vui-lòng-thử-lại")
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
     }
     var user = User.builder()
         .nickname(request.getNickname())
@@ -67,9 +78,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         .build();
     var savedUser = repository.save(user);
     savedUser.setStatus(UserStatus.INACTIVE);
-    String message = "user-registered-successfully";
+    String message = "chúc-mừng-bạn-đã-đăng-ký-tài-khoản-thành-công";
     return MessageResponse.builder()
         .message(message)
+        .status(HttpStatus.CREATED)
         .build();
 
   }
@@ -77,14 +89,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Override
   public JwtResponse authenticate(LoginRequest request) {
-    authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(
-            request.getUsername(),
-            request.getPassword()
-        )
-    );
+    try {
+      authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(
+              request.getUsername(),
+              request.getPassword()
+          )
+      );
+    } catch (AuthenticationException ex) {
+      return JwtResponse.builder()
+          .message("username-hoặc-password-không-chính-xác")
+          .status(HttpStatus.UNAUTHORIZED)
+          .build();
+    }
+
     var user = repository.findByUsername(request.getUsername())
-        .orElseThrow();
+        .orElseThrow(() -> new UsernameNotFoundException("không tìm thấy user"));
     user.setLastSignInTime(LocalDateTime.now());
     repository.save(user);
     var jwtToken = jwtService.generateToken(user);
@@ -101,6 +121,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         .role(user.getRole())
         .username(user.getUsername())
         .lastSignInTime(LocalDateTime.now())
+        .status(HttpStatus.OK)
         .authorities(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
         .build();
   }
@@ -118,19 +139,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   }
 
 
-
   @Override
   public void revokeAllUserTokens(User user) {
     var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
-    if (validUserTokens.isEmpty())
+    if (validUserTokens.isEmpty()) {
       return;
+    }
     validUserTokens.forEach(token -> {
       token.setExpired(true);
       token.setRevoked(true);
     });
     tokenRepository.saveAll(validUserTokens);
   }
-
 
 
   public void refreshToken(
@@ -140,7 +160,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
     final String refreshToken;
     final String userEmail;
-    if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
+    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
       return;
     }
     refreshToken = authHeader.substring(7);
@@ -163,22 +183,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Override
   public MessageResponse verifyAccount(String email, String otp) {
-    User user=repository.findByUsernameIgnoreCase(email)
-        .orElseThrow(()->new UsernameNotFoundException("User not found with email: "+email));
-    if(user.getOtp().equals(otp)&& Duration.between(user.getOtpGeneratedTime(),
-        LocalDateTime.now()).getSeconds() < (120)){
+    User user = repository.findByUsernameIgnoreCase(email)
+        .orElseThrow(
+            () -> new UsernameNotFoundException("Không tìm thấy người dùng với email: " + email));
+    if (user.getOtp().equals(otp) && Duration.between(user.getOtpGeneratedTime(),
+        LocalDateTime.now()).getSeconds() < (120)) {
       user.setStatus(UserStatus.ACTIVE);
-      String message = "Account verified successfully";
+      String message = "Xác thực tài khoản thành công";
       repository.save(user);
       return MessageResponse.builder()
           .message(message)
+          .status(HttpStatus.ACCEPTED)
           .build();
-
-
     }
-    String messageError="Your otp is expired or incorrect.Please regenerate otp and try again";
+    String messageError = "Mã OTP đã hết hạn hoặc không chính xác. Vui lòng tạo mã OTP mới và thử lại";
     return MessageResponse.builder()
         .message(messageError)
+        .status(HttpStatus.BAD_REQUEST)
         .build();
 
   }
@@ -186,20 +207,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Override
   public MessageResponse regenerateOtp(String email) {
     User user = repository.findByUsername(email)
-        .orElseThrow(() -> new RuntimeException("User not found with this email: " + email));
+        .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với email: " + email));
     String otp = String.valueOf(otpService.generateOtp());
     try {
       emailService.sendOtpToEmail(email, otp);
     } catch (MessagingException e) {
-      throw new RuntimeException("Unable to send otp please try again");
+      throw new RuntimeException("Không thể gửi mã OTP. Vui lòng thử lại");
     }
     user.setOtp(otp);
     user.setOtpGeneratedTime(LocalDateTime.now());
     repository.save(user);
-    String message="Email sent... please verify account within 2 minute";
+    String message = "Mã OTP đã được gửi... vui lòng xác thực tài khoản trong vòng 2 phút";
     return MessageResponse.builder()
         .message(message)
-        .build()
-        ;
+        .build();
   }
 }

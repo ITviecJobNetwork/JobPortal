@@ -61,9 +61,11 @@ public class Job {
       inverseJoinColumns = @JoinColumn(name = "skill_id")
   )
   private Set<Skill> skills = new HashSet<>();
+
   @ManyToOne
-  @JoinColumn(name = "candidate_level_id", unique = true)
+  @JoinColumn(name = "candidate_level_id")
   private CandidateLevel candidateLevel;
+
 
   @Column(name = "description", length = 255)
   private String description;

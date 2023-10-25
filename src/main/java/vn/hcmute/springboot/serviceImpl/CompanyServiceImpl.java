@@ -13,11 +13,12 @@ import vn.hcmute.springboot.service.CompanyService;
 public class CompanyServiceImpl implements CompanyService {
 
   private final CompanyRepository companyRepository;
+
   @Override
   public List<Company> listAllCompany() {
-    var company=companyRepository.findAll();
-    if(company.isEmpty()){
-      throw new RuntimeException("No company found");
+    var company = companyRepository.findAll();
+    if (company.isEmpty()) {
+      throw new NotFoundException("không-tìm-thấy-công-ty");
     }
     return company;
   }
@@ -25,6 +26,6 @@ public class CompanyServiceImpl implements CompanyService {
   @Override
   public Company findCompanyByName(String name) {
     return companyRepository.findByNameIgnoreCase(name)
-        .orElseThrow(()->new NotFoundException("No company found with this name"+name));
+        .orElseThrow(() -> new NotFoundException("không-tìm-thấy-công-ty " + name));
   }
 }

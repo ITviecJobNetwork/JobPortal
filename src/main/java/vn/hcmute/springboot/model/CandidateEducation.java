@@ -29,7 +29,7 @@ public class CandidateEducation {
   private Integer id;
 
   @ManyToOne
-  @JoinColumn(name = "user_id",nullable = false,unique = true)
+  @JoinColumn(name = "user_id",unique = true)
   private User candidate;
 
   @Column(name = "major")

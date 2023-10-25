@@ -6,5 +6,5 @@ import vn.hcmute.springboot.model.CandidateLevel;
 
 public interface CandidateLevelRepository extends JpaRepository<CandidateLevel, Long>
 {
-  CandidateLevel findByCandidateLevel( String candidateLevel);
+  CandidateLevel findByCandidateLevel(String candidateLevel);
 }

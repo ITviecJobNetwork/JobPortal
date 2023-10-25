@@ -75,7 +75,7 @@ public class JobServiceImpl implements JobService {
 
   @Override
   public List<Job> findJobByKeyWord(String keyword) {
-    return jobRepository.findByKeyword(keyword);
+    return jobRepository.findByKeywordAllIgnoreCase(keyword);
   }
 
 }

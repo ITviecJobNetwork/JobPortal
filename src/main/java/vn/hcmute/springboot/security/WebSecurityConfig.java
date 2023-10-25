@@ -1,6 +1,7 @@
 package vn.hcmute.springboot.security;
 
 
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 
 @Configuration
@@ -27,7 +30,6 @@ public class WebSecurityConfig {
   private final JwtAuthenticationFilter jwtAuthFilter;
   private final AuthenticationProvider authenticationProvider;
   private final LogoutHandler logoutHandler;
-
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
     httpSecurity.csrf(AbstractHttpConfigurer::disable)
@@ -57,7 +59,8 @@ public class WebSecurityConfig {
                 new AntPathRequestMatcher("/api/v1/sms/**"),
                 new AntPathRequestMatcher("/api/users/**"),
                 new AntPathRequestMatcher("/api/job/**"),
-                new AntPathRequestMatcher("/api/company/**")
+                new AntPathRequestMatcher("/api/company/**"),
+                new AntPathRequestMatcher("/api/profile/**")
             ).permitAll()
             .anyRequest().authenticated()
         );
@@ -70,5 +73,19 @@ public class WebSecurityConfig {
     httpSecurity.cors(Customizer.withDefaults());
 
     return httpSecurity.build();
+  }
+  @Bean
+  public WebMvcConfigurer corsMappingConfigurer() {
+    return new WebMvcConfigurer() {
+      @Override
+      public void addCorsMappings(@NotNull CorsRegistry registry) {
+        registry.addMapping("/**")
+            .allowedOrigins("http://localhost:8080", "http://localhost:3000")
+            .allowedMethods("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS", "HEAD")
+            .maxAge(3600)
+            .allowedHeaders("*")
+            .exposedHeaders("*");
+      }
+    };
   }
 }

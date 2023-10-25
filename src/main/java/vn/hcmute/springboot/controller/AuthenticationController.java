@@ -23,6 +23,7 @@ import vn.hcmute.springboot.request.RegisterRequest;
 import vn.hcmute.springboot.response.JwtResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.service.AuthenticationService;
+import vn.hcmute.springboot.serviceImpl.AuthenticationServiceImpl;
 
 
 @RestController
@@ -30,14 +31,11 @@ import vn.hcmute.springboot.service.AuthenticationService;
 @RequiredArgsConstructor
 public class AuthenticationController {
 
-  private final AuthenticationService service;
-  private final UserRepository userRepository;
+  private final AuthenticationServiceImpl service;
   @PostMapping("/register")
   public ResponseEntity<MessageResponse> register(
       @RequestBody RegisterRequest request
   ) {
-
-
     return ResponseEntity.ok(service.register(request));
   }
   @PostMapping("/sign-in")

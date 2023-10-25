@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.http.HttpStatus;
 import vn.hcmute.springboot.model.Role;
 import java.util.Date;
 
@@ -30,4 +31,6 @@ public class JwtResponse {
   private List<String> authorities;
   private String password;
   private LocalDateTime lastSignInTime;
+  private String message;
+  private HttpStatus status;
 }

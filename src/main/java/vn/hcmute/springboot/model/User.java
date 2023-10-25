@@ -14,14 +14,19 @@ import static vn.hcmute.springboot.model.Permission.RECRUITER_DELETE;
 import static vn.hcmute.springboot.model.Permission.RECRUITER_READ;
 import static vn.hcmute.springboot.model.Permission.RECRUITER_UPDATE;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -53,7 +58,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
+//Ignoring new fields on JSON objects
 public class  User implements UserDetails {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -65,10 +70,10 @@ public class  User implements UserDetails {
   @Column( name = "last_name")
   private String lastname;
 
-  @Column(name = "nickname")
+  @Column(name = "nickname",unique = true)
   private String nickname;
 
-  @Column(nullable = false, name = "password")
+  @Column(name = "password")
   private String password;
 
   @Column( name = "gender")
@@ -81,22 +86,45 @@ public class  User implements UserDetails {
   @Column(name = "birth_date")
   private LocalDate birthDate;
 
+  @Column(name="location")
+  private String location;
 
-  @Column(nullable = false, name = "username", unique = true)
+  @Column(nullable=false,name = "username", unique = true)
   @Email
   private String username;
 
   @Column(name = "about_me")
-  private String aboutMe; // Use camelCase for Java property names
+  private String aboutMe;
+
+  @Column(name = "link_website_profile")
+  private String linkWebsiteProfile;
 
   @ManyToOne
   @JoinColumn(name = "work_experience_id", unique = true)
   private CandidateExperience workExperienceId;
 
   @ManyToOne
-  @JoinColumn(name = "education_id", unique = true)
+  @JoinColumn(name = "education_id")
   private CandidateEducation educationId;
 
+  @Column(name = "city")
+  private String city;
+
+  @Lob
+  @Column(name = "avatar", length = Integer.MAX_VALUE)
+  private String avatar;
+
+  @Column(name = "full_name")
+  private String fullName;
+
+  @Column(name = "position")
+  private String position;
+
+  @Column(name = "address")
+  private String address;
+
+
+  @Enumerated(EnumType.STRING)
   @Column(name = "status")
   private UserStatus status = UserStatus.INACTIVE;
 
@@ -130,11 +158,30 @@ public class  User implements UserDetails {
   @Column(name="last_sigin_time")
   private LocalDateTime lastSignInTime;
 
-  @OneToMany(mappedBy = "user")
+  @OneToMany(mappedBy = "user",fetch = FetchType.EAGER)
   private List<Token> tokens;
 
   @OneToMany(mappedBy = "candidate")
-  private List<CandidateSkill> skills;
+  private List<CandidateSkill> candidateSkills;
+
+  @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE,
+      CascadeType.PERSIST, CascadeType.REFRESH})
+
+  @JoinTable(
+      name = "user_skill",
+      joinColumns = @JoinColumn(name = "user_id"),
+      inverseJoinColumns = @JoinColumn(name = "skill_id")
+  )
+  private List<Skill> skills;
+
+
+  @Column(name = "major")
+  private String major;
+
+  @Column(name = "school")
+  private String school;
+
+
 
   @Override
   public final boolean equals(Object o) {
@@ -222,4 +269,8 @@ public class  User implements UserDetails {
   public boolean isEnabled() {
     return true;
   }
+
+
+
+
 }

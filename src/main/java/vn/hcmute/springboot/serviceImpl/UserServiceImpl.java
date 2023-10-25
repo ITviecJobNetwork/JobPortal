@@ -1,22 +1,21 @@
 package vn.hcmute.springboot.serviceImpl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.swagger.v3.core.util.Json;
+
 import jakarta.mail.MessagingException;
+import java.util.Optional;
+import javax.management.relation.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.config.authentication.PasswordEncoderParser;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import vn.hcmute.springboot.exception.BadRequestException;
 import vn.hcmute.springboot.model.UserStatus;
+import vn.hcmute.springboot.repository.SkillRepository;
 import vn.hcmute.springboot.repository.UserRepository;
+import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.service.UserService;
 
 @Service
@@ -28,44 +27,106 @@ public class UserServiceImpl implements UserService {
   private final PasswordEncoder encoder;
   private final EmailServiceImpl emailService;
   private final PasswordEncoder passwordEncoder;
-  @Override
-  public String sendNewPasswordToEmail(String email) {
+  private final SkillRepository skillRepository;
+  public void handleUserStatus() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+      MessageResponse.builder()
+          .message("Unauthorized access")
+          .status(HttpStatus.UNAUTHORIZED)
+          .build();
+    }
+  }
+
+      @Override
+  public MessageResponse sendNewPasswordToEmail(String email) {
     var user = userRepository.findByUsername(email)
         .orElseThrow(() -> new UsernameNotFoundException("user-not-found"));
     if (user.getStatus().equals(UserStatus.INACTIVE)) {
-      throw new BadRequestException("user-is-unverified");
+      String messageError = "user-is-unverified";
+      return MessageResponse.builder()
+          .status(HttpStatus.UNAUTHORIZED)
+          .message(messageError)
+          .build();
     }
     try {
       String newPassword = String.valueOf(otpService.generateNewPassword());
       user.setPassword(encoder.encode(newPassword));
       emailService.sendNewPasswordToEmail(email, newPassword);
     } catch (MessagingException e) {
-      throw new RuntimeException("Unable to send new password please try again");
+      String messageError = "Unable to send new password please try again";
+      return MessageResponse.builder()
+          .status(HttpStatus.BAD_REQUEST)
+          .message(messageError)
+          .build();
     }
     userRepository.save(user);
-    return "new password has been sent to your email";
+    return MessageResponse.builder()
+        .status(HttpStatus.OK)
+        .message("new password sent to your email")
+        .build();
   }
 
   @Override
-  public String changePassword( String currentPassword, String newPassword,
+  public MessageResponse changePassword(String currentPassword, String newPassword,
       String confirmPassword) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
-      return "Unauthorized access";
+      String message = "user-is-unauthorized";
+      return MessageResponse.builder()
+          .message(message)
+          .status(HttpStatus.UNAUTHORIZED)
+          .build();
     }
     var user = userRepository.findByUsername(authentication.getName())
         .orElseThrow(() -> new UsernameNotFoundException("user-not-found"));
     String initialPassword = user.getPassword();
     if (!passwordEncoder.matches(currentPassword, initialPassword)) {
-      return "Current password is incorrect";
+      String message = "Current password is incorrect";
+      return MessageResponse.builder()
+          .message(message)
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
+
     }
 
-    if(!newPassword.equals(confirmPassword))
-      return "new password and confirm password are not the same";
+    if (!newPassword.equals(confirmPassword)) {
+      String message = "New password and confirm password does not match";
+      return MessageResponse.builder()
+          .message(message)
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
+    }
     String hashedPassword = passwordEncoder.encode(newPassword);
     user.setPassword(encoder.encode(hashedPassword));
     userRepository.save(user);
-    return "password changed successfully";
+    return MessageResponse.builder()
+        .message("Password changed successfully")
+        .status(HttpStatus.OK)
+        .build();
   }
+
+  @Override
+  public MessageResponse changeNickName(String newNickName) {
+    handleUserStatus();
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
+        .orElseThrow(() -> new UsernameNotFoundException("user-not-found"));
+    boolean existUser = userRepository.existsByNickname(newNickName);
+    if (existUser) {
+      return MessageResponse.builder()
+          .message("Nickname already exists")
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
+    }
+
+    user.setNickname(newNickName);
+    userRepository.save(user);
+    return MessageResponse.builder()
+        .message("Nickname changed successfully")
+        .status(HttpStatus.OK)
+        .build();
+  }
+
 
 }

@@ -80,15 +80,17 @@ public class JobController {
 
   @GetMapping("/searchJob")
   public List<Job> searchJob(@RequestParam(required = false) String keyword) {
-    var job = jobService.findJobByKeyWord(keyword);
-    if(keyword==null){
-      job = jobService.findAllJob();
-    }
-    if (job.isEmpty()) {
-      throw new NotFoundException("No job found with this keyword" + keyword);
+    List<Job> jobs;
+    if (keyword != null && !keyword.isEmpty()) {
+      jobs = jobService.findJobByKeyWord(keyword);
+      if (jobs==null) {
+        return Collections.emptyList();
+      }
+    } else {
+      jobs = jobService.findAllJob();
     }
 
-    return job;
+    return jobs;
   }
 
 
