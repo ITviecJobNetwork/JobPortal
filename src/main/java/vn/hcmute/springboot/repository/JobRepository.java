@@ -36,21 +36,7 @@ public interface JobRepository extends JpaRepository<Job,Integer>, JpaSpecificat
       "cl.candidateLevel LIKE %:keyword% OR " +
       "s.title LIKE %:keyword%")
   List<Job> findByKeywordAllIgnoreCase(@Param("keyword")String keyword);
-//  default List<Job> findByKeyword(String keyword) {
-//    return findAll((Specification<Job>) (root, query, builder) -> {
-//      List<Predicate> predicates = new ArrayList<>();
-//
-//      if (keyword != null) {
-//        String keywordLike = "%" + keyword.toLowerCase() + "%";
-//        predicates.add(builder.like(builder.lower(root.get("skills").get("title").as(String.class)), keywordLike));
-//        predicates.add(builder.like(builder.lower(root.get("candidateLevel").get("candidateLevel").as(String.class)), keywordLike));
-//        predicates.add(builder.like(builder.lower(root.get("company").get("name").as(String.class)), keywordLike));
-//        predicates.add(builder.like(builder.lower(root.get("location").get("cityName").as(String.class)), keywordLike));
-//      }
-//
-//      return builder.or(predicates.toArray(new Predicate[0]));
-//    });
-//  }
+
 
 }
 
