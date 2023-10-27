@@ -33,4 +33,8 @@ public class JwtResponse {
   private LocalDateTime lastSignInTime;
   private String message;
   private HttpStatus status;
+  public JwtResponse(String message, HttpStatus status) {
+    this.message = message;
+    this.status = status;
+  }
 }

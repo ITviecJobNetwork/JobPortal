@@ -2,19 +2,31 @@ package vn.hcmute.springboot.serviceImpl;
 
 
 import jakarta.mail.MessagingException;
-import java.util.Optional;
-import javax.management.relation.Role;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import vn.hcmute.springboot.exception.NotFoundException;
+import vn.hcmute.springboot.model.ApplicationForm;
+import vn.hcmute.springboot.model.ApplicationStatus;
+import vn.hcmute.springboot.model.Job;
+import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.model.UserStatus;
-import vn.hcmute.springboot.repository.SkillRepository;
+import vn.hcmute.springboot.repository.ApplicationFormRepository;
+import vn.hcmute.springboot.repository.JobRepository;
 import vn.hcmute.springboot.repository.UserRepository;
+import vn.hcmute.springboot.request.ApplyJobRequest;
+import vn.hcmute.springboot.response.ApplyJobResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.service.UserService;
 
@@ -27,23 +39,25 @@ public class UserServiceImpl implements UserService {
   private final PasswordEncoder encoder;
   private final EmailServiceImpl emailService;
   private final PasswordEncoder passwordEncoder;
-  private final SkillRepository skillRepository;
+  private final ApplicationFormRepository applicationFormRepository;
+  private final JobRepository jobRepository;
+  private final FileUploadServiceImpl fileService;
   public void handleUserStatus() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
       MessageResponse.builder()
-          .message("Unauthorized access")
+          .message("Truy cập không được ủy quyền")
           .status(HttpStatus.UNAUTHORIZED)
           .build();
     }
   }
 
-      @Override
+  @Override
   public MessageResponse sendNewPasswordToEmail(String email) {
     var user = userRepository.findByUsername(email)
-        .orElseThrow(() -> new UsernameNotFoundException("user-not-found"));
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
     if (user.getStatus().equals(UserStatus.INACTIVE)) {
-      String messageError = "user-is-unverified";
+      String messageError = "Người dùng chưa xác thực";
       return MessageResponse.builder()
           .status(HttpStatus.UNAUTHORIZED)
           .message(messageError)
@@ -54,7 +68,7 @@ public class UserServiceImpl implements UserService {
       user.setPassword(encoder.encode(newPassword));
       emailService.sendNewPasswordToEmail(email, newPassword);
     } catch (MessagingException e) {
-      String messageError = "Unable to send new password please try again";
+      String messageError = "Không thể gửi mật khẩu mới, vui lòng thử lại";
       return MessageResponse.builder()
           .status(HttpStatus.BAD_REQUEST)
           .message(messageError)
@@ -63,45 +77,48 @@ public class UserServiceImpl implements UserService {
     userRepository.save(user);
     return MessageResponse.builder()
         .status(HttpStatus.OK)
-        .message("new password sent to your email")
+        .message("Mật khẩu mới đã được gửi đến email của bạn")
         .build();
   }
 
   @Override
-  public MessageResponse changePassword(String currentPassword, String newPassword,
-      String confirmPassword) {
+  public MessageResponse changePassword(String currentPassword, String newPassword, String confirmPassword) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
-      String message = "user-is-unauthorized";
+      String message = "Người dùng chưa được ủy quyền";
       return MessageResponse.builder()
           .message(message)
           .status(HttpStatus.UNAUTHORIZED)
           .build();
     }
     var user = userRepository.findByUsername(authentication.getName())
-        .orElseThrow(() -> new UsernameNotFoundException("user-not-found"));
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
     String initialPassword = user.getPassword();
+    if(Objects.equals(currentPassword, newPassword)){
+      String message = "Mật khẩu mới và mật khẩu hiện tại không được giống nhau";
+      return MessageResponse.builder()
+          .message(message)
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
+    }
     if (!passwordEncoder.matches(currentPassword, initialPassword)) {
-      String message = "Current password is incorrect";
+      String message = "Mật khẩu hiện tại không đúng";
       return MessageResponse.builder()
           .message(message)
           .status(HttpStatus.BAD_REQUEST)
           .build();
-
     }
-
     if (!newPassword.equals(confirmPassword)) {
-      String message = "New password and confirm password does not match";
+      String message = "Mật khẩu mới và xác nhận mật khẩu không khớp";
       return MessageResponse.builder()
           .message(message)
           .status(HttpStatus.BAD_REQUEST)
           .build();
     }
-    String hashedPassword = passwordEncoder.encode(newPassword);
-    user.setPassword(encoder.encode(hashedPassword));
+    user.setPassword(encoder.encode(newPassword));
     userRepository.save(user);
     return MessageResponse.builder()
-        .message("Password changed successfully")
+        .message("Thay đổi mật khẩu thành công")
         .status(HttpStatus.OK)
         .build();
   }
@@ -111,22 +128,103 @@ public class UserServiceImpl implements UserService {
     handleUserStatus();
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-        .orElseThrow(() -> new UsernameNotFoundException("user-not-found"));
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
     boolean existUser = userRepository.existsByNickname(newNickName);
     if (existUser) {
       return MessageResponse.builder()
-          .message("Nickname already exists")
+          .message("Biệt danh đã tồn tại")
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
+    }
+    user.setNickname(newNickName);
+    userRepository.save(user);
+    return MessageResponse.builder()
+        .message("Thay đổi biệt danh thành công")
+        .status(HttpStatus.OK)
+        .build();
+  }
+
+  @Override
+  public ApplyJobResponse applyJob(ApplyJobRequest request) throws IOException {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+    var job = jobRepository.findById(request.getJobId()).orElse(null);
+    if (job == null) {
+      return ApplyJobResponse.builder()
+          .message("Không tìm thấy công việc")
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
+    }
+    if (hasAlreadyApplied(user, job)) {
+      return ApplyJobResponse.builder()
+          .message("Bạn đã nộp đơn cho công việc này")
           .status(HttpStatus.BAD_REQUEST)
           .build();
     }
 
-    user.setNickname(newNickName);
-    userRepository.save(user);
-    return MessageResponse.builder()
-        .message("Nickname changed successfully")
+    ApplicationForm applicationForm = job.getApplicationForms().stream()
+        .filter(applicationForm1 -> Objects.equals(applicationForm1.getCandidate().getId(),
+            user.getId()))
+        .findFirst()
+        .orElseGet(() -> {
+          ApplicationForm newApplicationForm = new ApplicationForm();
+          newApplicationForm.setCandidate(user);
+          newApplicationForm.setJob(job);
+          return newApplicationForm;
+        });
+
+    applicationForm.setCandidateName(request.getCandidateName());
+    applicationForm.setCoverLetter(request.getCoverLetter());
+    applicationForm.setStatus(ApplicationStatus.SUBMITTED);
+
+    MultipartFile fileCV = request.getLinkCv();
+    if (!isExactFile(fileCV.getOriginalFilename())) {
+      return ApplyJobResponse.builder()
+          .message("File không phải định dạng .word hoặc .pdf")
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
+    }
+
+    String urlCv = fileService.uploadCv(fileCV);
+    applicationForm.setLinkCV(urlCv);
+    applicationForm.setSubmittedAt(LocalDate.from(LocalDateTime.now()));
+    applicationFormRepository.save(applicationForm);
+
+    return ApplyJobResponse.builder()
+        .userId(user.getId())
+        .candidateName(applicationForm.getCandidateName())
+        .coverLetter(applicationForm.getCoverLetter())
+        .submittedAt(applicationForm.getSubmittedAt())
+        .linkCv(applicationForm.getLinkCV())
+        .jobId(String.valueOf(applicationForm.getJob().getId()))
+        .companyName(applicationForm.getJob().getCompany().getName())
+        .jobName(applicationForm.getJob().getTitle())
+        .applicationStatus(ApplicationStatus.SUBMITTED)
+        .message("Nộp đơn ứng tuyển thành công")
         .status(HttpStatus.OK)
         .build();
   }
+
+
+
+  private boolean isExactFile(String fileName) {
+    // Determine if the file has an image extension or content type
+    String[] fileExtensions = {".word", ".pdf", ".docx"};
+
+    for (String extension : fileExtensions) {
+      if (fileName.toLowerCase().endsWith(extension)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  private boolean hasAlreadyApplied(User candidate, Job job) {
+
+    List<ApplicationForm> applicationForms = applicationFormRepository.findByCandidateAndJob(candidate, job);
+    return !applicationForms.isEmpty();
+  }
+
 
 
 }

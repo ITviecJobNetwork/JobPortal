@@ -1,15 +1,16 @@
 package vn.hcmute.springboot.serviceImpl;
 
 import jakarta.transaction.Transactional;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.model.CandidateEducation;
 import vn.hcmute.springboot.model.Skill;
@@ -29,7 +30,7 @@ public class ProfileServiceImpl implements ProfileService {
   private final UserRepository userRepository;
   private final SkillRepository skillRepository;
   private final CandidateEducationRepository candidateEducationRepository;
-  private final FileStorageServiceImpl fileStorageService;
+  private final FileUploadServiceImpl fileStorageService;
 
   public void handleUserStatus() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -43,7 +44,7 @@ public class ProfileServiceImpl implements ProfileService {
 
 
   @Override
-  public MessageResponse updateUserProfile(ProfileUpdateRequest request) {
+  public MessageResponse updateUserProfile(ProfileUpdateRequest request) throws IOException {
     handleUserStatus();
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
     var user = userRepository.findByUsernameIgnoreCase(userName)
@@ -70,19 +71,20 @@ public class ProfileServiceImpl implements ProfileService {
       user.setEducationId(candidateEducation);
     }
 
-    String avatarFile = fileStorageService.storeFile(request.getAvatar());
-    if(!isImageFile(avatarFile)){
+    MultipartFile avatarFile = request.getAvatar();
+    if(!isImageFile(avatarFile.getOriginalFilename())){
       return MessageResponse.builder()
           .message("file-không-phải-định-dạng-image")
           .status(HttpStatus.BAD_REQUEST)
           .build();
     }
-    user.setAvatar("/avatars" + avatarFile);
+    String urlOfAvatar = fileStorageService.uploadFile(avatarFile);
+    user.setAvatar(urlOfAvatar);
+
     if (request.getSkills() != null && !request.getSkills().isEmpty()) {
       List<Skill> skills = skillRepository.findByTitleIn(request.getSkills());
 
       if (skills.size() != request.getSkills().size()) {
-        // Check if all requested skills were found
         List<String> foundSkills = skills.stream()
             .map(Skill::getTitle)
             .toList();

@@ -3,6 +3,7 @@ package vn.hcmute.springboot.controller;
 import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,11 +20,19 @@ public class CompanyController {
 
   @GetMapping()
   public ResponseEntity<List<Company>> getAllCompanies() {
-    return ResponseEntity.ok(companyService.listAllCompany());
+    var allCompany =  companyService.listAllCompany();
+    if(allCompany.isEmpty()) {
+      return new ResponseEntity<>(Collections.emptyList(), HttpStatus.NO_CONTENT);
+    }
+    return new ResponseEntity<>(allCompany, HttpStatus.OK);
   }
 
   @GetMapping("/findByName")
   public ResponseEntity<Company> findCompanyByName(@RequestParam("name") String name) {
-    return ResponseEntity.ok(companyService.findCompanyByName(name));
+    var company = companyService.findCompanyByName(name);
+    if(company == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    return new ResponseEntity<>(company, HttpStatus.OK);
   }
 }

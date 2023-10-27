@@ -33,4 +33,8 @@ public class UserProfileResponse {
   private String message;
   private HttpStatus status;
 
+    public UserProfileResponse(String message, HttpStatus httpStatus) {
+      this.message = message;
+      this.status = httpStatus;
+    }
 }

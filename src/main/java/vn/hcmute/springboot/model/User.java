@@ -31,11 +31,13 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
+import java.sql.Blob;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -110,8 +112,7 @@ public class  User implements UserDetails {
   @Column(name = "city")
   private String city;
 
-  @Lob
-  @Column(name = "avatar", length = Integer.MAX_VALUE)
+  @Column(name = "avatar")
   private String avatar;
 
   @Column(name = "full_name")
@@ -180,6 +181,10 @@ public class  User implements UserDetails {
 
   @Column(name = "school")
   private String school;
+
+
+
+
 
 
 
