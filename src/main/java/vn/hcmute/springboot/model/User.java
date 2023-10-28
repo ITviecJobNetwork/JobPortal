@@ -188,6 +188,8 @@ public class  User implements UserDetails {
 
 
 
+
+
   @Override
   public final boolean equals(Object o) {
     if (this == o) {

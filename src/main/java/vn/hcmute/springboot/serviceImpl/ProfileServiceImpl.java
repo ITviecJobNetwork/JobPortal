@@ -13,9 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.model.CandidateEducation;
+import vn.hcmute.springboot.model.CandidateExperience;
 import vn.hcmute.springboot.model.Skill;
 import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.repository.CandidateEducationRepository;
+import vn.hcmute.springboot.repository.CandidateExperienceRepository;
 import vn.hcmute.springboot.repository.SkillRepository;
 import vn.hcmute.springboot.repository.UserRepository;
 import vn.hcmute.springboot.request.ProfileUpdateRequest;
@@ -31,6 +33,7 @@ public class ProfileServiceImpl implements ProfileService {
   private final SkillRepository skillRepository;
   private final CandidateEducationRepository candidateEducationRepository;
   private final FileUploadServiceImpl fileStorageService;
+  private final CandidateExperienceRepository candidateExperienceRepository;
 
   public void handleUserStatus() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -54,6 +57,11 @@ public class ProfileServiceImpl implements ProfileService {
       candidateEducation = new CandidateEducation();
       candidateEducation.setCandidate(user);
     }
+    CandidateExperience candidateExperience = user.getWorkExperienceId();
+    if (candidateExperience == null) {
+      candidateExperience = new CandidateExperience();
+      candidateExperience.setCandidate(user);
+    }
     user.setFullName(request.getFullName());
     user.setAboutMe(request.getAboutMe());
     user.setUsername(request.getEmail());
@@ -70,6 +78,14 @@ public class ProfileServiceImpl implements ProfileService {
       candidateEducation.setCandidate(user);
       user.setEducationId(candidateEducation);
     }
+    if(request.getWorkExperience() != null){
+      candidateExperience.setCompanyName(request.getCompanyName());
+      candidateExperience.setJobTitle(request.getJobTitle());
+      candidateExperience.setStartTime(request.getStartDate());
+      candidateExperience.setEndTime(request.getEndDate());
+      candidateExperience.setCandidate(user);
+      user.setWorkExperienceId(candidateExperience);
+    }
 
     MultipartFile avatarFile = request.getAvatar();
     if(!isImageFile(avatarFile.getOriginalFilename())){
@@ -83,17 +99,12 @@ public class ProfileServiceImpl implements ProfileService {
 
     if (request.getSkills() != null && !request.getSkills().isEmpty()) {
       List<Skill> skills = skillRepository.findByTitleIn(request.getSkills());
-
-      if (skills.size() != request.getSkills().size()) {
-        List<String> foundSkills = skills.stream()
-            .map(Skill::getTitle)
-            .toList();
-        request.getSkills().stream()
-            .filter(skillTitle -> !foundSkills.contains(skillTitle))
-            .findFirst()
-            .ifPresent(skillTitle -> {
-              throw new NotFoundException("không-tìm-thấy-kỹ-năng-với-tiêu-đề: " + skillTitle);
-            });
+      if (skills.isEmpty()) {
+        skills = request.getSkills().stream().map(skill -> {
+          Skill newSkill = new Skill();
+          newSkill.setTitle(skill);
+          return newSkill;
+        }).toList();
       }
 
       user.setSkills(skills);
@@ -103,6 +114,7 @@ public class ProfileServiceImpl implements ProfileService {
     user.setSchool(request.getSchool().toString());
     user.setMajor(request.getMajor().toString());
     candidateEducationRepository.save(candidateEducation);
+    candidateExperienceRepository.save(candidateExperience);
     userRepository.save(user);
     return MessageResponse.builder()
         .message("cập-nhật-thông-tin-thành-công")

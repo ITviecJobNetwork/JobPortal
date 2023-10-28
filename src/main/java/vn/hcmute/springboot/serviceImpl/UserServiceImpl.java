@@ -206,6 +206,38 @@ public class UserServiceImpl implements UserService {
         .build();
   }
 
+  @Override
+  public MessageResponse uploadUserCv(MultipartFile fileCv) throws IOException {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+    if (!isExactFile(fileCv.getOriginalFilename())) {
+      return MessageResponse.builder()
+          .message("File không phải định dạng .word hoặc .pdf")
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
+    }
+    String urlCv = fileService.uploadCv(fileCv);
+    user.setLinkCV(urlCv);
+    userRepository.save(user);
+    return MessageResponse.builder()
+        .message("Upload CV thành công")
+        .status(HttpStatus.OK)
+        .build();
+  }
+
+  @Override
+  public MessageResponse writeCoverLetter(String coverLetter) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+    user.setCoverLetter(coverLetter);
+    userRepository.save(user);
+    return MessageResponse.builder()
+        .message("Viết cover-letter thành công")
+        .status(HttpStatus.OK)
+        .build();
+  }
 
 
   private boolean isExactFile(String fileName) {

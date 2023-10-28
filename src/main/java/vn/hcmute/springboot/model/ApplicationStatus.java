@@ -1,5 +1,10 @@
 package vn.hcmute.springboot.model;
 
-public class ApplicationStatus {
+public enum ApplicationStatus {
+  PENDING,
+  SUBMITTED,
+  DELIVERED,
+  APPROVED,
+  REJECTED,
 
 }

@@ -34,18 +34,9 @@ public class UserProfileController {
     if(userName == null) {
       return new ResponseEntity<>(new MessageResponse("Người dùng không tồn tại", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
     }
-    var user = userRepository.findByUsername(userName);
-    if(user.get().getEducationId() == null) {
-      return new ResponseEntity<>(new MessageResponse("Education không tồn tại", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
-    }
-
     MultipartFile avatarFile = request.getAvatar();
     if(!isImageFile(avatarFile.getOriginalFilename())) {
       return new ResponseEntity<>(new MessageResponse("File không phải định dạng image", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
-    }
-    var skill = user.get().getSkills();
-    if(skill == null) {
-      return new ResponseEntity<>(new MessageResponse("Skill không tồn tại", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
     }
     var profile = profileService.updateUserProfile(request);
     return new ResponseEntity<>(profile, HttpStatus.OK);

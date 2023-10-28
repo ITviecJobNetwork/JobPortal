@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import vn.hcmute.springboot.model.ApplicationForm;
 import vn.hcmute.springboot.model.Job;
 import vn.hcmute.springboot.model.User;
@@ -136,6 +138,24 @@ public class UserController {
     return new ResponseEntity<>(userService.applyJob(request),HttpStatus.OK);
   }
 
+  @PostMapping("/writeCoverLetter")
+  public ResponseEntity<MessageResponse> writeCoverLetter(@RequestBody String coverLetter) {
+    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    if(userName == null) {
+      return new ResponseEntity<>(new MessageResponse("Người dùng không tồn tại", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+    }
+    return new ResponseEntity<>(userService.writeCoverLetter(coverLetter), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/uploadUserCv", consumes = {"multipart/form-data"})
+  public ResponseEntity<MessageResponse> uploadUserCv(
+      @Valid @RequestParam("fileCv") MultipartFile fileCv) throws IOException {
+    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    if(userName == null) {
+      return new ResponseEntity<>(new MessageResponse("Người dùng không tồn tại", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+    }
+    return new ResponseEntity<>(userService.uploadUserCv(fileCv), HttpStatus.OK);
+  }
   private boolean hasAlreadyApplied(User candidate, Job job) {
 
     List<ApplicationForm> applicationForms = applicationFormRepository.findByCandidateAndJob(candidate, job);

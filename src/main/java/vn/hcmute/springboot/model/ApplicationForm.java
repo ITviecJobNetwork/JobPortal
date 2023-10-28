@@ -63,8 +63,6 @@ public class ApplicationForm {
   private String attachment;
 
 
-
-
   @Column(name = "submitted_at")
   private LocalDate submittedAt;
 

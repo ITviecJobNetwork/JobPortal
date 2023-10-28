@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import java.time.LocalDate;
 import java.util.Date;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
@@ -37,13 +38,13 @@ public class CandidateExperience {
   @Column(name = "company_name")
   private String companyName;
 
-  @Temporal(TemporalType.TIMESTAMP)
-  @Column(name = "start_time")
-  private Date startTime;
 
-  @Temporal(TemporalType.TIMESTAMP)
+  @Column(name = "start_time")
+  private LocalDate startTime;
+
+
   @Column(name = "end_time")
-  private Date endTime;
+  private LocalDate endTime;
 
   @Column(name = "description")
   private String description;

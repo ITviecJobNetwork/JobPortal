@@ -13,6 +13,7 @@ import vn.hcmute.springboot.model.Skill;
 @Setter
 @Data
 public class ProfileUpdateRequest {
+  private MultipartFile avatar;
   private String aboutMe;
   private String fullName;
   private String email;
@@ -28,6 +29,10 @@ public class ProfileUpdateRequest {
   private List<String> school;
   private List<String> major;
   private String coverLetter;
-  private MultipartFile avatar;
+  private String companyName;
+  private String jobTitle;
+  private LocalDate startDate;
+  private LocalDate endDate;
+
 
 }
