@@ -90,21 +90,6 @@ public class ProfileServiceImpl implements ProfileService {
         user.setWorkExperienceId(candidateExperience);
       }
 
-//      if (user.getAvatar() != null && request.getAvatar() == null) {
-//        user.setAvatar(user.getAvatar());
-//      } else if (user.getAvatar() != null && request.getAvatar() != null) {
-//        MultipartFile avatarFile = request.getAvatar();
-//        if (!isImageFile(avatarFile.getOriginalFilename())) {
-//          return MessageResponse.builder()
-//              .message("file-không-phải-định-dạng-image")
-//              .status(HttpStatus.BAD_REQUEST)
-//              .build();
-//        }
-//        String urlOfAvatar = fileStorageService.uploadFile(avatarFile);
-//        user.setAvatar(urlOfAvatar);
-//      }
-
-
 
       if (request.getSkills() != null && !request.getSkills().isEmpty()) {
         List<Skill> skills = skillRepository.findByTitleIn(request.getSkills());
