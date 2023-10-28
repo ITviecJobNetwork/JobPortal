@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,89 +40,95 @@ public class ProfileServiceImpl implements ProfileService {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
       MessageResponse.builder()
-          .message("truy cập không hợp lệ")
+          .message("Ngươi dùng chưa đăng nhập")
           .status(HttpStatus.UNAUTHORIZED)
           .build();
     }
   }
 
 
-  @Override
-  public MessageResponse updateUserProfile(ProfileUpdateRequest request) throws IOException {
-    handleUserStatus();
-    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
-    var user = userRepository.findByUsernameIgnoreCase(userName)
-        .orElseThrow(() -> new NotFoundException("không-tìm-thấy-user"));
-    CandidateEducation candidateEducation = user.getEducationId();
-    if (candidateEducation == null) {
-      candidateEducation = new CandidateEducation();
-      candidateEducation.setCandidate(user);
-    }
-    CandidateExperience candidateExperience = user.getWorkExperienceId();
-    if (candidateExperience == null) {
-      candidateExperience = new CandidateExperience();
-      candidateExperience.setCandidate(user);
-    }
-    user.setFullName(request.getFullName());
-    user.setAboutMe(request.getAboutMe());
-    user.setUsername(request.getEmail());
-    user.setLocation(request.getLocation());
-    user.setAddress(request.getAddress());
-    user.setPosition(request.getPosition());
-    user.setPhoneNumber(request.getPhoneNumber());
-    user.setBirthDate(request.getBirthdate());
-    user.setLinkWebsiteProfile(request.getLinkWebsiteProfile());
-    user.setCoverLetter(request.getCoverLetter());
-    if (request.getSchool() != null && request.getMajor() != null) {
-      candidateEducation.setSchool(request.getSchool().toString());
-      candidateEducation.setMajor(request.getMajor().toString());
-      candidateEducation.setCandidate(user);
-      user.setEducationId(candidateEducation);
-    }
-    if(request.getWorkExperience() != null){
-      candidateExperience.setCompanyName(request.getCompanyName());
-      candidateExperience.setJobTitle(request.getJobTitle());
-      candidateExperience.setStartTime(request.getStartDate());
-      candidateExperience.setEndTime(request.getEndDate());
-      candidateExperience.setCandidate(user);
-      user.setWorkExperienceId(candidateExperience);
-    }
-
-    MultipartFile avatarFile = request.getAvatar();
-    if(!isImageFile(avatarFile.getOriginalFilename())){
-      return MessageResponse.builder()
-          .message("file-không-phải-định-dạng-image")
-          .status(HttpStatus.BAD_REQUEST)
-          .build();
-    }
-    String urlOfAvatar = fileStorageService.uploadFile(avatarFile);
-    user.setAvatar(urlOfAvatar);
-
-    if (request.getSkills() != null && !request.getSkills().isEmpty()) {
-      List<Skill> skills = skillRepository.findByTitleIn(request.getSkills());
-      if (skills.isEmpty()) {
-        skills = request.getSkills().stream().map(skill -> {
-          Skill newSkill = new Skill();
-          newSkill.setTitle(skill);
-          return newSkill;
-        }).toList();
+    @Override
+    public MessageResponse updateUserProfile(ProfileUpdateRequest request) throws IOException {
+      handleUserStatus();
+      var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+      var user = userRepository.findByUsernameIgnoreCase(userName)
+          .orElseThrow(() -> new NotFoundException("không-tìm-thấy-user"));
+      CandidateEducation candidateEducation = user.getEducationId();
+      if (candidateEducation == null) {
+        candidateEducation = new CandidateEducation();
+        candidateEducation.setCandidate(user);
+      }
+      CandidateExperience candidateExperience = user.getWorkExperienceId();
+      if (candidateExperience == null) {
+        candidateExperience = new CandidateExperience();
+        candidateExperience.setCandidate(user);
+      }
+      user.setFullName(request.getFullName());
+      user.setAboutMe(request.getAboutMe());
+      user.setUsername(request.getEmail());
+      user.setLocation(request.getLocation());
+      user.setAddress(request.getAddress());
+      user.setPosition(request.getPosition());
+      user.setPhoneNumber(request.getPhoneNumber());
+      user.setBirthDate(request.getBirthdate());
+      user.setLinkWebsiteProfile(request.getLinkWebsiteProfile());
+      user.setCoverLetter(request.getCoverLetter());
+      if (request.getSchool() != null && request.getMajor() != null) {
+        candidateEducation.setSchool(request.getSchool().toString());
+        candidateEducation.setMajor(request.getMajor().toString());
+        candidateEducation.setCandidate(user);
+        user.setEducationId(candidateEducation);
+        user.setSchool(request.getSchool().toString());
+        user.setMajor(request.getMajor().toString());
+      }
+      if(request.getCompanyName() != null){
+        candidateExperience.setJobTitle(request.getPositionName().toString());
+        candidateExperience.setCompanyName(request.getCompanyName().toString());
+        candidateExperience.setStartTime(request.getStartDate());
+        candidateExperience.setEndTime(request.getEndDate());
+        candidateExperience.setCandidate(user);
+        user.setWorkExperienceId(candidateExperience);
       }
 
-      user.setSkills(skills);
-    }
-    user.setCity(request.getCity());
-    user.setGender(request.getGender());
-    user.setSchool(request.getSchool().toString());
-    user.setMajor(request.getMajor().toString());
-    candidateEducationRepository.save(candidateEducation);
-    candidateExperienceRepository.save(candidateExperience);
-    userRepository.save(user);
-    return MessageResponse.builder()
-        .message("cập-nhật-thông-tin-thành-công")
-        .status(HttpStatus.OK)
-        .build();
+//      if (user.getAvatar() != null && request.getAvatar() == null) {
+//        user.setAvatar(user.getAvatar());
+//      } else if (user.getAvatar() != null && request.getAvatar() != null) {
+//        MultipartFile avatarFile = request.getAvatar();
+//        if (!isImageFile(avatarFile.getOriginalFilename())) {
+//          return MessageResponse.builder()
+//              .message("file-không-phải-định-dạng-image")
+//              .status(HttpStatus.BAD_REQUEST)
+//              .build();
+//        }
+//        String urlOfAvatar = fileStorageService.uploadFile(avatarFile);
+//        user.setAvatar(urlOfAvatar);
+//      }
 
-  }
+
+
+      if (request.getSkills() != null && !request.getSkills().isEmpty()) {
+        List<Skill> skills = skillRepository.findByTitleIn(request.getSkills());
+        if (skills.isEmpty()) {
+          skills = request.getSkills().stream().map(skill -> {
+            Skill newSkill = new Skill();
+            newSkill.setTitle(skill);
+            return newSkill;
+          }).toList();
+        }
+
+        user.setSkills(skills);
+      }
+      user.setCity(request.getCity());
+      user.setGender(request.getGender());
+      candidateEducationRepository.save(candidateEducation);
+      candidateExperienceRepository.save(candidateExperience);
+      userRepository.save(user);
+      return MessageResponse.builder()
+          .message("cập-nhật-thông-tin-thành-công")
+          .status(HttpStatus.OK)
+          .build();
+
+    }
 
   @Override
   @Transactional
@@ -140,6 +147,8 @@ public class ProfileServiceImpl implements ProfileService {
           .linkWebsiteProfile(user.getLinkWebsiteProfile())
           .coverLetter(user.getCoverLetter())
           .city(user.getCity())
+          .positionName(Collections.singletonList(user.getWorkExperienceId().getJobTitle()))
+          .companyName(Collections.singletonList(user.getWorkExperienceId().getCompanyName()))
           .gender(user.getGender())
           .school(Collections.singletonList(user.getSchool()))
           .major(Collections.singletonList(user.getMajor()))
@@ -154,6 +163,8 @@ public class ProfileServiceImpl implements ProfileService {
     }
   }
 
+
+
   private boolean isImageFile(String fileName) {
     // Determine if the file has an image extension or content type
     String[] imageExtensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp"};
@@ -165,6 +176,7 @@ public class ProfileServiceImpl implements ProfileService {
     }
     return false;
   }
+
 
 
 }

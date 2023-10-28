@@ -44,8 +44,6 @@ public class UserController {
 
   private final UserServiceImpl userService;
   private final UserRepository userRepository;
-  private final OtpServiceImpl otpService;
-  private final EmailServiceImpl emailService;
   private final PasswordEncoder passwordEncoder;
   private final JobRepository jobRepository;
   private final ApplicationFormRepository applicationFormRepository;
@@ -71,7 +69,7 @@ public class UserController {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Người dùng chưa được ủy quyền", HttpStatus.UNAUTHORIZED));
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Người dùng chưa đăng nhập", HttpStatus.UNAUTHORIZED));
     }
 
     String userName = authentication.getName();

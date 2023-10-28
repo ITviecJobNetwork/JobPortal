@@ -28,6 +28,8 @@ public class UserProfileResponse {
   private Gender gender;
   private List<String> school;
   private List<String> major;
+  private List<String> companyName;
+  private List<String> positionName;
   private String coverLetter;
   private String avatar;
   private String message;

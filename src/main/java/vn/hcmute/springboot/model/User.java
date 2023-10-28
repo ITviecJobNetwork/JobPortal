@@ -78,6 +78,7 @@ public class  User implements UserDetails {
   @Column(name = "password")
   private String password;
 
+  @Enumerated(EnumType.STRING)
   @Column( name = "gender")
   private Gender gender;
 
@@ -91,7 +92,7 @@ public class  User implements UserDetails {
   @Column(name="location")
   private String location;
 
-  @Column(nullable=false,name = "username", unique = true)
+  @Column(name = "username", unique = true)
   @Email
   private String username;
 
