@@ -8,8 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,7 +52,7 @@ public class UserProfileController {
           new MessageResponse("Người dùng không tồn tại", HttpStatus.NOT_FOUND),
           HttpStatus.NOT_FOUND);
     }
-    var user = userRepository.findByUsername(userName).orElseThrow();
+
     var profile = profileService.updateUserProfile(request);
     return new ResponseEntity<>(profile, HttpStatus.OK);
   }
@@ -68,6 +70,7 @@ public class UserProfileController {
           new UserProfileResponse("Profile của người dùng không tồn tại", HttpStatus.NOT_FOUND),
           HttpStatus.NOT_FOUND);
     }
+
     return new ResponseEntity<>(userProfileResponse, HttpStatus.OK);
   }
 
@@ -91,11 +94,31 @@ public class UserProfileController {
     userRepository.save(user);
 
 
+
     return new ResponseEntity<>(new MessageResponse("Upload thành công", HttpStatus.OK),
         HttpStatus.OK);
   }
+  @DeleteMapping(value = "/deleteAvatar")
+  public ResponseEntity<MessageResponse> deleteImage() throws IOException {
+    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    if (userName == null) {
+      return new ResponseEntity<>(
+          new MessageResponse("Người dùng không tồn tại", HttpStatus.NOT_FOUND),
+          HttpStatus.NOT_FOUND);
+    }
+    var user = userRepository.findByUsername(userName).orElseThrow();
+    if(user.getAvatar() == null){
+      return new ResponseEntity<>(
+          new MessageResponse("Không có avatar để xóa", HttpStatus.BAD_REQUEST),
+          HttpStatus.BAD_REQUEST);
+    }
+    fileUploadService.deleteFile(user.getAvatar());
+    user.setAvatar(null);
+    userRepository.save(user);
+    return new ResponseEntity<>(new MessageResponse("Xóa avatar thành công", HttpStatus.OK),
+        HttpStatus.OK);
+  }
   private boolean isImageFile(String fileName) {
-    // Determine if the file has an image extension or content type
     String[] imageExtensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp"};
 
     for (String extension : imageExtensions) {

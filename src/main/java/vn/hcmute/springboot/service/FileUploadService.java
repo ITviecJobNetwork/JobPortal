@@ -8,4 +8,6 @@ public interface FileUploadService {
 
   String uploadCv(MultipartFile multipartFile) throws IOException;
 
+  void deleteFile(String publicId) throws IOException;
+
 }

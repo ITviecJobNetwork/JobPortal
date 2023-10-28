@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -63,6 +62,7 @@ public class ProfileServiceImpl implements ProfileService {
         candidateExperience = new CandidateExperience();
         candidateExperience.setCandidate(user);
       }
+
       user.setFullName(request.getFullName());
       user.setAboutMe(request.getAboutMe());
       user.setUsername(request.getEmail());
@@ -162,6 +162,24 @@ public class ProfileServiceImpl implements ProfileService {
     return false;
   }
 
+  public String uploadAvatar(MultipartFile file) throws IOException {
+
+    if(!isImageFile(file.getOriginalFilename())) {
+      return null;
+    }
+    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    var user = userRepository.findByUsernameIgnoreCase(userName).orElseThrow();
+    if(user.getAvatar() != null && file.isEmpty()){
+      user.setAvatar(user.getAvatar());
+    }
+    else if(user.getAvatar() == null && !file.isEmpty() || user.getAvatar() != null && !file.isEmpty()){
+      String urlImage = fileStorageService.uploadFile(file);
+      user.setAvatar(urlImage);
+      userRepository.save(user);
+    }
+
+    return user.getAvatar();
+  }
 
 
 }

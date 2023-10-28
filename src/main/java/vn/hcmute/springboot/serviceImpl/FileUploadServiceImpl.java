@@ -31,6 +31,16 @@ public class FileUploadServiceImpl implements FileUploadService {
         .get("url")
         .toString();
   }
+  @Override
+  public void deleteFile(String publicId) throws IOException {
+
+    try {
+      cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+    } catch (Exception e) {
+      throw new IOException("Không thể xóa tệp " + publicId, e);
+    }
+  }
+
 
 }
 
