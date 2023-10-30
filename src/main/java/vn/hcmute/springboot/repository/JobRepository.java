@@ -1,13 +1,18 @@
 package vn.hcmute.springboot.repository;
 
 
+import java.math.BigDecimal;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import vn.hcmute.springboot.model.CandidateLevel;
+import vn.hcmute.springboot.model.CompanyType;
 import vn.hcmute.springboot.model.Job;
+import vn.hcmute.springboot.model.JobType;
 import vn.hcmute.springboot.model.Skill;
 
 public interface JobRepository extends JpaRepository<Job,Integer>, JpaSpecificationExecutor<Job> {
@@ -31,13 +36,24 @@ public interface JobRepository extends JpaRepository<Job,Integer>, JpaSpecificat
       "LEFT JOIN j.candidateLevels cl " +
       "LEFT JOIN j.skills s " +
       "WHERE " +
-      "j.title LIKE %:keyword% OR " +
+      "(j.title LIKE %:keyword% OR " +
       "c.name LIKE %:keyword% OR " +
       "l.cityName LIKE %:keyword% OR " +
       "cl.candidateLevel LIKE %:keyword% OR " +
-      "s.title LIKE %:keyword%")
-  Page<Job> findByKeywordAllIgnoreCase(@Param("keyword") String keyword, Pageable pageable);
-
+      "s.title LIKE %:keyword%) " + // Existing keyword filter
+      "AND (:salaryMin is null OR j.minSalary >= :salaryMin) " +
+      "AND (:salaryMax is null OR j.maxSalary <= :salaryMax) " +
+      "AND (:companyType is null OR j.companyType.type IN :companyType) " +
+      "AND (:jobType is null OR j.jobType.jobType IN :jobType) " +
+      "AND (:candidateLevel is null OR cl.candidateLevel IN :candidateLevel)")
+  Page<Job> findByKeywordAndFilters(
+      @Param("keyword") String keyword,
+      @Param("salaryMin") Double salaryMin,
+      @Param("salaryMax") Double salaryMax,
+      @Param("companyType") List<String> companyType,
+      @Param("jobType") List<String> jobType,
+      @Param("candidateLevel") List<String> candidateLevel,
+      Pageable pageable);
 
 
 }

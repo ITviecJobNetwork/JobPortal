@@ -3,13 +3,17 @@ package vn.hcmute.springboot.serviceImpl;
 
 
 
+import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.hcmute.springboot.exception.NotFoundException;
+import vn.hcmute.springboot.model.CandidateLevel;
+import vn.hcmute.springboot.model.CompanyType;
 import vn.hcmute.springboot.model.Job;
+import vn.hcmute.springboot.model.JobType;
 import vn.hcmute.springboot.model.Skill;
 import vn.hcmute.springboot.repository.CandidateLevelRepository;
 import vn.hcmute.springboot.repository.CompanyRepository;
@@ -34,7 +38,7 @@ public class JobServiceImpl implements JobService {
     Pageable pageable = PageRequest.of(page, size);
     var allJobs = jobRepository.findAllJobs(pageable);
     if (allJobs.isEmpty()) {
-      throw new NotFoundException("No job found");
+      throw new NotFoundException("Hiện tại không có công việc nào");
     }
     return allJobs;
   }
@@ -64,7 +68,7 @@ public class JobServiceImpl implements JobService {
   @Override
   public Page<Job> findJobByCompanyName(String companyName,int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
-    var company = companyRepository.findByName(companyName);
+    var company = companyRepository.findByName(companyName,pageable);
     if (company!=null) {
       return jobRepository.findJobsByCompanyName(companyName,pageable);
     }
@@ -82,12 +86,27 @@ public class JobServiceImpl implements JobService {
   }
 
   @Override
-  public Page<Job> findJobByKeyWord(String keyword,int page, int size) {
+  public Page<Job> findJobsWithFilters(
+      String keyword,
+      Double salaryMin,
+      Double salaryMax,
+      List<String> companyType,
+      List<String> jobType,
+      List<String> candidateLevel,
+      int page,
+      int size
+  ) {
     Pageable pageable = PageRequest.of(page, size);
-    if(keyword==null){
-      return jobRepository.findAll(pageable);
-    }
-    return jobRepository.findByKeywordAllIgnoreCase(keyword, pageable);
+
+    return jobRepository.findByKeywordAndFilters(
+        keyword,
+        salaryMin,
+        salaryMax,
+        companyType,
+        jobType,
+        candidateLevel,
+        pageable
+    );
   }
 
 }

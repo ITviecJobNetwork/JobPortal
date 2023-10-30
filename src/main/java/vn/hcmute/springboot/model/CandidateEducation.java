@@ -2,20 +2,25 @@ package vn.hcmute.springboot.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-import java.util.Date;
+import java.time.LocalDate;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "candidate_education")
@@ -23,30 +28,34 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+
+
+
+
 public class CandidateEducation {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
-  @ManyToOne
-  @JoinColumn(name = "user_id",unique = true)
-  private User candidate;
-
+  @ManyToMany(mappedBy = "educations",fetch = FetchType.EAGER)
+  private Set<User> users;
   @Column(name = "major")
   private String major;
 
   @Column(name = "school")
   private String school;
 
-  @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "start_time")
-  private Date startTime;
+  private LocalDate startTime;
 
-  @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "end_time")
-  private Date endTime;
+  private LocalDate endTime;
 
   @Column(name = "description")
   private String description;
+
+
+
 
 }

@@ -2,10 +2,9 @@ package vn.hcmute.springboot.service;
 
 
 import java.io.IOException;
-import java.util.Optional;
-import org.springframework.web.multipart.MultipartFile;
-import vn.hcmute.springboot.model.User;
+import vn.hcmute.springboot.request.AddEducationRequest;
 import vn.hcmute.springboot.request.ProfileUpdateRequest;
+import vn.hcmute.springboot.request.AddExperienceRequest;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.response.UserProfileResponse;
 
@@ -13,6 +12,8 @@ import vn.hcmute.springboot.response.UserProfileResponse;
 public interface ProfileService {
   MessageResponse updateUserProfile (ProfileUpdateRequest request) throws IOException;
   UserProfileResponse getUserProfile();
+  void addEducation (AddEducationRequest request);
 
+  void addExperience (AddExperienceRequest request);
 
 }

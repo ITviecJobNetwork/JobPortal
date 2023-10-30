@@ -239,6 +239,43 @@ public class UserServiceImpl implements UserService {
         .build();
   }
 
+  @Override
+  public MessageResponse resetPassword(String email,String currentPassword, String newPassword,
+      String confirmPassword) {
+    var user = userRepository.findByUsername(email)
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+
+    if (!passwordEncoder.matches(currentPassword, user.getPassword())
+        && !Objects.equals(currentPassword, newPassword)) {
+      String message = "Mật khẩu hiện tại không đúng";
+      return MessageResponse.builder()
+          .message(message)
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
+    }
+    if(Objects.equals(currentPassword, newPassword)){
+      String message = "Mật khẩu mới và mật khẩu hiện tại không được giống nhau";
+      return MessageResponse.builder()
+          .message(message)
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
+    }
+
+    if (!newPassword.equals(confirmPassword)) {
+      String message = "Mật khẩu mới và xác nhận mật khẩu không khớp";
+      return MessageResponse.builder()
+          .message(message)
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
+    }
+    user.setPassword(passwordEncoder.encode(newPassword));
+    userRepository.save(user);
+    return MessageResponse.builder()
+        .message("Thay đổi mật khẩu thành công")
+        .status(HttpStatus.OK)
+        .build();
+  }
+
 
   private boolean isExactFile(String fileName) {
     // Determine if the file has an image extension or content type

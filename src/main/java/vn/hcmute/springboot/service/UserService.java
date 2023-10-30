@@ -21,5 +21,7 @@ public interface UserService {
   MessageResponse writeCoverLetter (String coverLetter);
 
 
+  MessageResponse resetPassword(String email,String currentPassword, String newPassword, String confirmPassword);
+
 
 }

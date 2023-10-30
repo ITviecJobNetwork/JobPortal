@@ -60,7 +60,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-//Ignoring new fields on JSON objects
+
 public class  User implements UserDetails {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -102,13 +102,7 @@ public class  User implements UserDetails {
   @Column(name = "link_website_profile")
   private String linkWebsiteProfile;
 
-  @ManyToOne
-  @JoinColumn(name = "work_experience_id", unique = true)
-  private CandidateExperience workExperienceId;
 
-  @ManyToOne
-  @JoinColumn(name = "education_id")
-  private CandidateEducation educationId;
 
   @Column(name = "city")
   private String city;
@@ -163,25 +157,33 @@ public class  User implements UserDetails {
   @OneToMany(mappedBy = "user",fetch = FetchType.EAGER)
   private List<Token> tokens;
 
-  @OneToMany(mappedBy = "candidate")
-  private List<CandidateSkill> candidateSkills;
-
   @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE,
       CascadeType.PERSIST, CascadeType.REFRESH})
 
   @JoinTable(
-      name = "user_skill",
-      joinColumns = @JoinColumn(name = "user_id"),
+      name = "candidate_skill",
+      joinColumns = @JoinColumn(name = "candidate_id"),
       inverseJoinColumns = @JoinColumn(name = "skill_id")
   )
   private List<Skill> skills;
 
+  @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+  @JoinTable(
+      name = "user_education",
+      joinColumns = @JoinColumn(name = "user_id"),
+      inverseJoinColumns = @JoinColumn(name = "education_id")
+  )
+  private List<CandidateEducation> educations;
 
-  @Column(name = "major")
-  private String major;
+  @ManyToMany (fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE,
+      CascadeType.PERSIST, CascadeType.REFRESH})
+  @JoinTable(
+      name = "user_experience",
+      joinColumns = @JoinColumn(name = "user_id"),
+      inverseJoinColumns = @JoinColumn(name = "experience_id")
+  )
+  private List<CandidateExperience> experiences;
 
-  @Column(name = "school")
-  private String school;
 
 
 

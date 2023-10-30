@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
+import vn.hcmute.springboot.model.CandidateEducation;
+import vn.hcmute.springboot.model.CandidateExperience;
 import vn.hcmute.springboot.model.Gender;
 
 @Getter
@@ -26,10 +28,8 @@ public class UserProfileResponse {
   private List<String> skills;
   private String city;
   private Gender gender;
-  private List<String> school;
-  private List<String> major;
-  private List<String> companyName;
-  private List<String> positionName;
+  private List<CandidateEducation> education;
+  private List<CandidateExperience> experience;
   private String coverLetter;
   private String avatar;
   private String message;

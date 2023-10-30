@@ -1,7 +1,10 @@
 package vn.hcmute.springboot.serviceImpl;
 
-import java.util.List;
+
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.model.Company;
@@ -15,8 +18,9 @@ public class CompanyServiceImpl implements CompanyService {
   private final CompanyRepository companyRepository;
 
   @Override
-  public List<Company> listAllCompany() {
-    var company = companyRepository.findAll();
+  public Page<Company> listAllCompany(int page,int size) {
+    Pageable pageable = PageRequest.of(page, size);
+    var company = companyRepository.findAllCompanies(pageable);
     if (company.isEmpty()) {
       throw new NotFoundException("không-tìm-thấy-công-ty");
     }
@@ -24,8 +28,18 @@ public class CompanyServiceImpl implements CompanyService {
   }
 
   @Override
-  public Company findCompanyByName(String name) {
-    return companyRepository.findByNameIgnoreCase(name)
-        .orElseThrow(() -> new NotFoundException("không-tìm-thấy-công-ty " + name));
+  public Page<Company> findCompanyByName(String name,int page,int size) {
+    Pageable pageable = PageRequest.of(page, size);
+    var company = companyRepository.findByName(name,pageable);
+    if (company.isEmpty()) {
+      throw new NotFoundException("không-tìm-thấy-công-ty " + name);
+    }
+    return company;
+  }
+
+  @Override
+  public Company findCompanyById(Integer id) {
+    return companyRepository.findById(id)
+        .orElseThrow(() -> new NotFoundException("không-tìm-thấy-công-ty " + id));
   }
 }

@@ -2,10 +2,12 @@ package vn.hcmute.springboot.serviceImpl;
 
 import jakarta.transaction.Transactional;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +22,8 @@ import vn.hcmute.springboot.repository.CandidateEducationRepository;
 import vn.hcmute.springboot.repository.CandidateExperienceRepository;
 import vn.hcmute.springboot.repository.SkillRepository;
 import vn.hcmute.springboot.repository.UserRepository;
+import vn.hcmute.springboot.request.AddEducationRequest;
+import vn.hcmute.springboot.request.AddExperienceRequest;
 import vn.hcmute.springboot.request.ProfileUpdateRequest;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.response.UserProfileResponse;
@@ -52,15 +56,16 @@ public class ProfileServiceImpl implements ProfileService {
       var userName = SecurityContextHolder.getContext().getAuthentication().getName();
       var user = userRepository.findByUsernameIgnoreCase(userName)
           .orElseThrow(() -> new NotFoundException("không-tìm-thấy-user"));
-      CandidateEducation candidateEducation = user.getEducationId();
-      if (candidateEducation == null) {
-        candidateEducation = new CandidateEducation();
-        candidateEducation.setCandidate(user);
-      }
-      CandidateExperience candidateExperience = user.getWorkExperienceId();
-      if (candidateExperience == null) {
-        candidateExperience = new CandidateExperience();
-        candidateExperience.setCandidate(user);
+      MultipartFile fileAvatar = request.getAvatar();
+      if(request.getAvatar()!=null) {
+        if (!isImageFile(fileAvatar.getOriginalFilename())) {
+          return MessageResponse.builder()
+              .message("không-phải-file-ảnh")
+              .status(HttpStatus.BAD_REQUEST)
+              .build();
+        }
+        String profileAvatar = fileStorageService.uploadFile(fileAvatar);
+        user.setAvatar(profileAvatar);
       }
 
       user.setFullName(request.getFullName());
@@ -73,40 +78,15 @@ public class ProfileServiceImpl implements ProfileService {
       user.setBirthDate(request.getBirthdate());
       user.setLinkWebsiteProfile(request.getLinkWebsiteProfile());
       user.setCoverLetter(request.getCoverLetter());
-      if (request.getSchool() != null && request.getMajor() != null) {
-        candidateEducation.setSchool(request.getSchool().toString());
-        candidateEducation.setMajor(request.getMajor().toString());
-        candidateEducation.setCandidate(user);
-        user.setEducationId(candidateEducation);
-        user.setSchool(request.getSchool().toString());
-        user.setMajor(request.getMajor().toString());
-      }
-      if(request.getCompanyName() != null){
-        candidateExperience.setJobTitle(request.getPositionName().toString());
-        candidateExperience.setCompanyName(request.getCompanyName().toString());
-        candidateExperience.setStartTime(request.getStartDate());
-        candidateExperience.setEndTime(request.getEndDate());
-        candidateExperience.setCandidate(user);
-        user.setWorkExperienceId(candidateExperience);
-      }
-
-
       if (request.getSkills() != null && !request.getSkills().isEmpty()) {
-        List<Skill> skills = skillRepository.findByTitleIn(request.getSkills());
-        if (skills.isEmpty()) {
-          skills = request.getSkills().stream().map(skill -> {
-            Skill newSkill = new Skill();
-            newSkill.setTitle(skill);
-            return newSkill;
-          }).toList();
-        }
-
-        user.setSkills(skills);
+        List<Skill> existingSkills = skillRepository.findByTitleIn(request.getSkills());
+        user.setSkills(existingSkills);
       }
+
       user.setCity(request.getCity());
       user.setGender(request.getGender());
-      candidateEducationRepository.save(candidateEducation);
-      candidateExperienceRepository.save(candidateExperience);
+
+
       userRepository.save(user);
       return MessageResponse.builder()
           .message("cập-nhật-thông-tin-thành-công")
@@ -132,11 +112,9 @@ public class ProfileServiceImpl implements ProfileService {
           .linkWebsiteProfile(user.getLinkWebsiteProfile())
           .coverLetter(user.getCoverLetter())
           .city(user.getCity())
-          .positionName(Collections.singletonList(user.getWorkExperienceId().getJobTitle()))
-          .companyName(Collections.singletonList(user.getWorkExperienceId().getCompanyName()))
+          .education(user.getEducations())
+          .experience(user.getExperiences())
           .gender(user.getGender())
-          .school(Collections.singletonList(user.getSchool()))
-          .major(Collections.singletonList(user.getMajor()))
           .skills(user.getSkills().stream().map(Skill::getTitle).toList())
           .status(HttpStatus.OK)
           .build();
@@ -148,6 +126,76 @@ public class ProfileServiceImpl implements ProfileService {
     }
   }
 
+  @Override
+  public void addEducation(AddEducationRequest request) {
+    handleUserStatus();
+    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    var user = userRepository.findByUsernameIgnoreCase(userName)
+        .orElseThrow(() -> new NotFoundException("không-tìm-thấy-user"));
+    if(request.getId()!=null) {
+      var existingEducation = candidateEducationRepository.findById(request.getId())
+          .orElseThrow(() -> new NotFoundException("không-tìm-thấy-education"));
+      existingEducation.setSchool(request.getSchool());
+      existingEducation.setMajor(request.getMajor());
+      existingEducation.setStartTime(request.getStartDate());
+      existingEducation.setEndTime(request.getEndDate());
+      candidateEducationRepository.save(existingEducation);
+
+    }
+    else {
+      CandidateEducation candidateEducation = new CandidateEducation();
+      candidateEducation.setSchool(request.getSchool());
+      candidateEducation.setMajor(request.getMajor());
+      candidateEducation.setStartTime(request.getStartDate());
+      candidateEducation.setEndTime(request.getEndDate());
+      List<CandidateEducation> educations = user.getEducations();
+      educations.add(candidateEducation);
+      candidateEducationRepository.save(candidateEducation);
+      userRepository.save(user);
+
+    }
+
+    MessageResponse.builder()
+        .message("tạo-mới-thông-tin-thành-công")
+        .status(HttpStatus.OK)
+        .build();
+  }
+
+  @Override
+  public void addExperience(AddExperienceRequest request) {
+    handleUserStatus();
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    var userName = authentication.getName();
+    var user = userRepository.findByUsername(userName)
+        .orElseThrow(() -> new NotFoundException("không-tìm-thấy-user"));
+    if(request.getId()!=null){
+      var existingExperience = candidateExperienceRepository.findById(request.getId())
+          .orElseThrow(() -> new NotFoundException("không-tìm-thấy-experience"));
+      existingExperience.setCompanyName(request.getCompanyName());
+      existingExperience.setJobTitle(request.getJobTitle());
+      existingExperience.setStartTime(request.getStartDate());
+      existingExperience.setEndTime(request.getEndDate());
+      candidateExperienceRepository.save(existingExperience);
+    }
+    else{
+      CandidateExperience candidateExperience = new CandidateExperience();
+      if (request.getCompanyName() != null) {
+        candidateExperience.setCompanyName(request.getCompanyName());
+        candidateExperience.setJobTitle(request.getJobTitle());
+        candidateExperience.setStartTime(request.getStartDate());
+        candidateExperience.setEndTime(request.getEndDate());
+      }
+      List<CandidateExperience> experience = user.getExperiences();
+      experience.add(candidateExperience);
+      candidateExperienceRepository.save(candidateExperience);
+      userRepository.save(user);
+    }
+    MessageResponse.builder()
+        .message("tạo-mới-thông-tin-thành-công")
+        .status(HttpStatus.OK)
+        .build();
+
+  }
 
 
   private boolean isImageFile(String fileName) {
@@ -162,24 +210,6 @@ public class ProfileServiceImpl implements ProfileService {
     return false;
   }
 
-  public String uploadAvatar(MultipartFile file) throws IOException {
-
-    if(!isImageFile(file.getOriginalFilename())) {
-      return null;
-    }
-    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
-    var user = userRepository.findByUsernameIgnoreCase(userName).orElseThrow();
-    if(user.getAvatar() != null && file.isEmpty()){
-      user.setAvatar(user.getAvatar());
-    }
-    else if(user.getAvatar() == null && !file.isEmpty() || user.getAvatar() != null && !file.isEmpty()){
-      String urlImage = fileStorageService.uploadFile(file);
-      user.setAvatar(urlImage);
-      userRepository.save(user);
-    }
-
-    return user.getAvatar();
-  }
 
 
 }

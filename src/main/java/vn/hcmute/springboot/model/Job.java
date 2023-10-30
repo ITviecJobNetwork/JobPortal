@@ -43,6 +43,10 @@ public class Job {
   private Company company;
 
   @ManyToOne
+  @JoinColumn(name = "company_type_id")
+  private CompanyType companyType;
+
+  @ManyToOne
   @JoinColumn(name = "job_type_id")
   private JobType jobType;
 

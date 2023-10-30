@@ -10,4 +10,6 @@ public interface SkillRepository extends JpaRepository<Skill, Integer> {
   @Query("SELECT s FROM Skill s WHERE s.title = :title")
   Skill findByName(@Param("title") String title);
   List<Skill> findByTitleIn(List<String> skillNames);
+
+
 }
