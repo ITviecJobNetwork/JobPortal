@@ -8,12 +8,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.model.ApplicationForm;
 import vn.hcmute.springboot.model.Job;
+import vn.hcmute.springboot.model.SaveJobs;
 import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.repository.ApplicationFormRepository;
 import vn.hcmute.springboot.repository.JobRepository;
@@ -36,6 +40,8 @@ import vn.hcmute.springboot.request.ForgotPasswordRequest;
 import vn.hcmute.springboot.request.ResetPasswordRequest;
 import vn.hcmute.springboot.response.ApplyJobResponse;
 import vn.hcmute.springboot.response.MessageResponse;
+import vn.hcmute.springboot.response.SaveJobResponse;
+import vn.hcmute.springboot.response.UserCvResponse;
 import vn.hcmute.springboot.serviceImpl.UserServiceImpl;
 import vn.hcmute.springboot.request.ApplyJobRequest;
 
@@ -132,10 +138,29 @@ public class UserController {
     if(job.isEmpty()){
       return new ResponseEntity<>((new ApplyJobResponse("Công việc không tồn tại",HttpStatus.NOT_FOUND)),HttpStatus.NOT_FOUND);
     }
+    if(job.get().getExpireAt().isBefore(java.time.LocalDate.now())){
+      return new ResponseEntity<>((new ApplyJobResponse("Công việc đã hết hạn",HttpStatus.BAD_REQUEST)),HttpStatus.BAD_REQUEST);
+    }
     if(hasAlreadyApplied(user.get(), job.get())){
       return new ResponseEntity<>((new ApplyJobResponse("Bạn đã ứng tuyển công việc này trước đó",HttpStatus.BAD_REQUEST)),HttpStatus.BAD_REQUEST);
     }
-    return new ResponseEntity<>(userService.applyJob(request),HttpStatus.OK);
+    if(request.getCoverLetter().length()>500){
+      return new ResponseEntity<>((new ApplyJobResponse("Thư xin việc không được quá 500 ký tự",HttpStatus.BAD_REQUEST)),HttpStatus.BAD_REQUEST);
+    }
+    if(request.getLinkCv()==null && request.getLinkNewCv()==null){
+      return new ResponseEntity<>((new ApplyJobResponse("Bạn chưa đính kèm CV",HttpStatus.BAD_REQUEST)),HttpStatus.BAD_REQUEST);
+    }
+    if(user.get().getLinkCV()==null && request.getLinkCv()==null){
+      return new ResponseEntity<>((new ApplyJobResponse("Bạn chưa tải CV lên hệ thống",HttpStatus.BAD_REQUEST)),HttpStatus.BAD_REQUEST);
+    }
+    var relatedJobs = jobRepository.findSimilarJobsByTitle(request.getJobId(),job.get().getTitle());
+    if(relatedJobs.isEmpty()){
+      return new ResponseEntity<>((new ApplyJobResponse("Không có công việc nào tương tự",HttpStatus.NOT_FOUND)),HttpStatus.NOT_FOUND);
+    }
+    String position = job.get().getTitle();
+    String company = job.get().getCompany().getName();
+    String message = String.format("Chúng tôi đã nhận được CV của bạn cho:%n\nVị trí: %s%nCông ty: %s%nCV của bạn sẽ được gửi tới nhà tuyển dụng sau khi được JobPortal xét duyệt. Vui lòng theo dõi email %s để cập nhật thông tin về tình trạng CV.", position, company, userName);
+    return new ResponseEntity<>(new ApplyJobResponse(message,relatedJobs),HttpStatus.OK);
   }
 
   @PostMapping("/writeCoverLetter")
@@ -183,11 +208,73 @@ public class UserController {
     var resetPassword = userService.resetPassword(email,request.getCurrentPassword(), request.getNewPassword(), request.getConfirmPassword());
     return new ResponseEntity<>(resetPassword,HttpStatus.OK);
   }
+
+  @PostMapping("/saveJob/{jobId}")
+  public void ResponseEntity(@PathVariable Integer jobId) throws IOException {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+      throw new NotFoundException("Người dùng chưa đăng nhập");
+    }
+    userService.saveJob(jobId);
+  }
+  @GetMapping("getUserCv")
+  public ResponseEntity<UserCvResponse> getUserCv() {
+    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    if(userName == null) {
+      return new ResponseEntity<>(new UserCvResponse("Người dùng chưa đăng nhập", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+    }
+    var user = userRepository.findByUsername(userName);
+    if(user.isEmpty()){
+      return new ResponseEntity<>((new UserCvResponse("Người dùng không tồn tại",HttpStatus.NOT_FOUND)),HttpStatus.NOT_FOUND);
+    }
+    var linkCv= user.get().getLinkCV();
+    if(linkCv==null){
+      return new ResponseEntity<>((new UserCvResponse("Bạn chưa tải CV lên hệ thống",HttpStatus.NOT_FOUND)),HttpStatus.NOT_FOUND);
+    }
+
+    return new ResponseEntity<>((new UserCvResponse(linkCv)),HttpStatus.OK);
+  }
+
+
+  @GetMapping("/getSavedJobs")
+  public  ResponseEntity<SaveJobResponse> getSavedJobs() {
+    List<Job> saveJob=userService.getSavedJobs();
+    if(saveJob.isEmpty()){
+      return new ResponseEntity<>(new SaveJobResponse("Bạn có 0 Việc làm đã lưu",HttpStatus.NOT_FOUND),HttpStatus.NOT_FOUND);
+    }
+    if(saveJob.size()>20){
+      return new ResponseEntity<>(new SaveJobResponse("Bạn chỉ có thể lưu tối đa 20 công việc",HttpStatus.BAD_REQUEST),HttpStatus.BAD_REQUEST);
+    }
+    return new ResponseEntity<>(new SaveJobResponse(saveJob),HttpStatus.OK);
+  }
+
+  @GetMapping("/getAppliedJobs")
+  public  ResponseEntity<SaveJobResponse> getAppliedJobs() {
+    List<Job> appliedJob=userService.getAppliedJobs();
+    if(appliedJob.isEmpty()){
+      return new ResponseEntity<>(new SaveJobResponse("Bạn có 0 việc làm ứng tuyển",HttpStatus.NOT_FOUND),HttpStatus.NOT_FOUND);
+    }
+    if(appliedJob.size()>20){
+      return new ResponseEntity<>(new SaveJobResponse("Bạn chỉ có thể lưu tối đa 20 công việc",HttpStatus.BAD_REQUEST),HttpStatus.BAD_REQUEST);
+    }
+    return new ResponseEntity<>(new SaveJobResponse(appliedJob),HttpStatus.OK);
+  }
   private boolean hasAlreadyApplied(User candidate, Job job) {
 
     List<ApplicationForm> applicationForms = applicationFormRepository.findByCandidateAndJob(candidate, job);
     return !applicationForms.isEmpty();
   }
 
+  @DeleteMapping("/saveJobs/{id}")
+  public ResponseEntity<MessageResponse> deleteSaveJobs(@PathVariable Integer id){
+    var saveJobs = userService.deleteSaveJobs(id);
+    if(saveJobs==null){
+      return new ResponseEntity<>((new MessageResponse("Bạn chưa lưu công việc này",HttpStatus.NOT_FOUND)),HttpStatus.NOT_FOUND);
+    }
+    return new ResponseEntity<>(saveJobs,HttpStatus.OK);
+
+  }
+
 }
+
 

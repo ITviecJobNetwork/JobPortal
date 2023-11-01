@@ -2,7 +2,6 @@
 package vn.hcmute.springboot.auditing;
 
 import java.util.Optional;
-import java.util.UUID;
 import lombok.NonNull;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;

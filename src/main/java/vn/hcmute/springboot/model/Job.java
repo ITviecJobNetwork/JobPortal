@@ -13,6 +13,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -89,10 +90,10 @@ public class Job {
   private String createdBy;
 
   @Column(name = "created_at")
-  private Date createdAt;
+  private LocalDate createdAt;
 
   @Column(name = "expire_at")
-  private Date expireAt;
+  private LocalDate expireAt;
 
   @JsonIgnore
   @OneToMany(mappedBy = "job",fetch = FetchType.EAGER)

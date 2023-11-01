@@ -5,9 +5,9 @@ import jakarta.mail.MessagingException;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -20,10 +20,12 @@ import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.model.ApplicationForm;
 import vn.hcmute.springboot.model.ApplicationStatus;
 import vn.hcmute.springboot.model.Job;
+import vn.hcmute.springboot.model.SaveJobs;
 import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.model.UserStatus;
 import vn.hcmute.springboot.repository.ApplicationFormRepository;
 import vn.hcmute.springboot.repository.JobRepository;
+import vn.hcmute.springboot.repository.SaveJobRepository;
 import vn.hcmute.springboot.repository.UserRepository;
 import vn.hcmute.springboot.request.ApplyJobRequest;
 import vn.hcmute.springboot.response.ApplyJobResponse;
@@ -42,6 +44,8 @@ public class UserServiceImpl implements UserService {
   private final ApplicationFormRepository applicationFormRepository;
   private final JobRepository jobRepository;
   private final FileUploadServiceImpl fileService;
+  private final SaveJobRepository saveJobRepository;
+
   public void handleUserStatus() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
@@ -82,7 +86,8 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public MessageResponse changePassword(String currentPassword, String newPassword, String confirmPassword) {
+  public MessageResponse changePassword(String currentPassword, String newPassword,
+      String confirmPassword) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
       String message = "Người dùng chưa được ủy quyền";
@@ -94,7 +99,7 @@ public class UserServiceImpl implements UserService {
     var user = userRepository.findByUsername(authentication.getName())
         .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
     String initialPassword = user.getPassword();
-    if(Objects.equals(currentPassword, newPassword)){
+    if (Objects.equals(currentPassword, newPassword)) {
       String message = "Mật khẩu mới và mật khẩu hiện tại không được giống nhau";
       return MessageResponse.builder()
           .message(message)
@@ -148,11 +153,17 @@ public class UserServiceImpl implements UserService {
   public ApplyJobResponse applyJob(ApplyJobRequest request) throws IOException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-        .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+        .orElseThrow(() -> new NotFoundException("Bạn chưa đăng nhập vui lòng đăng nhập"));
     var job = jobRepository.findById(request.getJobId()).orElse(null);
     if (job == null) {
       return ApplyJobResponse.builder()
           .message("Không tìm thấy công việc")
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
+    }
+    if (job.getExpireAt().isBefore(java.time.LocalDate.now())) {
+      return ApplyJobResponse.builder()
+          .message("Công việc đã hết hạn")
           .status(HttpStatus.BAD_REQUEST)
           .build();
     }
@@ -177,32 +188,42 @@ public class UserServiceImpl implements UserService {
     applicationForm.setCandidateName(request.getCandidateName());
     applicationForm.setCoverLetter(request.getCoverLetter());
     applicationForm.setStatus(ApplicationStatus.SUBMITTED);
-
-    MultipartFile fileCV = request.getLinkCv();
-    if (!isExactFile(fileCV.getOriginalFilename())) {
-      return ApplyJobResponse.builder()
-          .message("File không phải định dạng .word hoặc .pdf")
-          .status(HttpStatus.BAD_REQUEST)
-          .build();
+    //condition when upload CV
+    if (user.getLinkCV() != null) {
+      if (request.getLinkCv() == null && request.getLinkNewCv() != null) {
+        String linkNewCv = fileService.uploadCv(request.getLinkNewCv());
+        applicationForm.setLinkCV(linkNewCv);
+      } else if (request.getLinkCv() != null && request.getLinkNewCv() == null) {
+        String linkCv = user.getLinkCV();
+        applicationForm.setLinkCV(linkCv);
+      } else {
+        return ApplyJobResponse.builder()
+            .message("Bạn chỉ được upload 1 file")
+            .status(HttpStatus.BAD_REQUEST)
+            .build();
+      }
+    } else {
+      if (request.getLinkNewCv() != null) {
+        String urlCv = fileService.uploadCv(request.getLinkNewCv());
+        applicationForm.setLinkCV(urlCv);
+        user.setLinkCV(urlCv);
+      } else {
+        return ApplyJobResponse.builder()
+            .message("Bạn cần tải lên một liên kết CV mới")
+            .status(HttpStatus.BAD_REQUEST)
+            .build();
+      }
     }
 
-    String urlCv = fileService.uploadCv(fileCV);
-    applicationForm.setLinkCV(urlCv);
-    applicationForm.setSubmittedAt(LocalDate.from(LocalDateTime.now()));
-    applicationFormRepository.save(applicationForm);
 
+    applicationForm.setSubmittedAt(LocalDate.from(LocalDateTime.now()));
+    List<Job> relatedJobs = jobRepository.findSimilarJobsByTitle(request.getJobId(),job.getTitle());
+    applicationFormRepository.save(applicationForm);
     return ApplyJobResponse.builder()
-        .userId(user.getId())
-        .candidateName(applicationForm.getCandidateName())
-        .coverLetter(applicationForm.getCoverLetter())
-        .submittedAt(applicationForm.getSubmittedAt())
-        .linkCv(applicationForm.getLinkCV())
-        .jobId(String.valueOf(applicationForm.getJob().getId()))
-        .companyName(applicationForm.getJob().getCompany().getName())
-        .jobName(applicationForm.getJob().getTitle())
-        .applicationStatus(ApplicationStatus.SUBMITTED)
-        .message("Nộp đơn ứng tuyển thành công")
+        .message("Nộp đơn thành công")
+        .relatedJobs(relatedJobs)
         .status(HttpStatus.OK)
+        .relatedJobs(relatedJobs)
         .build();
   }
 
@@ -240,7 +261,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public MessageResponse resetPassword(String email,String currentPassword, String newPassword,
+  public MessageResponse resetPassword(String email, String currentPassword, String newPassword,
       String confirmPassword) {
     var user = userRepository.findByUsername(email)
         .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
@@ -253,7 +274,7 @@ public class UserServiceImpl implements UserService {
           .status(HttpStatus.BAD_REQUEST)
           .build();
     }
-    if(Objects.equals(currentPassword, newPassword)){
+    if (Objects.equals(currentPassword, newPassword)) {
       String message = "Mật khẩu mới và mật khẩu hiện tại không được giống nhau";
       return MessageResponse.builder()
           .message(message)
@@ -276,6 +297,69 @@ public class UserServiceImpl implements UserService {
         .build();
   }
 
+  @Override
+  public void saveJob(Integer jobId) throws IOException {
+    var job = jobRepository.findById(jobId)
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy công việc"));
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    var userPrincipal = userRepository.findByUsernameIgnoreCase(authentication.getName())
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+    if (job != null) {
+      SaveJobs saveJobs = new SaveJobs();
+      saveJobs.setJob(job);
+      saveJobs.setCandidate(userPrincipal);
+      saveJobRepository.save(saveJobs);
+
+    }
+    MessageResponse.builder()
+        .message("Lưu công việc thành công")
+        .status(HttpStatus.OK)
+        .build();
+  }
+
+  @Override
+  public List<Job> getSavedJobs() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+    if (user != null) {
+      List<SaveJobs> savedJobs = saveJobRepository.findByCandidate(user);
+      return savedJobs.stream()
+          .map(SaveJobs::getJob)
+          .toList();
+    }
+
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<Job> getAppliedJobs() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+    if (user != null) {
+      List<ApplicationForm> applicationForms = applicationFormRepository.findByCandidate(user);
+      return applicationForms.stream()
+          .map(ApplicationForm::getJob)
+          .toList();
+    }
+    return Collections.emptyList();
+  }
+
+  @Override
+  public MessageResponse deleteSaveJobs(Integer id) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+    if (user != null) {
+      saveJobRepository.deleteById(id);
+    }
+    return MessageResponse.builder()
+        .message("Xóa công việc đã lưu thành công")
+        .status(HttpStatus.OK)
+        .build();
+  }
+
 
   private boolean isExactFile(String fileName) {
     // Determine if the file has an image extension or content type
@@ -288,12 +372,13 @@ public class UserServiceImpl implements UserService {
     }
     return false;
   }
+
   private boolean hasAlreadyApplied(User candidate, Job job) {
 
-    List<ApplicationForm> applicationForms = applicationFormRepository.findByCandidateAndJob(candidate, job);
+    List<ApplicationForm> applicationForms = applicationFormRepository.findByCandidateAndJob(
+        candidate, job);
     return !applicationForms.isEmpty();
   }
-
 
 
 }

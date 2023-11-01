@@ -36,16 +36,20 @@ public interface JobRepository extends JpaRepository<Job,Integer>, JpaSpecificat
       "LEFT JOIN j.candidateLevels cl " +
       "LEFT JOIN j.skills s " +
       "WHERE " +
-      "(j.title LIKE %:keyword% OR " +
-      "c.name LIKE %:keyword% OR " +
-      "l.cityName LIKE %:keyword% OR " +
-      "cl.candidateLevel LIKE %:keyword% OR " +
-      "s.title LIKE %:keyword%) " + // Existing keyword filter
+      "(:keyword is null OR :keyword = '' OR REPLACE(j.title, ' ', '') LIKE CONCAT('%', REPLACE(:keyword, ' ', ''), '%') " +
+      "OR REPLACE(c.name, ' ', '') LIKE CONCAT('%', REPLACE(:keyword, ' ', ''), '%') " +
+      "OR REPLACE(l.cityName, ' ', '') LIKE CONCAT('%', REPLACE(:keyword, ' ', ''), '%') " +
+      "OR REPLACE(cl.candidateLevel, ' ', '') LIKE CONCAT('%', REPLACE(:keyword, ' ', ''), '%') " +
+      "OR REPLACE(s.title, ' ', '') LIKE CONCAT('%', REPLACE(:keyword, ' ', ''), '%')) " +
       "AND (:salaryMin is null OR j.minSalary >= :salaryMin) " +
       "AND (:salaryMax is null OR j.maxSalary <= :salaryMax) " +
       "AND (:companyType is null OR j.companyType.type IN :companyType) " +
       "AND (:jobType is null OR j.jobType.jobType IN :jobType) " +
-      "AND (:candidateLevel is null OR cl.candidateLevel IN :candidateLevel)")
+      "AND (:candidateLevel is null OR REPLACE(cl.candidateLevel, ' ', '') IN :candidateLevel)")
+
+
+
+
   Page<Job> findByKeywordAndFilters(
       @Param("keyword") String keyword,
       @Param("salaryMin") Double salaryMin,
@@ -54,6 +58,10 @@ public interface JobRepository extends JpaRepository<Job,Integer>, JpaSpecificat
       @Param("jobType") List<String> jobType,
       @Param("candidateLevel") List<String> candidateLevel,
       Pageable pageable);
+
+  @Query("SELECT j FROM Job j WHERE j.id != :appliedJobId AND j.title LIKE %:title%")
+  List<Job> findSimilarJobsByTitle(@Param("appliedJobId") Integer appliedJobId, @Param("title") String title);
+
 
 
 }
