@@ -3,10 +3,16 @@ package vn.hcmute.springboot.controller;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -42,6 +48,7 @@ import vn.hcmute.springboot.response.ApplyJobResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.response.SaveJobResponse;
 import vn.hcmute.springboot.response.UserCvResponse;
+import vn.hcmute.springboot.serviceImpl.JobServiceImpl;
 import vn.hcmute.springboot.serviceImpl.UserServiceImpl;
 import vn.hcmute.springboot.request.ApplyJobRequest;
 
@@ -55,6 +62,7 @@ public class UserController {
   private final PasswordEncoder passwordEncoder;
   private final JobRepository jobRepository;
   private final ApplicationFormRepository applicationFormRepository;
+  private final JobServiceImpl jobService;
 
 
   @PostMapping("/forgot-password")
@@ -135,9 +143,13 @@ public class UserController {
     }
     var user = userRepository.findByUsername(userName);
     var job = jobRepository.findById(request.getJobId());
+
     if(job.isEmpty()){
       return new ResponseEntity<>((new ApplyJobResponse("Công việc không tồn tại",HttpStatus.NOT_FOUND)),HttpStatus.NOT_FOUND);
     }
+
+
+
     if(job.get().getExpireAt().isBefore(java.time.LocalDate.now())){
       return new ResponseEntity<>((new ApplyJobResponse("Công việc đã hết hạn",HttpStatus.BAD_REQUEST)),HttpStatus.BAD_REQUEST);
     }
@@ -153,14 +165,13 @@ public class UserController {
     if(user.get().getLinkCV()==null && request.getLinkCv()==null){
       return new ResponseEntity<>((new ApplyJobResponse("Bạn chưa tải CV lên hệ thống",HttpStatus.BAD_REQUEST)),HttpStatus.BAD_REQUEST);
     }
-    var relatedJobs = jobRepository.findSimilarJobsByTitle(request.getJobId(),job.get().getTitle());
-    if(relatedJobs.isEmpty()){
-      return new ResponseEntity<>((new ApplyJobResponse("Không có công việc nào tương tự",HttpStatus.NOT_FOUND)),HttpStatus.NOT_FOUND);
-    }
+    userService.applyJob(request);
+    var relatedJobs =jobRepository.findSimilarJobsByTitleAndLocation(request.getJobId(),job.get().getTitle(),job.get().getLocation().getCityName());
+    List<Job> top3RelatedJobs = relatedJobs.stream().limit(3).toList();
     String position = job.get().getTitle();
     String company = job.get().getCompany().getName();
     String message = String.format("Chúng tôi đã nhận được CV của bạn cho:%n\nVị trí: %s%nCông ty: %s%nCV của bạn sẽ được gửi tới nhà tuyển dụng sau khi được JobPortal xét duyệt. Vui lòng theo dõi email %s để cập nhật thông tin về tình trạng CV.", position, company, userName);
-    return new ResponseEntity<>(new ApplyJobResponse(message,relatedJobs),HttpStatus.OK);
+    return new ResponseEntity<>(new ApplyJobResponse(message,HttpStatus.OK,top3RelatedJobs),HttpStatus.OK);
   }
 
   @PostMapping("/writeCoverLetter")
@@ -210,14 +221,21 @@ public class UserController {
   }
 
   @PostMapping("/saveJob/{jobId}")
-  public void ResponseEntity(@PathVariable Integer jobId) throws IOException {
+  public ResponseEntity<MessageResponse> saveJob(@PathVariable Integer jobId) throws IOException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
-      throw new NotFoundException("Người dùng chưa đăng nhập");
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Người dùng chưa đăng nhập", HttpStatus.UNAUTHORIZED));
+    }
+    var userName = authentication.getName();
+    var user = userRepository.findByUsername(userName);
+    var job = jobRepository.findById(jobId);
+    if(hasAlreadyApplied(user.get(),job.get())){
+      return new ResponseEntity<>((new MessageResponse("Bạn đã ứng tuyển công việc này trước đó",HttpStatus.BAD_REQUEST)),HttpStatus.BAD_REQUEST);
     }
     userService.saveJob(jobId);
+    return new ResponseEntity<>(new MessageResponse("Lưu công việc thành công",HttpStatus.OK),HttpStatus.OK);
   }
-  @GetMapping("getUserCv")
+  @GetMapping("/getUserCv")
   public ResponseEntity<UserCvResponse> getUserCv() {
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
     if(userName == null) {
@@ -237,11 +255,30 @@ public class UserController {
 
 
   @GetMapping("/getSavedJobs")
-  public  ResponseEntity<SaveJobResponse> getSavedJobs() {
+  public  ResponseEntity<SaveJobResponse> getSavedJobs(@RequestParam(value="sort",defaultValue = "recentExpiredAt") String sort) {
     List<Job> saveJob=userService.getSavedJobs();
     if(saveJob.isEmpty()){
       return new ResponseEntity<>(new SaveJobResponse("Bạn có 0 Việc làm đã lưu",HttpStatus.NOT_FOUND),HttpStatus.NOT_FOUND);
     }
+    if("recentExpiredAt".equals(sort)) {
+
+      LocalDateTime now =LocalDateTime.now();
+      Job nearestJob = saveJob.stream()
+          .min(Comparator.comparing(job -> Duration.between(now, job.getExpireAt().atStartOfDay()).abs()))
+          .orElse(null);
+
+      if (nearestJob != null) {
+        saveJob = saveJob.stream()
+            .sorted(Comparator.comparing(Job::getExpireAt))
+            .toList();
+      }
+
+    }
+    else{
+      saveJob = saveJob.stream().sorted((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt())).toList();
+    }
+
+
     if(saveJob.size()>20){
       return new ResponseEntity<>(new SaveJobResponse("Bạn chỉ có thể lưu tối đa 20 công việc",HttpStatus.BAD_REQUEST),HttpStatus.BAD_REQUEST);
     }
@@ -249,13 +286,19 @@ public class UserController {
   }
 
   @GetMapping("/getAppliedJobs")
-  public  ResponseEntity<SaveJobResponse> getAppliedJobs() {
+  public  ResponseEntity<SaveJobResponse> getAppliedJobs(@RequestParam(value="sort",defaultValue = "recentApplied") String sort) {
     List<Job> appliedJob=userService.getAppliedJobs();
+    if("recentApplied".equals(sort)) {
+      appliedJob = appliedJob.stream().sorted((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt())).toList();
+    }
+    else{
+      appliedJob = appliedJob.stream().sorted((o1, o2) -> o2.getExpireAt().compareTo(o1.getExpireAt())).toList();
+    }
     if(appliedJob.isEmpty()){
       return new ResponseEntity<>(new SaveJobResponse("Bạn có 0 việc làm ứng tuyển",HttpStatus.NOT_FOUND),HttpStatus.NOT_FOUND);
     }
     if(appliedJob.size()>20){
-      return new ResponseEntity<>(new SaveJobResponse("Bạn chỉ có thể lưu tối đa 20 công việc",HttpStatus.BAD_REQUEST),HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(new SaveJobResponse("Bạn chỉ có thể ứng tuyển tối đa 20 công việc",HttpStatus.BAD_REQUEST),HttpStatus.BAD_REQUEST);
     }
     return new ResponseEntity<>(new SaveJobResponse(appliedJob),HttpStatus.OK);
   }
@@ -274,6 +317,7 @@ public class UserController {
     return new ResponseEntity<>(saveJobs,HttpStatus.OK);
 
   }
+
 
 }
 

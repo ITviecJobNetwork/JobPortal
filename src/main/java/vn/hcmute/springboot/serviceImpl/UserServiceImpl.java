@@ -217,7 +217,7 @@ public class UserServiceImpl implements UserService {
 
 
     applicationForm.setSubmittedAt(LocalDate.from(LocalDateTime.now()));
-    List<Job> relatedJobs = jobRepository.findSimilarJobsByTitle(request.getJobId(),job.getTitle());
+    List<Job> relatedJobs = jobRepository.findSimilarJobsByTitleAndLocation(request.getJobId(),job.getTitle(),job.getLocation().getCityName());
     applicationFormRepository.save(applicationForm);
     return ApplyJobResponse.builder()
         .message("Nộp đơn thành công")
@@ -316,6 +316,7 @@ public class UserServiceImpl implements UserService {
         .status(HttpStatus.OK)
         .build();
   }
+
 
   @Override
   public List<Job> getSavedJobs() {

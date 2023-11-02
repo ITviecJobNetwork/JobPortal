@@ -22,6 +22,8 @@ public interface JobRepository extends JpaRepository<Job,Integer>, JpaSpecificat
   @Query("SELECT j FROM Job j")
   Page<Job> findAllJobs(Pageable pageable);
 
+  Page<Job> findJobByIsReadAtTrue(Pageable pageable);
+
   @Query("SELECT j FROM Job j JOIN j.candidateLevels s WHERE s.candidateLevel = :candidateLevel")
   Page<Job> findJobsByCandidateLevel(@Param("candidateLevel") String candidateLevel,Pageable pageable);
 
@@ -59,8 +61,9 @@ public interface JobRepository extends JpaRepository<Job,Integer>, JpaSpecificat
       @Param("candidateLevel") List<String> candidateLevel,
       Pageable pageable);
 
-  @Query("SELECT j FROM Job j WHERE j.id != :appliedJobId AND j.title LIKE %:title%")
-  List<Job> findSimilarJobsByTitle(@Param("appliedJobId") Integer appliedJobId, @Param("title") String title);
+  @Query("SELECT j FROM Job j WHERE j.id != :appliedJobId "
+      + "OR j.title LIKE %:title% " +"OR j.location.cityName LIKE %:location%")
+  List<Job> findSimilarJobsByTitleAndLocation(@Param("appliedJobId") Integer appliedJobId, @Param("title") String title, @Param("location") String location);
 
 
 

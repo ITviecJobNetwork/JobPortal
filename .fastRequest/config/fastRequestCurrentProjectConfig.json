@@ -1,11 +1,25 @@
 {
-	"dataList":[],
-	"envList":[],
+	"dataList":[
+		{
+			"hostGroup":[
+				{
+					"env":"local",
+					"url":"http://localhost:8080"
+				}
+			],
+			"name":"springboot"
+		}
+	],
+	"envList":[
+		"local"
+	],
 	"headerList":[],
 	"maxDescriptionLength":-1,
 	"postScript":"",
 	"preScript":"",
-	"projectList":[],
+	"projectList":[
+		"springboot"
+	],
 	"syncModel":{
 		"branch":"master",
 		"domain":"https://github.com",

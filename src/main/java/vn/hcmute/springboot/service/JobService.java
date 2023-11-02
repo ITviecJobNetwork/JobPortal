@@ -3,12 +3,7 @@ package vn.hcmute.springboot.service;
 
 import java.util.List;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import vn.hcmute.springboot.model.CandidateLevel;
-import vn.hcmute.springboot.model.Company;
-import vn.hcmute.springboot.model.CompanyType;
 import vn.hcmute.springboot.model.Job;
-import vn.hcmute.springboot.model.JobType;
 
 public interface JobService {
   Page<Job> findAllJob(int page, int size);
@@ -30,5 +25,8 @@ public interface JobService {
       int page,
       int size
   );
+
+
+
 
 }
