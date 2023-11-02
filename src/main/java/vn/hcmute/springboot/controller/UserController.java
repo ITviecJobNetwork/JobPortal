@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -15,6 +17,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -39,12 +44,14 @@ import vn.hcmute.springboot.model.SaveJobs;
 import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.repository.ApplicationFormRepository;
 import vn.hcmute.springboot.repository.JobRepository;
+import vn.hcmute.springboot.repository.SaveJobRepository;
 import vn.hcmute.springboot.repository.UserRepository;
 import vn.hcmute.springboot.request.ChangeNickNameRequest;
 import vn.hcmute.springboot.request.ChangePasswordRequest;
 import vn.hcmute.springboot.request.ForgotPasswordRequest;
 import vn.hcmute.springboot.request.ResetPasswordRequest;
 import vn.hcmute.springboot.response.ApplyJobResponse;
+import vn.hcmute.springboot.response.GetJobApplyResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.response.SaveJobResponse;
 import vn.hcmute.springboot.response.UserCvResponse;
@@ -62,7 +69,7 @@ public class UserController {
   private final PasswordEncoder passwordEncoder;
   private final JobRepository jobRepository;
   private final ApplicationFormRepository applicationFormRepository;
-  private final JobServiceImpl jobService;
+  private final SaveJobRepository saveJobRepository;
 
 
   @PostMapping("/forgot-password")
@@ -144,11 +151,10 @@ public class UserController {
     var user = userRepository.findByUsername(userName);
     var job = jobRepository.findById(request.getJobId());
 
+
     if(job.isEmpty()){
       return new ResponseEntity<>((new ApplyJobResponse("Công việc không tồn tại",HttpStatus.NOT_FOUND)),HttpStatus.NOT_FOUND);
     }
-
-
 
     if(job.get().getExpireAt().isBefore(java.time.LocalDate.now())){
       return new ResponseEntity<>((new ApplyJobResponse("Công việc đã hết hạn",HttpStatus.BAD_REQUEST)),HttpStatus.BAD_REQUEST);
@@ -167,13 +173,79 @@ public class UserController {
     }
     userService.applyJob(request);
     var relatedJobs =jobRepository.findSimilarJobsByTitleAndLocation(request.getJobId(),job.get().getTitle(),job.get().getLocation().getCityName());
-    List<Job> top3RelatedJobs = relatedJobs.stream().limit(3).toList();
+    List<Job> top5RelatedJobs = relatedJobs.stream().limit(5).toList();
     String position = job.get().getTitle();
     String company = job.get().getCompany().getName();
     String message = String.format("Chúng tôi đã nhận được CV của bạn cho:%n\nVị trí: %s%nCông ty: %s%nCV của bạn sẽ được gửi tới nhà tuyển dụng sau khi được JobPortal xét duyệt. Vui lòng theo dõi email %s để cập nhật thông tin về tình trạng CV.", position, company, userName);
-    return new ResponseEntity<>(new ApplyJobResponse(message,HttpStatus.OK,top3RelatedJobs),HttpStatus.OK);
+    SaveJobs saveJobs = saveJobRepository.findByCandidateAndJob(user.get(),job.get());
+    if (saveJobs != null) {
+      saveJobRepository.delete(saveJobs);
+      job.get().setIsReadAt(null);
+      job.get().setReadAt(null);
+      jobRepository.save(job.get());
+    }
+    return new ResponseEntity<>(new ApplyJobResponse(message,HttpStatus.OK,top5RelatedJobs),HttpStatus.OK);
   }
+  @GetMapping("/appliedJobs")
+  public  ResponseEntity<GetJobApplyResponse> getAppliedJobs(@RequestParam(value="sort",defaultValue = "Ngày ứng tuyển gần nhất") String sort,
+      @RequestParam(value="page",defaultValue = "0") int page,@RequestParam(value="size",defaultValue = "20") int size) {
+    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    if(userName == null) {
+      return new ResponseEntity<>(new GetJobApplyResponse("Người dùng chưa đăng nhập", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+    }
+    var user = userRepository.findByUsername(userName);
+    PageRequest pageRequest = PageRequest.of(page,size);
 
+    Page<Job> appliedJob = userService.getAppliedJobs(user.get(), pageRequest);
+
+
+    List<Job> newestSubmitted = appliedJob.getContent()
+        .stream()
+        .sorted((job1, job2) -> {
+          LocalDate submittedAt1 = getLatestSubmittedAt(user.get(), job1);
+          LocalDate submittedAt2 = getLatestSubmittedAt(user.get(), job2);
+          return submittedAt2.compareTo(submittedAt1);
+        })
+        .collect(Collectors.toList());
+
+    List<Job> oldestSubmitted = appliedJob.getContent()
+        .stream()
+        .sorted((job1, job2) -> {
+          LocalDate submittedAt1 = getOldestSubmittedAt(user.get(), job1);
+          LocalDate submittedAt2 = getOldestSubmittedAt(user.get(), job2);
+          return submittedAt1.compareTo(submittedAt2);
+        })
+        .collect(Collectors.toList());
+
+    List<Job> sortedAppliedJob = sort.equals("Ngày ứng tuyển gần nhất") ? oldestSubmitted : newestSubmitted;
+    Page<Job> sortedPage = new PageImpl<>(sortedAppliedJob, pageRequest, appliedJob.getTotalElements());
+
+
+
+    if(appliedJob.isEmpty()){
+      return new ResponseEntity<>(new GetJobApplyResponse("Bạn có 0 việc làm ứng tuyển",HttpStatus.NOT_FOUND),HttpStatus.NOT_FOUND);
+    }
+
+
+    return new ResponseEntity<>(new GetJobApplyResponse(sortedPage), HttpStatus.OK);
+
+  }
+  private LocalDate getOldestSubmittedAt(User user, Job job) {
+    return job.getApplicationForms()
+        .stream()
+        .filter(applicationForm -> applicationForm.getCandidate().equals(user))
+        .map(ApplicationForm::getSubmittedAt)
+        .min(LocalDate::compareTo)
+        .orElse(null);
+  }
+  private LocalDate getLatestSubmittedAt(User user, Job job) {
+    return job.getApplicationForms()
+        .stream()
+        .filter(applicationForm -> applicationForm.getCandidate().equals(user))
+        .map(ApplicationForm::getSubmittedAt)
+        .max(LocalDate::compareTo)
+        .orElse(null);
+  }
   @PostMapping("/writeCoverLetter")
   public ResponseEntity<MessageResponse> writeCoverLetter(@RequestBody String coverLetter) {
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -220,22 +292,7 @@ public class UserController {
     return new ResponseEntity<>(resetPassword,HttpStatus.OK);
   }
 
-  @PostMapping("/saveJob/{jobId}")
-  public ResponseEntity<MessageResponse> saveJob(@PathVariable Integer jobId) throws IOException {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Người dùng chưa đăng nhập", HttpStatus.UNAUTHORIZED));
-    }
-    var userName = authentication.getName();
-    var user = userRepository.findByUsername(userName);
-    var job = jobRepository.findById(jobId);
-    if(hasAlreadyApplied(user.get(),job.get())){
-      return new ResponseEntity<>((new MessageResponse("Bạn đã ứng tuyển công việc này trước đó",HttpStatus.BAD_REQUEST)),HttpStatus.BAD_REQUEST);
-    }
-    userService.saveJob(jobId);
-    return new ResponseEntity<>(new MessageResponse("Lưu công việc thành công",HttpStatus.OK),HttpStatus.OK);
-  }
-  @GetMapping("/getUserCv")
+  @GetMapping("/userCv")
   public ResponseEntity<UserCvResponse> getUserCv() {
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
     if(userName == null) {
@@ -253,14 +310,40 @@ public class UserController {
     return new ResponseEntity<>((new UserCvResponse(linkCv)),HttpStatus.OK);
   }
 
+  @PostMapping("/saveJob/{jobId}")
+  public ResponseEntity<MessageResponse> saveJob(@PathVariable Integer jobId) throws IOException {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Người dùng chưa đăng nhập", HttpStatus.UNAUTHORIZED));
+    }
+    var userName = authentication.getName();
+    var user = userRepository.findByUsername(userName);
+    var job = jobRepository.findById(jobId);
+    boolean jobAlreadySaved = saveJobRepository.existsByCandidateAndJob(user.get(), job.get());
 
-  @GetMapping("/getSavedJobs")
-  public  ResponseEntity<SaveJobResponse> getSavedJobs(@RequestParam(value="sort",defaultValue = "recentExpiredAt") String sort) {
-    List<Job> saveJob=userService.getSavedJobs();
+    if (jobAlreadySaved) {
+      return new ResponseEntity<>(new MessageResponse("Công việc đã được lưu trước đó", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+    }
+
+    if(hasAlreadyApplied(user.get(),job.get())){
+      return new ResponseEntity<>((new MessageResponse("Bạn đã ứng tuyển công việc này trước đó",HttpStatus.BAD_REQUEST)),HttpStatus.BAD_REQUEST);
+    }
+
+    userService.saveJob(jobId);
+    return new ResponseEntity<>(new MessageResponse("Lưu công việc thành công",HttpStatus.OK),HttpStatus.OK);
+  }
+  @GetMapping("/savedJobs")
+  public  ResponseEntity<SaveJobResponse> getSavedJobs(@RequestParam(value="sort",defaultValue = "Ngày hết hạn gần nhất") String sort) {
+    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    if(userName == null) {
+      return new ResponseEntity<>(new SaveJobResponse("Người dùng chưa đăng nhập", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+    }
+    var user = userRepository.findByUsername(userName);
+    List<Job> saveJob=userService.getSavedJobs(user.get());
     if(saveJob.isEmpty()){
       return new ResponseEntity<>(new SaveJobResponse("Bạn có 0 Việc làm đã lưu",HttpStatus.NOT_FOUND),HttpStatus.NOT_FOUND);
     }
-    if("recentExpiredAt".equals(sort)) {
+    if("Ngày hết hạn gần nhất".equals(sort)) {
 
       LocalDateTime now =LocalDateTime.now();
       Job nearestJob = saveJob.stream()
@@ -285,23 +368,7 @@ public class UserController {
     return new ResponseEntity<>(new SaveJobResponse(saveJob),HttpStatus.OK);
   }
 
-  @GetMapping("/getAppliedJobs")
-  public  ResponseEntity<SaveJobResponse> getAppliedJobs(@RequestParam(value="sort",defaultValue = "recentApplied") String sort) {
-    List<Job> appliedJob=userService.getAppliedJobs();
-    if("recentApplied".equals(sort)) {
-      appliedJob = appliedJob.stream().sorted((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt())).toList();
-    }
-    else{
-      appliedJob = appliedJob.stream().sorted((o1, o2) -> o2.getExpireAt().compareTo(o1.getExpireAt())).toList();
-    }
-    if(appliedJob.isEmpty()){
-      return new ResponseEntity<>(new SaveJobResponse("Bạn có 0 việc làm ứng tuyển",HttpStatus.NOT_FOUND),HttpStatus.NOT_FOUND);
-    }
-    if(appliedJob.size()>20){
-      return new ResponseEntity<>(new SaveJobResponse("Bạn chỉ có thể ứng tuyển tối đa 20 công việc",HttpStatus.BAD_REQUEST),HttpStatus.BAD_REQUEST);
-    }
-    return new ResponseEntity<>(new SaveJobResponse(appliedJob),HttpStatus.OK);
-  }
+
   private boolean hasAlreadyApplied(User candidate, Job job) {
 
     List<ApplicationForm> applicationForms = applicationFormRepository.findByCandidateAndJob(candidate, job);

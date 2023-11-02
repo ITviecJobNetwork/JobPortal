@@ -1,10 +1,12 @@
 package vn.hcmute.springboot.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -138,7 +140,7 @@ public class JobController {
     Job job = jobOptional.get();
     return new ResponseEntity<>(job, HttpStatus.OK);
   }
-  @PostMapping("/{id}/isReadAt")
+  @PostMapping("/{id}/readAt")
   public ResponseEntity<JobResponse> isReadAtJob(@PathVariable Integer id){
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
     if(userName == null) {
@@ -154,10 +156,10 @@ public class JobController {
       return new ResponseEntity<>((new JobResponse("Công việc không tồn tại",HttpStatus.NOT_FOUND)),HttpStatus.NOT_FOUND);
     }
     else{
+      job.get().setReadAt(LocalDateTime.now());
       job.get().setIsReadAt(true);
-      job.get().setReadAt(java.time.LocalDate.now());
+      jobRepository.save(job.get());
     }
-    jobRepository.save(job.get());
     return new ResponseEntity<>((new JobResponse("Bạn đã đọc công việc này",HttpStatus.OK)),HttpStatus.OK);
   }
 
@@ -165,7 +167,7 @@ public class JobController {
   public ResponseEntity<JobResponse> getReadAtJob(
       @RequestParam(value = "page", defaultValue = "0") int page,
       @RequestParam(value = "size", defaultValue = "20") int size,
-      @RequestParam(value="sort", defaultValue = "recent") String sort){
+      @RequestParam(value="sort", defaultValue = "Xem gần nhất") String sort){
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var userName = authentication.getName();
     var user = userRepository.findByUsername(userName);
@@ -175,21 +177,22 @@ public class JobController {
     PageRequest request = PageRequest.of(page,size);
 
 
-    if("endingSoon".equals(sort)){
-      request = PageRequest.of(page,size, Sort.by(Sort.Order.asc("expireAt")));
+    if("Sắp hết hạn".equals(sort)){
+      request = PageRequest.of(page,size, Sort.by(Order.asc("expireAt")));
     }
-    if("recent".equals(sort)){
-      request = PageRequest.of(page,size, Sort.by(Sort.Order.desc("createdAt")));
+    if("Đăng mới nhất".equals(sort)){
+      request = PageRequest.of(page,size, Sort.by(Order.desc("createdAt")));
     }
-    if("readAtRecent".equals(sort)){
-      request = PageRequest.of(page,size, Sort.by(Sort.Order.desc("readAt")));
+    if("Xem gần nhất".equals(sort)){
+      request = PageRequest.of(page,size, Sort.by(Order.desc("readAt")));
     }
     Page<Job> job = jobRepository.findJobByIsReadAtTrue(request);
-    if(!job.isEmpty()){
-      return new ResponseEntity<>((new JobResponse(job)),HttpStatus.OK);
+    if(job.isEmpty()){
+      return new ResponseEntity<>((new JobResponse("Bạn chưa xem công việc nào",HttpStatus.NOT_FOUND)),HttpStatus.NOT_FOUND);
     }
     else{
-      return new ResponseEntity<>((new JobResponse("Bạn chưa xem công việc nào",HttpStatus.NOT_FOUND)),HttpStatus.NOT_FOUND);
+
+      return new ResponseEntity<>((new JobResponse(job)),HttpStatus.OK);
     }
   }
 

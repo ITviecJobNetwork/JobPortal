@@ -14,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -106,6 +107,6 @@ public class Job {
   private Boolean isReadAt;
 
   @Column (name ="readAt")
-  private LocalDate readAt;
+  private LocalDateTime readAt;
 
 }

@@ -9,6 +9,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -150,28 +153,31 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public ApplyJobResponse applyJob(ApplyJobRequest request) throws IOException {
+  public void applyJob(ApplyJobRequest request) throws IOException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
         .orElseThrow(() -> new NotFoundException("Bạn chưa đăng nhập vui lòng đăng nhập"));
     var job = jobRepository.findById(request.getJobId()).orElse(null);
     if (job == null) {
-      return ApplyJobResponse.builder()
+      ApplyJobResponse.builder()
           .message("Không tìm thấy công việc")
           .status(HttpStatus.BAD_REQUEST)
           .build();
+      return;
     }
     if (job.getExpireAt().isBefore(java.time.LocalDate.now())) {
-      return ApplyJobResponse.builder()
+      ApplyJobResponse.builder()
           .message("Công việc đã hết hạn")
           .status(HttpStatus.BAD_REQUEST)
           .build();
+      return;
     }
     if (hasAlreadyApplied(user, job)) {
-      return ApplyJobResponse.builder()
+      ApplyJobResponse.builder()
           .message("Bạn đã nộp đơn cho công việc này")
           .status(HttpStatus.BAD_REQUEST)
           .build();
+      return;
     }
 
     ApplicationForm applicationForm = job.getApplicationForms().stream()
@@ -197,10 +203,11 @@ public class UserServiceImpl implements UserService {
         String linkCv = user.getLinkCV();
         applicationForm.setLinkCV(linkCv);
       } else {
-        return ApplyJobResponse.builder()
+        ApplyJobResponse.builder()
             .message("Bạn chỉ được upload 1 file")
             .status(HttpStatus.BAD_REQUEST)
             .build();
+        return;
       }
     } else {
       if (request.getLinkNewCv() != null) {
@@ -208,10 +215,11 @@ public class UserServiceImpl implements UserService {
         applicationForm.setLinkCV(urlCv);
         user.setLinkCV(urlCv);
       } else {
-        return ApplyJobResponse.builder()
+        ApplyJobResponse.builder()
             .message("Bạn cần tải lên một liên kết CV mới")
             .status(HttpStatus.BAD_REQUEST)
             .build();
+        return;
       }
     }
 
@@ -219,7 +227,7 @@ public class UserServiceImpl implements UserService {
     applicationForm.setSubmittedAt(LocalDate.from(LocalDateTime.now()));
     List<Job> relatedJobs = jobRepository.findSimilarJobsByTitleAndLocation(request.getJobId(),job.getTitle(),job.getLocation().getCityName());
     applicationFormRepository.save(applicationForm);
-    return ApplyJobResponse.builder()
+    ApplyJobResponse.builder()
         .message("Nộp đơn thành công")
         .relatedJobs(relatedJobs)
         .status(HttpStatus.OK)
@@ -302,13 +310,16 @@ public class UserServiceImpl implements UserService {
     var job = jobRepository.findById(jobId)
         .orElseThrow(() -> new NotFoundException("Không tìm thấy công việc"));
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    var userPrincipal = userRepository.findByUsernameIgnoreCase(authentication.getName())
+    var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
         .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
     if (job != null) {
       SaveJobs saveJobs = new SaveJobs();
       saveJobs.setJob(job);
-      saveJobs.setCandidate(userPrincipal);
+      saveJobs.setCandidate(user);
+      job.setIsReadAt(true);
+      job.setReadAt(LocalDate.now().atStartOfDay());
       saveJobRepository.save(saveJobs);
+      jobRepository.save(job);
 
     }
     MessageResponse.builder()
@@ -319,9 +330,9 @@ public class UserServiceImpl implements UserService {
 
 
   @Override
-  public List<Job> getSavedJobs() {
+  public List<Job> getSavedJobs(User user) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
+    user = userRepository.findByUsernameIgnoreCase(authentication.getName())
         .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
     if (user != null) {
       List<SaveJobs> savedJobs = saveJobRepository.findByCandidate(user);
@@ -334,17 +345,22 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public List<Job> getAppliedJobs() {
+  public Page<Job>  getAppliedJobs(User user,Pageable pageRequest) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
+    user = userRepository.findByUsernameIgnoreCase(authentication.getName())
         .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
     if (user != null) {
       List<ApplicationForm> applicationForms = applicationFormRepository.findByCandidate(user);
-      return applicationForms.stream()
+      List<Job> appliedJobs = applicationForms.stream()
           .map(ApplicationForm::getJob)
           .toList();
+      int pageSize = pageRequest.getPageSize();
+      int start = (int) pageRequest.getOffset();
+      int end = Math.min((start + pageSize), appliedJobs.size());
+      List<Job> pageContent = appliedJobs.subList(start, end);
+      return new PageImpl<>(pageContent, pageRequest, appliedJobs.size());
     }
-    return Collections.emptyList();
+    return new PageImpl<>(Collections.emptyList());
   }
 
   @Override

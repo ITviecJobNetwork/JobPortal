@@ -29,7 +29,7 @@ public class SaveJobs {
   private User candidate;
 
   @ManyToOne
-  @JoinColumn(name = "job_id")
+  @JoinColumn(name = "job_id",unique = true)
   private Job job;
 
 }

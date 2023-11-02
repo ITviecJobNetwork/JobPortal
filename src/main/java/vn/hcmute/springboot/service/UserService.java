@@ -3,10 +3,12 @@ package vn.hcmute.springboot.service;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
+import vn.hcmute.springboot.model.ApplicationForm;
 import vn.hcmute.springboot.model.Job;
+import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.request.ApplyJobRequest;
-import vn.hcmute.springboot.response.ApplyJobResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 
 public interface UserService {
@@ -15,7 +17,7 @@ public interface UserService {
 
   MessageResponse changeNickName (String newNickName);
 
-  ApplyJobResponse applyJob(ApplyJobRequest request) throws IOException;
+  void applyJob(ApplyJobRequest request) throws IOException;
 
   MessageResponse uploadUserCv(MultipartFile fileCv) throws IOException;
 
@@ -26,9 +28,9 @@ public interface UserService {
 
   void saveJob(Integer jobId) throws IOException;
 
-  List<Job> getSavedJobs();
+  List<Job> getSavedJobs(User user);
 
-  List<Job> getAppliedJobs();
+  Page<Job> getAppliedJobs(User user,Pageable pageRequest);
 
 
   MessageResponse deleteSaveJobs(Integer id);

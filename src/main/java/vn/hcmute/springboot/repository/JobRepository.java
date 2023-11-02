@@ -9,11 +9,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import vn.hcmute.springboot.model.ApplicationForm;
 import vn.hcmute.springboot.model.CandidateLevel;
 import vn.hcmute.springboot.model.CompanyType;
 import vn.hcmute.springboot.model.Job;
 import vn.hcmute.springboot.model.JobType;
 import vn.hcmute.springboot.model.Skill;
+import vn.hcmute.springboot.model.User;
 
 public interface JobRepository extends JpaRepository<Job,Integer>, JpaSpecificationExecutor<Job> {
   @Query("SELECT j FROM Job j JOIN j.skills s WHERE s = :skill")
@@ -23,6 +25,8 @@ public interface JobRepository extends JpaRepository<Job,Integer>, JpaSpecificat
   Page<Job> findAllJobs(Pageable pageable);
 
   Page<Job> findJobByIsReadAtTrue(Pageable pageable);
+
+
 
   @Query("SELECT j FROM Job j JOIN j.candidateLevels s WHERE s.candidateLevel = :candidateLevel")
   Page<Job> findJobsByCandidateLevel(@Param("candidateLevel") String candidateLevel,Pageable pageable);
@@ -62,7 +66,7 @@ public interface JobRepository extends JpaRepository<Job,Integer>, JpaSpecificat
       Pageable pageable);
 
   @Query("SELECT j FROM Job j WHERE j.id != :appliedJobId "
-      + "OR j.title LIKE %:title% " +"OR j.location.cityName LIKE %:location%")
+      + "AND j.title LIKE %:title% " +"OR j.location.cityName LIKE %:location%")
   List<Job> findSimilarJobsByTitleAndLocation(@Param("appliedJobId") Integer appliedJobId, @Param("title") String title, @Param("location") String location);
 
 
