@@ -9,6 +9,7 @@ import vn.hcmute.springboot.model.ApplicationForm;
 import vn.hcmute.springboot.model.Job;
 import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.request.ApplyJobRequest;
+import vn.hcmute.springboot.request.FavouriteJobRequest;
 import vn.hcmute.springboot.response.MessageResponse;
 
 public interface UserService {
@@ -34,4 +35,6 @@ public interface UserService {
 
 
   MessageResponse deleteSaveJobs(Integer id);
+
+  MessageResponse saveFavouriteJobType(FavouriteJobRequest request);
 }

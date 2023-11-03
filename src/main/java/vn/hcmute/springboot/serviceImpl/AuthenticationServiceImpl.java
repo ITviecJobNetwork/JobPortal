@@ -91,19 +91,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Override
   public JwtResponse authenticate(LoginRequest request) {
-//    try {
-//      authenticationManager.authenticate(
-//          new UsernamePasswordAuthenticationToken(
-//              request.getUsername(),
-//              request.getPassword()
-//          )
-//      );
-//    } catch (AuthenticationException ex) {
-//      return JwtResponse.builder()
-//          .message("Username hoặc password không chính xác")
-//          .status(HttpStatus.UNAUTHORIZED)
-//          .build();
-//    }
 
     var user = repository.findByUsername(request.getUsername())
         .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));

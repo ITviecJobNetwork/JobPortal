@@ -5,9 +5,11 @@ import jakarta.mail.MessagingException;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -22,18 +24,28 @@ import org.springframework.web.multipart.MultipartFile;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.model.ApplicationForm;
 import vn.hcmute.springboot.model.ApplicationStatus;
+import vn.hcmute.springboot.model.CompanyType;
+import vn.hcmute.springboot.model.FavouriteJobType;
 import vn.hcmute.springboot.model.Job;
+import vn.hcmute.springboot.model.JobType;
 import vn.hcmute.springboot.model.SaveJobs;
+import vn.hcmute.springboot.model.Skill;
 import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.model.UserStatus;
 import vn.hcmute.springboot.repository.ApplicationFormRepository;
+import vn.hcmute.springboot.repository.CompanyTypeRepository;
+import vn.hcmute.springboot.repository.FavouriteJobTypeRepository;
 import vn.hcmute.springboot.repository.JobRepository;
+import vn.hcmute.springboot.repository.JobTypeRepository;
 import vn.hcmute.springboot.repository.SaveJobRepository;
+import vn.hcmute.springboot.repository.SkillRepository;
 import vn.hcmute.springboot.repository.UserRepository;
 import vn.hcmute.springboot.request.ApplyJobRequest;
+import vn.hcmute.springboot.request.FavouriteJobRequest;
 import vn.hcmute.springboot.response.ApplyJobResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.service.UserService;
+
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +60,10 @@ public class UserServiceImpl implements UserService {
   private final JobRepository jobRepository;
   private final FileUploadServiceImpl fileService;
   private final SaveJobRepository saveJobRepository;
+  private final FavouriteJobTypeRepository favouriteJobTypeRepository;
+  private final JobTypeRepository jobTypeRepository;
+  private final SkillRepository skillRepository;
+  private final CompanyTypeRepository companyTypeRepository;
 
   public void handleUserStatus() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -377,7 +393,107 @@ public class UserServiceImpl implements UserService {
         .build();
   }
 
+  @Override
+  public MessageResponse saveFavouriteJobType(FavouriteJobRequest request) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+    List<Skill> skills = updateSkills(request.getSkills());
+    if(user==null){
+      return MessageResponse.builder()
+          .message("Người dùng chưa đăng nhập")
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
+    }
+    if(request.getId()!=null){
+      FavouriteJobType existingFavouriteJobType = favouriteJobTypeRepository.findById(request.getId())
+          .orElseThrow(() -> new NotFoundException("Không tìm thấy FavouriteJobType"));
+      existingFavouriteJobType.setMinSalary(request.getMinSalary());
+      existingFavouriteJobType.setMaxSalary(request.getMaxSalary());
+      existingFavouriteJobType.setCurrentSalary(request.getCurrentSalary());
+      existingFavouriteJobType.setLocations(request.getJobLocation().toString());
+      existingFavouriteJobType.setExperience(request.getExperiences().toString());
+      existingFavouriteJobType.setCompanySize(request.getCompanySize().toString());
 
+
+      existingFavouriteJobType.setJobTypeSkills(skills);
+
+      List<CompanyType> companyTypes = updateCompanyTypes(request.getCompanyType());
+      existingFavouriteJobType.setCompanyTypes(companyTypes);
+
+      List<JobType> jobTypes = updateJobTypes(request.getJobType());
+      existingFavouriteJobType.setJobTypes(jobTypes);
+      favouriteJobTypeRepository.save(existingFavouriteJobType);
+      return MessageResponse.builder()
+          .message("Cập nhật công việc ưa thích thành công")
+          .status(HttpStatus.OK)
+          .build();
+
+    }
+    else{
+      var favouriteJobType =new FavouriteJobType();
+      List<Skill> favouriteSkill = updateSkills(request.getSkills());
+      favouriteJobType.setJobTypeSkills(favouriteSkill);
+
+      List<CompanyType> companyTypes = updateCompanyTypes(request.getCompanyType());
+      favouriteJobType.setCompanyTypes(companyTypes);
+
+      List<JobType> jobTypes = updateJobTypes(request.getJobType());
+      favouriteJobType.setJobTypes(jobTypes);
+      var companySizeList = request.getCompanySize();
+      favouriteJobType.setCandidate(user);
+      favouriteJobType.setMinSalary(request.getMinSalary());
+      favouriteJobType.setMaxSalary(request.getMaxSalary());
+      favouriteJobType.setCurrentSalary(request.getCurrentSalary());
+      favouriteJobType.setLocations(request.getJobLocation().toString());
+      favouriteJobType.setExperience(request.getExperiences().toString());
+      favouriteJobType.setCompanySize(companySizeList.toString());
+
+
+
+      favouriteJobTypeRepository.save(favouriteJobType);
+      return MessageResponse.builder()
+          .message("Lưu công việc ưa thích thành công")
+          .status(HttpStatus.OK)
+          .build();
+    }
+
+
+
+  }
+
+  private List<Skill> updateSkills(List<String> skillNames) {
+    List<Skill> skills = new ArrayList<>();
+    for (String skillName : skillNames) {
+      Skill skill = skillRepository.findByName(skillName);
+      if (skill != null) {
+        skills.add(skill);
+      }
+    }
+    return skills;
+  }
+
+  private List<CompanyType> updateCompanyTypes(List<String> companyTypeNames) {
+    List<CompanyType> companyTypes = new ArrayList<>();
+    for (String companyTypeStr : companyTypeNames) {
+      CompanyType companyType = companyTypeRepository.findByType(companyTypeStr);
+      if (companyType != null) {
+        companyTypes.add(companyType);
+      }
+    }
+    return companyTypes;
+  }
+
+  private List<JobType> updateJobTypes(List<String> jobTypeNames) {
+    List<JobType> jobTypes = new ArrayList<>();
+    for (String jobTypeStr : jobTypeNames) {
+      JobType jobType = jobTypeRepository.findByJobType(jobTypeStr);
+      if (jobType != null) {
+        jobTypes.add(jobType);
+      }
+    }
+    return jobTypes;
+  }
   private boolean isExactFile(String fileName) {
     // Determine if the file has an image extension or content type
     String[] fileExtensions = {".word", ".pdf", ".docx"};

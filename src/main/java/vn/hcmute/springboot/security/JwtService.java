@@ -13,6 +13,7 @@ import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import vn.hcmute.springboot.model.User;
 
 
 @Service
@@ -45,6 +46,7 @@ public class JwtService {
       Map<String, Object> extraClaims,
       UserDetails userDetails
   ) {
+
     return buildToken(extraClaims, userDetails, accessTokenExpirationMs);
   }
 
