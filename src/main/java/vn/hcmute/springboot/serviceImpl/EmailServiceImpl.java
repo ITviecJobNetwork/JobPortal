@@ -70,7 +70,7 @@ public class EmailServiceImpl implements EmailService {
     MimeMessage mimeMessage = javaMailSender.createMimeMessage();
     MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
     mimeMessageHelper.setTo(email);
-    mimeMessageHelper.setSubject("Verify OTP");
+    mimeMessageHelper.setSubject("Forgot Password");
     mimeMessageHelper.setText("""
         <html>
             <head>
@@ -111,4 +111,58 @@ public class EmailServiceImpl implements EmailService {
                 
         """.formatted(newPassword), true);
     javaMailSender.send(mimeMessage);  }
+
+  @Override
+  public void sendConfirmationToEmail(String email) throws MessagingException {
+    MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+    MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
+    mimeMessageHelper.setTo(email);
+    mimeMessageHelper.setSubject("Confirmation for registration to receive job notification");
+    String htmlContent = """
+            <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            background-color: #f4f4f4;
+                        }
+                        .container {
+                            max-width: 600px;
+                            margin: 0 auto;
+                            padding: 20px;
+                            background-color: #ffffff;
+                            border-radius: 5px;
+                            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                        }
+                        h1 {
+                            color: #333;
+                        }
+                        h2 {
+                            color: #007BFF;
+                        }
+                        p {
+                            color: #777;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                          <h1>JobPortal ít nhưng mà chất</h1>
+                          <p>Cảm ơn bạn đã đăng ký nhận thông tin công việc</p>
+                          <p>Hi there,
+                                     Our Job Robot has received your instructions!
+                                     
+                                     He will send you all new Java jobs in Ho Chi Minh as soon as they appear on our site, up to one email per day.
+                                     
+                                     Delivering jobs to you makes him happy.
+                                     
+                                     I wish you the best of luck in your search for a new job!</p>
+                          <h2>Xin cảm ơn!</h2>
+                    </div>
+                </body>
+            </html>
+        """;
+    mimeMessageHelper.setText(htmlContent, true);
+    javaMailSender.send(mimeMessage);
+  }
 }

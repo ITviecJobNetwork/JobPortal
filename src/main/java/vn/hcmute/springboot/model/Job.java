@@ -96,9 +96,6 @@ public class Job {
   @Column(name = "expire_at")
   private LocalDate expireAt;
 
-  @Column(name="is_expired")
-  private Boolean isExpired;
-
   @JsonIgnore
   @OneToMany(mappedBy = "job",fetch = FetchType.EAGER)
   private List<ApplicationForm> applicationForms;

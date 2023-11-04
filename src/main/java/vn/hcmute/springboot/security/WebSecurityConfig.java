@@ -60,7 +60,8 @@ public class WebSecurityConfig {
                 new AntPathRequestMatcher("/api/users/**"),
                 new AntPathRequestMatcher("/api/job/**"),
                 new AntPathRequestMatcher("/api/company/**"),
-                new AntPathRequestMatcher("/api/profile/**")
+                new AntPathRequestMatcher("/api/profile/**"),
+                new AntPathRequestMatcher("/api/v1/files/**")
             ).permitAll()
             .anyRequest().authenticated()
         );

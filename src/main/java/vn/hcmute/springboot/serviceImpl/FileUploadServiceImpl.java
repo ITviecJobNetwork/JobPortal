@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import vn.hcmute.springboot.service.FileUploadService;
@@ -14,7 +16,9 @@ import vn.hcmute.springboot.service.FileUploadService;
 @Service
 @RequiredArgsConstructor
 public class FileUploadServiceImpl implements FileUploadService {
+
   private final Cloudinary cloudinary;
+
   @Override
   public String uploadFile(MultipartFile multipartFile) throws IOException {
     return cloudinary.uploader()
@@ -31,6 +35,7 @@ public class FileUploadServiceImpl implements FileUploadService {
         .get("url")
         .toString();
   }
+
   @Override
   public void deleteFile(String publicId) throws IOException {
 
@@ -40,6 +45,8 @@ public class FileUploadServiceImpl implements FileUploadService {
       throw new IOException("Không thể xóa tệp " + publicId, e);
     }
   }
+
+
 
 
 }

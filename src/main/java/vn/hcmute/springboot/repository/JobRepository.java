@@ -2,6 +2,7 @@ package vn.hcmute.springboot.repository;
 
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import vn.hcmute.springboot.model.ApplicationForm;
 import vn.hcmute.springboot.model.CandidateLevel;
+import vn.hcmute.springboot.model.Company;
 import vn.hcmute.springboot.model.CompanyType;
 import vn.hcmute.springboot.model.Job;
 import vn.hcmute.springboot.model.JobType;
@@ -70,6 +72,7 @@ public interface JobRepository extends JpaRepository<Job,Integer>, JpaSpecificat
   List<Job> findSimilarJobsByTitleAndLocation(@Param("appliedJobId") Integer appliedJobId, @Param("title") String title, @Param("location") String location);
 
 
+  List<Job> findJobByCompanyId(Integer id);
 
 }
 

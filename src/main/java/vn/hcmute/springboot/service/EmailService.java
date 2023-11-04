@@ -8,4 +8,6 @@ public interface EmailService {
 
   void sendNewPasswordToEmail(String email, String newPassword) throws MessagingException;
 
+  void sendConfirmationToEmail(String email) throws MessagingException;
+
 }
