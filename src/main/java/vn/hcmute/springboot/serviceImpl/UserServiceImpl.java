@@ -497,6 +497,25 @@ public class UserServiceImpl implements UserService {
         .build();
   }
 
+  @Override
+  public MessageResponse followCompany(Integer companyId) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+    var company = companyRepository.findById(companyId)
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
+    if(user!=null && company!=null){
+      company.setIsFollowed(true);
+      company.setIsFollowedAt(LocalDate.now());
+      company.setUser(user);
+      companyRepository.save(company);
+    }
+    return MessageResponse.builder()
+        .message("Theo dõi công ty thành công")
+        .status(HttpStatus.OK)
+        .build();
+  }
+
   private List<Skill> updateSkills(List<String> skillNames) {
     List<Skill> skills = new ArrayList<>();
     for (String skillName : skillNames) {

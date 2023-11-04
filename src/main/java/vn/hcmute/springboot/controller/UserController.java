@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -68,7 +69,6 @@ public class UserController {
   private final SaveJobRepository saveJobRepository;
   private final CompanyRepository companyRepository;
   private final CompanyReviewRepository companyReviewRepository;
-
   @PostMapping("/forgot-password")
   public ResponseEntity<MessageResponse> forgotPassword(
       @Valid @RequestBody ForgotPasswordRequest request) {
@@ -531,25 +531,76 @@ public class UserController {
   }
 
   @GetMapping("/companyReview/{companyId}")
-  public ResponseEntity<List<CompanyReview>> getCompanyReview(@PathVariable Integer companyId) {
-    var user = userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+  public ResponseEntity<Page<CompanyReview>> getCompanyReview(
+      @PathVariable Integer companyId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size
+  ) {
+    var user = userRepository.findByUsername(
+        SecurityContextHolder.getContext().getAuthentication().getName());
     if (user.isEmpty()) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
     }
+
     var company = companyRepository.findById(companyId);
     if (company.isEmpty()) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
-    var companyReview = companyReviewRepository.findByCompanyId(company.get().getId());
-    if (companyReview.isEmpty()) {
+
+    Pageable pageable = PageRequest.of(page, size);
+    Page<CompanyReview> companyReviewPage = companyReviewRepository.findByCompanyId(
+        company.get().getId(), pageable);
+
+    if (companyReviewPage.isEmpty()) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
-    List<CompanyReview> reviews = companyReview.stream().map(CompanyReview::new).toList();
-    return ResponseEntity.ok(reviews);
 
+    return ResponseEntity.ok(companyReviewPage);
   }
 
+  @PostMapping("/followCompany/{companyId}")
+  public ResponseEntity<MessageResponse> followCompany(@PathVariable Integer companyId) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+    var user = userRepository.findByUsername(authentication.getName());
+    if(user.isEmpty()){
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(new MessageResponse("Người dùng không tồn tại", HttpStatus.NOT_FOUND));
+    }
+    var company = companyRepository.findById(companyId);
+    if(company.isEmpty()){
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(new MessageResponse("Công ty không tồn tại", HttpStatus.NOT_FOUND));
+    }
+    userService.followCompany(company.get().getId());
+    return ResponseEntity.ok(new MessageResponse("Theo dõi thành công", HttpStatus.OK));
+
+  }
+  @DeleteMapping("/removeFollowCompany/{companyId}")
+  public ResponseEntity<MessageResponse> removeFollowCompany(@PathVariable Integer companyId) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    var user = userRepository.findByUsername(authentication.getName());
+    if(user.isEmpty()){
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(new MessageResponse("Người dùng chưa đăng nhập", HttpStatus.NOT_FOUND));
+    }
+    var company = companyRepository.findById(companyId);
+    if(company.isEmpty()){
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(new MessageResponse("Công ty không tồn tại", HttpStatus.NOT_FOUND));
+    }
+    var isFollowed = userService.followCompany(company.get().getId());
+    if(isFollowed!=null){
+      company.get().setIsFollowed(false);
+      company.get().setUser(null);
+      company.get().setIsFollowedAt(null);
+      companyRepository.save(company.get());
+    }
+    return ResponseEntity.ok(new MessageResponse("Bỏ theo dõi thành công", HttpStatus.OK));
+
+
+  }
 }
 
 

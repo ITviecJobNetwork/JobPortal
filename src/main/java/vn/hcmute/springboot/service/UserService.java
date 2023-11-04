@@ -41,4 +41,6 @@ public interface UserService {
   MessageResponse saveFavouriteJobType(FavouriteJobRequest request);
 
   MessageResponse writeCompanyReview(WriteReviewRequest request);
+
+  MessageResponse followCompany(Integer companyId);
 }

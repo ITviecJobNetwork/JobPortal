@@ -1,12 +1,16 @@
 package vn.hcmute.springboot.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -62,7 +66,12 @@ public class Company {
   private Boolean isFollowed;
 
   @Column(name="is_followed_at")
-  private Date isFollowedAt;
+  private LocalDate isFollowedAt;
+
+  @ManyToOne
+  @JoinColumn(name = "user_follow_id")
+  @JsonIgnore
+  private User user;
 
 
 }
