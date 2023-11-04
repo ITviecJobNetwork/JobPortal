@@ -31,10 +31,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import vn.hcmute.springboot.model.ApplicationForm;
+import vn.hcmute.springboot.model.CompanyReview;
 import vn.hcmute.springboot.model.Job;
 import vn.hcmute.springboot.model.SaveJobs;
 import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.repository.ApplicationFormRepository;
+import vn.hcmute.springboot.repository.CompanyRepository;
+import vn.hcmute.springboot.repository.CompanyReviewRepository;
 import vn.hcmute.springboot.repository.JobRepository;
 import vn.hcmute.springboot.repository.SaveJobRepository;
 import vn.hcmute.springboot.repository.UserRepository;
@@ -44,6 +47,7 @@ import vn.hcmute.springboot.request.ChangePasswordRequest;
 import vn.hcmute.springboot.request.FavouriteJobRequest;
 import vn.hcmute.springboot.request.ForgotPasswordRequest;
 import vn.hcmute.springboot.request.ResetPasswordRequest;
+import vn.hcmute.springboot.request.WriteReviewRequest;
 import vn.hcmute.springboot.response.ApplyJobResponse;
 import vn.hcmute.springboot.response.GetJobApplyResponse;
 import vn.hcmute.springboot.response.MessageResponse;
@@ -62,7 +66,8 @@ public class UserController {
   private final JobRepository jobRepository;
   private final ApplicationFormRepository applicationFormRepository;
   private final SaveJobRepository saveJobRepository;
-
+  private final CompanyRepository companyRepository;
+  private final CompanyReviewRepository companyReviewRepository;
 
   @PostMapping("/forgot-password")
   public ResponseEntity<MessageResponse> forgotPassword(
@@ -488,6 +493,60 @@ public class UserController {
     }
     var saveJob = userService.saveFavouriteJobType(request);
     return new ResponseEntity<>(saveJob, HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/writeCompanyReview", consumes = {"multipart/form-data"})
+  public ResponseEntity<MessageResponse> writeCompanyReview(
+      @Valid @ModelAttribute WriteReviewRequest content) {
+    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    if (userName == null) {
+      return new ResponseEntity<>(
+          new MessageResponse("Người dùng không tồn tại", HttpStatus.NOT_FOUND),
+          HttpStatus.NOT_FOUND);
+    }
+    var company = companyRepository.findById(content.getCompanyId());
+    if (company.isEmpty()) {
+      return new ResponseEntity<>(
+          (new MessageResponse("Công ty không tồn tại", HttpStatus.NOT_FOUND)),
+          HttpStatus.NOT_FOUND);
+    }
+    if (content.getRating() < 1 || content.getRating() > 5) {
+      return new ResponseEntity<>(
+          (new MessageResponse("Đánh giá phải từ 1 đến 5 sao", HttpStatus.BAD_REQUEST)),
+          HttpStatus.BAD_REQUEST);
+    }
+    if (content.getTitle().length() > 100) {
+      return new ResponseEntity<>(
+          (new MessageResponse("Tiêu đề đánh giá không được quá 100 ký tự",
+              HttpStatus.BAD_REQUEST)), HttpStatus.BAD_REQUEST);
+    }
+
+    if (content.getContent().length() > 500) {
+      return new ResponseEntity<>(
+          (new MessageResponse("Nội dung đánh giá không được quá 500 ký tự",
+              HttpStatus.BAD_REQUEST)), HttpStatus.BAD_REQUEST);
+    }
+
+    return new ResponseEntity<>(userService.writeCompanyReview(content), HttpStatus.OK);
+  }
+
+  @GetMapping("/companyReview/{companyId}")
+  public ResponseEntity<List<CompanyReview>> getCompanyReview(@PathVariable Integer companyId) {
+    var user = userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+    if (user.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+    }
+    var company = companyRepository.findById(companyId);
+    if (company.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    }
+    var companyReview = companyReviewRepository.findByCompanyId(company.get().getId());
+    if (companyReview.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    }
+    List<CompanyReview> reviews = companyReview.stream().map(CompanyReview::new).toList();
+    return ResponseEntity.ok(reviews);
+
   }
 
 

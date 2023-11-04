@@ -58,6 +58,12 @@ public class Company {
   @Column(name = "last_modified_date")
   private Date lastModifiedDate;
 
+  @Column(name="is_followed")
+  private Boolean isFollowed;
+
+  @Column(name="is_followed_at")
+  private Date isFollowedAt;
+
 
 }
 

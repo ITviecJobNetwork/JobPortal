@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -24,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.model.ApplicationForm;
 import vn.hcmute.springboot.model.ApplicationStatus;
+import vn.hcmute.springboot.model.CompanyReview;
 import vn.hcmute.springboot.model.CompanyType;
 import vn.hcmute.springboot.model.FavouriteJobType;
 import vn.hcmute.springboot.model.Job;
@@ -33,6 +33,8 @@ import vn.hcmute.springboot.model.Skill;
 import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.model.UserStatus;
 import vn.hcmute.springboot.repository.ApplicationFormRepository;
+import vn.hcmute.springboot.repository.CompanyRepository;
+import vn.hcmute.springboot.repository.CompanyReviewRepository;
 import vn.hcmute.springboot.repository.CompanyTypeRepository;
 import vn.hcmute.springboot.repository.FavouriteJobTypeRepository;
 import vn.hcmute.springboot.repository.JobRepository;
@@ -42,6 +44,7 @@ import vn.hcmute.springboot.repository.SkillRepository;
 import vn.hcmute.springboot.repository.UserRepository;
 import vn.hcmute.springboot.request.ApplyJobRequest;
 import vn.hcmute.springboot.request.FavouriteJobRequest;
+import vn.hcmute.springboot.request.WriteReviewRequest;
 import vn.hcmute.springboot.response.ApplyJobResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.service.UserService;
@@ -64,6 +67,8 @@ public class UserServiceImpl implements UserService {
   private final JobTypeRepository jobTypeRepository;
   private final SkillRepository skillRepository;
   private final CompanyTypeRepository companyTypeRepository;
+  private final CompanyRepository companyRepository;
+  private final CompanyReviewRepository companyReviewRepository;
 
   public void handleUserStatus() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -460,6 +465,36 @@ public class UserServiceImpl implements UserService {
 
 
 
+  }
+
+  @Override
+  public MessageResponse writeCompanyReview(WriteReviewRequest request) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+    var company = companyRepository.findById(request.getCompanyId())
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
+    if (user == null || company == null) {
+      return MessageResponse.builder()
+          .message("User or company not found")
+          .status(HttpStatus.NOT_FOUND)
+          .build();
+    }
+    else {
+      CompanyReview companyReview = new CompanyReview();
+      companyReview.setCandidate(user);
+      companyReview.setCompany(company);
+      companyReview.setRating(request.getRating());
+      companyReview.setTitle(request.getTitle());
+      companyReview.setContent(request.getContent());
+      companyReview.setCreatedDate(LocalDate.now());
+      companyReviewRepository.save(companyReview);
+
+    }
+    return MessageResponse.builder()
+        .message("Viết đánh giá thành công")
+        .status(HttpStatus.OK)
+        .build();
   }
 
   private List<Skill> updateSkills(List<String> skillNames) {
