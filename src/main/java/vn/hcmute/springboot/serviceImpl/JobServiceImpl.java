@@ -68,7 +68,7 @@ public class JobServiceImpl implements JobService {
   @Override
   public Page<Job> findJobByCompanyName(String companyName,int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
-    var company = companyRepository.findByName(companyName,pageable);
+    var company = companyRepository.findCompanyByName(companyName,pageable);
     if (company!=null) {
       return jobRepository.findJobsByCompanyName(companyName,pageable);
     }

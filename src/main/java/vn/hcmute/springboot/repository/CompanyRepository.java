@@ -8,8 +8,10 @@ import vn.hcmute.springboot.model.Company;
 
 public interface CompanyRepository extends JpaRepository<Company, Integer> {
 
-  Page<Company> findByName(String name, Pageable pageable);
+  Page<Company> findCompanyByName(String name, Pageable pageable);
 
+
+  Company findByName(String name);
   @Query("SELECT j FROM Company j")
   Page<Company> findAllCompanies(Pageable pageable);
 }

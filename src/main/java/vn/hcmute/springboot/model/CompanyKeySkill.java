@@ -1,6 +1,7 @@
 package vn.hcmute.springboot.model;
 
 import jakarta.persistence.*;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,9 +24,8 @@ public class CompanyKeySkill {
   @JoinColumn(name = "recruiter_id")
   private Recruiters recruiter;
 
-  @ManyToOne
-  @JoinColumn(name = "skill_id",nullable = false,unique = true)
-  private Skill skill;
+  @OneToMany(mappedBy = "companyKeySkill", fetch=FetchType.EAGER,cascade = CascadeType.ALL)
+  private List<Skill> skills;
 
 
 

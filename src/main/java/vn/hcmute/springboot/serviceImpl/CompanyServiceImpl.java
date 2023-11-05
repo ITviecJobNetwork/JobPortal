@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.model.Company;
+import vn.hcmute.springboot.repository.CompanyKeySkillRepository;
 import vn.hcmute.springboot.repository.CompanyRepository;
 import vn.hcmute.springboot.service.CompanyService;
 
@@ -16,7 +17,7 @@ import vn.hcmute.springboot.service.CompanyService;
 public class CompanyServiceImpl implements CompanyService {
 
   private final CompanyRepository companyRepository;
-
+  private final CompanyKeySkillRepository companyKeySkillRepository;
   @Override
   public Page<Company> listAllCompany(int page,int size) {
     Pageable pageable = PageRequest.of(page, size);
@@ -30,7 +31,7 @@ public class CompanyServiceImpl implements CompanyService {
   @Override
   public Page<Company> findCompanyByName(String name,int page,int size) {
     Pageable pageable = PageRequest.of(page, size);
-    var company = companyRepository.findByName(name,pageable);
+    var company = companyRepository.findCompanyByName(name,pageable);
     if (company.isEmpty()) {
       throw new NotFoundException("không-tìm-thấy-công-ty " + name);
     }
@@ -42,4 +43,5 @@ public class CompanyServiceImpl implements CompanyService {
     return companyRepository.findById(id)
         .orElseThrow(() -> new NotFoundException("không-tìm-thấy-công-ty " + id));
   }
+
 }
