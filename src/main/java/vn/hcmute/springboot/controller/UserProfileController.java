@@ -272,7 +272,7 @@ public class UserProfileController {
       URL url = uri.toURL();
       InputStream pdfInputStream = url.openStream();
       HttpHeaders headers = new HttpHeaders();
-      headers.add("Content-Disposition", "inline; filename=cv.pdf");
+      headers.add("Content-Disposition", "attachment; filename=%s".formatted(cloudinaryPDFUrl));
 
       return ResponseEntity
           .ok()
@@ -281,7 +281,6 @@ public class UserProfileController {
           .contentType(MediaType.APPLICATION_PDF)
           .body(new InputStreamResource(pdfInputStream));
     } catch (IOException e) {
-      // Xử lý lỗi
       return ResponseEntity.notFound().build();
     }
   }

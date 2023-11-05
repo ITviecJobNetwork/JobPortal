@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,8 +17,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import vn.hcmute.springboot.model.Company;
+import vn.hcmute.springboot.model.CompanyKeySkill;
 import vn.hcmute.springboot.model.Job;
+import vn.hcmute.springboot.repository.CompanyKeySkillRepository;
+import vn.hcmute.springboot.repository.CompanyRepository;
 import vn.hcmute.springboot.repository.JobRepository;
+import vn.hcmute.springboot.repository.RecruiterRepository;
+import vn.hcmute.springboot.repository.SkillRepository;
 import vn.hcmute.springboot.repository.UserRepository;
 import vn.hcmute.springboot.response.CompanyResponse;
 import vn.hcmute.springboot.response.JobResponse;
@@ -30,6 +36,10 @@ public class CompanyController {
   private final CompanyService companyService;
   private final UserRepository userRepository;
   private final JobRepository jobRepository;
+  private final CompanyRepository companyRepository;
+  private final CompanyKeySkillRepository companyKeySkillRepository;
+  private final SkillRepository skillRepository;
+  private final RecruiterRepository recruiterRepository;
 
   @GetMapping()
   public ResponseEntity<CompanyResponse> getAllCompanies(@RequestParam(value = "page", defaultValue = "0") int page,
@@ -62,17 +72,31 @@ public class CompanyController {
   }
   @GetMapping("/{id}/jobOpenings")
   public ResponseEntity<List<Job>> getJobOpenings(@PathVariable Integer id) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    var user = userRepository.findByUsername(authentication.getName());
-    if (user.isEmpty()) {
-      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    var company = companyRepository.findById(id);
+    if(company.isEmpty()) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    var company = jobRepository.findById(id);
     List<Job> jobOpenings = jobRepository.findJobByCompanyId(company.get().getId());
     if (jobOpenings.isEmpty()) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     return new ResponseEntity<>(jobOpenings, HttpStatus.OK);
+  }
+  @GetMapping("/companyKeySkill/{recruiterId}")
+  public ResponseEntity<List<CompanyKeySkill>> listCompanyKeySkill(@PathVariable Integer recruiterId){
+    var recruiter = recruiterRepository.findById(recruiterId);
+    if(recruiter.isEmpty()) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    var company = recruiter.get().getCompany();
+    if(company== null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    List<CompanyKeySkill> companyKeySkills = companyKeySkillRepository.findByRecruiterId(recruiterId);
+    if(companyKeySkills==null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    return new ResponseEntity<>(companyKeySkills,HttpStatus.OK);
   }
 
 

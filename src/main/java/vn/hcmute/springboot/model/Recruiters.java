@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import vn.hcmute.springboot.model.CompanyType;
 
 @Entity
 @Table(name = "recruiters")
@@ -99,4 +98,6 @@ public class Recruiters {
   private Date lastSignInTime;
 
 
+  @OneToOne(mappedBy = "recruiter")
+  private Company company;
 }
