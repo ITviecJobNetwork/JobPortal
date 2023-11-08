@@ -21,27 +21,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import vn.hcmute.springboot.exception.NotFoundException;
-import vn.hcmute.springboot.model.ApplicationForm;
-import vn.hcmute.springboot.model.ApplicationStatus;
-import vn.hcmute.springboot.model.CompanyReview;
-import vn.hcmute.springboot.model.CompanyType;
-import vn.hcmute.springboot.model.FavouriteJobType;
-import vn.hcmute.springboot.model.Job;
-import vn.hcmute.springboot.model.JobType;
-import vn.hcmute.springboot.model.SaveJobs;
-import vn.hcmute.springboot.model.Skill;
-import vn.hcmute.springboot.model.User;
-import vn.hcmute.springboot.model.UserStatus;
-import vn.hcmute.springboot.repository.ApplicationFormRepository;
-import vn.hcmute.springboot.repository.CompanyRepository;
-import vn.hcmute.springboot.repository.CompanyReviewRepository;
-import vn.hcmute.springboot.repository.CompanyTypeRepository;
-import vn.hcmute.springboot.repository.FavouriteJobTypeRepository;
-import vn.hcmute.springboot.repository.JobRepository;
-import vn.hcmute.springboot.repository.JobTypeRepository;
-import vn.hcmute.springboot.repository.SaveJobRepository;
-import vn.hcmute.springboot.repository.SkillRepository;
-import vn.hcmute.springboot.repository.UserRepository;
+import vn.hcmute.springboot.model.*;
+import vn.hcmute.springboot.repository.*;
 import vn.hcmute.springboot.request.ApplyJobRequest;
 import vn.hcmute.springboot.request.FavouriteJobRequest;
 import vn.hcmute.springboot.request.WriteReviewRequest;
@@ -69,6 +50,7 @@ public class UserServiceImpl implements UserService {
   private final CompanyTypeRepository companyTypeRepository;
   private final CompanyRepository companyRepository;
   private final CompanyReviewRepository companyReviewRepository;
+  private final CompanyFollowRepository companyFollowRepository;
 
   public void handleUserStatus() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -468,11 +450,11 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public MessageResponse writeCompanyReview(WriteReviewRequest request) {
+  public MessageResponse writeCompanyReview(Integer companyId,WriteReviewRequest request) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
         .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
-    var company = companyRepository.findById(request.getCompanyId())
+    var company = companyRepository.findById(companyId)
         .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
     if (user == null || company == null) {
       return MessageResponse.builder()
@@ -502,14 +484,24 @@ public class UserServiceImpl implements UserService {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
         .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
-    var company = companyRepository.findById(companyId)
-        .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
-    if(user!=null && company!=null){
-      company.setIsFollowed(true);
-      company.setIsFollowedAt(LocalDate.now());
-      company.setUser(user);
-      companyRepository.save(company);
+    var company = companyRepository.findById(companyId);
+    if(company.isEmpty()){
+      return MessageResponse.builder()
+          .message("Không tồn tại công ty này")
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
     }
+    if(company.equals(user.getId())){
+      return MessageResponse.builder()
+          .message("Bạn đã theo dõi công ty này trước đó")
+          .status(HttpStatus.BAD_REQUEST)
+          .build();
+    }
+    CompanyFollow companyFollow = new CompanyFollow();
+    companyFollow.setFollowedAt(LocalDate.now().atStartOfDay());
+    companyFollow.setUser(user);
+    companyFollow.setCompany(company.get());
+    companyFollowRepository.save(companyFollow);
     return MessageResponse.builder()
         .message("Theo dõi công ty thành công")
         .status(HttpStatus.OK)

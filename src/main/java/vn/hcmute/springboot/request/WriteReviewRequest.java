@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class WriteReviewRequest {
-  private Integer companyId;
   private Integer rating;
   private String title;
   private String content;

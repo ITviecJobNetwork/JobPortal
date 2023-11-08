@@ -3,17 +3,13 @@ package vn.hcmute.springboot.serviceImpl;
 
 
 
-import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.hcmute.springboot.exception.NotFoundException;
-import vn.hcmute.springboot.model.CandidateLevel;
-import vn.hcmute.springboot.model.CompanyType;
 import vn.hcmute.springboot.model.Job;
-import vn.hcmute.springboot.model.JobType;
 import vn.hcmute.springboot.model.Skill;
 import vn.hcmute.springboot.repository.CandidateLevelRepository;
 import vn.hcmute.springboot.repository.CompanyRepository;

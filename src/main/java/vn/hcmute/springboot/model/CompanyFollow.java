@@ -1,6 +1,5 @@
 package vn.hcmute.springboot.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,44 +8,34 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "company_review")
+@Table(name = "company_follow")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CompanyReview {
+public class CompanyFollow {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
+
   @ManyToOne
   @JoinColumn(name = "user_id")
-  @JsonIgnore
-  private User candidate;
+  private User user;
 
   @ManyToOne
   @JoinColumn(name = "company_id")
-  @JsonIgnore
   private Company company;
 
-  @Column(name = "rating")
-  private Integer rating;
-
-  @Column(name = "title")
-  private String title;
-
-  @Column(name = "content", columnDefinition = "TEXT", nullable = false)
-  private String content;
-
-  @Column(name = "created_date")
-  private LocalDate createdDate;
+  @Column(name = "followed_at")
+  private LocalDateTime followedAt;
 
 
 }

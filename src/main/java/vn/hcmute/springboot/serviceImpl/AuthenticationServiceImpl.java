@@ -30,6 +30,8 @@ import vn.hcmute.springboot.response.JwtResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.security.JwtService;
 import vn.hcmute.springboot.service.AuthenticationService;
+import vn.hcmute.springboot.service.EmailService;
+import vn.hcmute.springboot.service.OtpService;
 
 @org.springframework.stereotype.Service
 @RequiredArgsConstructor
@@ -39,9 +41,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final TokenRepository tokenRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
-  private final AuthenticationManager authenticationManager;
-  private final EmailServiceImpl emailService;
-  private final OtpServiceImpl otpService;
+  private final EmailService emailService;
+  private final OtpService otpService;
 
 
   @Override

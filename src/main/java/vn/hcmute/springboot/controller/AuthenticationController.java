@@ -24,6 +24,7 @@ import vn.hcmute.springboot.request.LoginRequest;
 import vn.hcmute.springboot.request.RegisterRequest;
 import vn.hcmute.springboot.response.JwtResponse;
 import vn.hcmute.springboot.response.MessageResponse;
+import vn.hcmute.springboot.security.JwtService;
 import vn.hcmute.springboot.serviceImpl.AuthenticationServiceImpl;
 import vn.hcmute.springboot.serviceImpl.EmailServiceImpl;
 import vn.hcmute.springboot.serviceImpl.OtpServiceImpl;
@@ -37,9 +38,8 @@ public class AuthenticationController {
   private final UserRepository userRepository;
 
   private final AuthenticationServiceImpl service;
-  private final OtpServiceImpl otpService;
-  private final EmailServiceImpl emailService;
   private final AuthenticationManager authenticationManager;
+  private final JwtService jwtService;
 
   @PostMapping("/register")
   public ResponseEntity<MessageResponse> register(
@@ -101,6 +101,12 @@ public class AuthenticationController {
     }
 
     var userLogin = service.authenticate(request);
+    if (jwtService.isTokenExpired(userLogin.getAccessToken())) {
+      return new ResponseEntity<>(
+          new JwtResponse("Token đã hết hạn vui lòng đăng nhập lại", HttpStatus.UNAUTHORIZED),
+          HttpStatus.UNAUTHORIZED
+      );
+    }
     return new ResponseEntity<>(userLogin, HttpStatus.OK);
   }
 

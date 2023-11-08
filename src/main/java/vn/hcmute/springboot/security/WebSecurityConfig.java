@@ -28,7 +28,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebSecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthFilter;
-  private final AuthenticationProvider authenticationProvider;
   private final LogoutHandler logoutHandler;
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -55,13 +54,13 @@ public class WebSecurityConfig {
             // others
             .requestMatchers(
                 new AntPathRequestMatcher("/api/auth/**"),
-                new AntPathRequestMatcher("/api/test/**"),
-                new AntPathRequestMatcher("/api/v1/sms/**"),
                 new AntPathRequestMatcher("/api/users/**"),
                 new AntPathRequestMatcher("/api/job/**"),
                 new AntPathRequestMatcher("/api/company/**"),
-                new AntPathRequestMatcher("/api/profile/**"),
-                new AntPathRequestMatcher("/api/v1/files/**")
+                new AntPathRequestMatcher("/api/profile/**")
+            ).permitAll()
+            .requestMatchers(
+                new AntPathRequestMatcher("/api/recruiter/**")
             ).permitAll()
             .anyRequest().authenticated()
         );

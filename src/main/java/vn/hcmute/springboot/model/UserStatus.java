@@ -2,6 +2,10 @@ package vn.hcmute.springboot.model;
 
 public enum UserStatus {
   ACTIVE,
-  INACTIVE
+  INACTIVE,
+
+  BLOCKED,
+
+  DELETED
 
 }

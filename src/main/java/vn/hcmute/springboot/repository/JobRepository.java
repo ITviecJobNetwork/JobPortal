@@ -1,6 +1,8 @@
 package vn.hcmute.springboot.repository;
 
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +15,8 @@ import vn.hcmute.springboot.model.Skill;
 
 public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecificationExecutor<Job> {
 
+  @PersistenceContext
+  EntityManager entityManager = null;
 
   @Query("SELECT j FROM Job j JOIN j.skills s WHERE s = :skill")
   Page<Job> findJobsBySkills(@Param("skill") Skill skill, Pageable pageable);

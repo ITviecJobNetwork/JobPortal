@@ -52,11 +52,13 @@ public class EmailServiceImpl implements EmailService {
                 </style>
             </head>
             <body>
+                
                 <div class="container">
                     <h1>OTP Verification</h1>
                     <p>Thank you for registering. Your OTP is:</p>
                     <h2>%s</h2>
                     <p>Please use this OTP to verify your account.</p>
+                    <h2>Thank you</h2>
                 </div>
             </body>
         </html>
@@ -100,7 +102,7 @@ public class EmailServiceImpl implements EmailService {
             </head>
             <body>
                 <div class="container">
-                    <h1>OTP Verification</h1>
+                    <h1>Forgot Password</h1>
                     <p>Thank you for registering. Your new password is:</p>
                     <h2>%s</h2>
                     <p>Please use this password to login in to website.</p>
@@ -113,7 +115,7 @@ public class EmailServiceImpl implements EmailService {
     javaMailSender.send(mimeMessage);  }
 
   @Override
-  public void sendConfirmationToEmail(String email) throws MessagingException {
+  public void sendConfirmRegistrationToRecruiter(String email, String password) throws MessagingException {
     MimeMessage mimeMessage = javaMailSender.createMimeMessage();
     MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
     mimeMessageHelper.setTo(email);
@@ -121,6 +123,7 @@ public class EmailServiceImpl implements EmailService {
     String htmlContent = """
             <html>
                 <head>
+                  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
                     <style>
                         body {
                             font-family: Arial, sans-serif;
@@ -157,11 +160,14 @@ public class EmailServiceImpl implements EmailService {
                                      Delivering jobs to you makes him happy.
                                      
                                      I wish you the best of luck in your search for a new job!</p>
+                          <h2>%s</h2>
+                          <h2>%s</h2>
                           <h2>Xin cảm ơn!</h2>
+                          
                     </div>
                 </body>
             </html>
-        """;
+        """.formatted(email, password);
     mimeMessageHelper.setText(htmlContent, true);
     javaMailSender.send(mimeMessage);
   }

@@ -1,17 +1,32 @@
 package vn.hcmute.springboot.model;
 
+import static vn.hcmute.springboot.model.Permission.RECRUITER_CREATE;
+import static vn.hcmute.springboot.model.Permission.RECRUITER_DELETE;
+import static vn.hcmute.springboot.model.Permission.RECRUITER_READ;
+import static vn.hcmute.springboot.model.Permission.RECRUITER_UPDATE;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import jakarta.persistence.*;
+import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Table(name = "recruiters")
@@ -19,7 +34,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Recruiters {
+@Builder
+public class Recruiters implements UserDetails {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,28 +44,27 @@ public class Recruiters {
   @Column(name = "company_name", length = 255)
   private String companyName;
 
-  @Column(name = "username", length = 255)
-  private String username;
+  @Column(name = "nickName", length = 255)
+  private String nickname;
 
   @Column(name = "password", length = 255)
   private String password;
 
   @Column(name = "phoneNumber", length = 255)
   private String phoneNumber;
+
   @Column(name = "birthDate")
-  private Date birthDate;
+  private LocalDate birthDate;
 
-  @Column(name = "email", length = 255)
-  private String email;
+  @Column(name = "username", length = 255)
+  private String username;
 
-  @ManyToOne
-  @JoinColumn(name = "location_id")
-  private Location location;
-
-
-  @ManyToOne
-  @JoinColumn(name = "company_type_id")
-  private CompanyType companyType;
+  @ManyToMany(fetch = FetchType.EAGER)
+  @JoinTable(
+      name = "recruiter_location",
+      joinColumns = @JoinColumn(name = "recruiter_id"),
+      inverseJoinColumns = @JoinColumn(name = "location_id"))
+  private List<Location> locations;
 
   @Column(name = "country", length = 255)
   private String country;
@@ -76,6 +91,8 @@ public class Recruiters {
   @Column(name = "key_skills_id", length = 255)
   private String keySkillsId;
 
+
+
   @Column(name = "fb_url", length = 255)
   private String fbUrl;
 
@@ -85,19 +102,60 @@ public class Recruiters {
   @Column(name = "linkedIn_url", length = 255)
   private String linkedInUrl;
 
-  @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "created_date")
-  private Date createdDate;
+  private LocalDate createdDate;
 
-  @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "last_modified_date")
-  private Date lastModifiedDate;
+  private LocalDate lastModifiedDate;
 
-  @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "last_signInTime")
-  private Date lastSignInTime;
+  private LocalDateTime lastSignInTime;
 
 
   @OneToOne(mappedBy = "recruiter")
   private Company company;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "status")
+  private RecruiterStatus status;
+
+  @OneToMany(mappedBy = "recruiters",fetch = FetchType.EAGER)
+  private List<Token> tokens;
+
+  public <E> Recruiters(String username, String password, ArrayList<E> es) {
+    this.username = username;
+    this.password = password;
+
+  }
+
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return Set.of(
+            RECRUITER_READ,
+            RECRUITER_UPDATE,
+            RECRUITER_CREATE,
+            RECRUITER_DELETE
+        ).stream().map(permission -> new SimpleGrantedAuthority(permission.getPermission()))
+        .toList();
+  }
+
+  @Override
+  public boolean isAccountNonExpired() {
+    return true;
+  }
+
+  @Override
+  public boolean isAccountNonLocked() {
+    return true;
+  }
+
+  @Override
+  public boolean isCredentialsNonExpired() {
+    return true;
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return true;
+  }
 }

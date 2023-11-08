@@ -37,6 +37,7 @@ import vn.hcmute.springboot.model.Job;
 import vn.hcmute.springboot.model.SaveJobs;
 import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.repository.ApplicationFormRepository;
+import vn.hcmute.springboot.repository.CompanyFollowRepository;
 import vn.hcmute.springboot.repository.CompanyRepository;
 import vn.hcmute.springboot.repository.CompanyReviewRepository;
 import vn.hcmute.springboot.repository.JobRepository;
@@ -69,6 +70,8 @@ public class UserController {
   private final SaveJobRepository saveJobRepository;
   private final CompanyRepository companyRepository;
   private final CompanyReviewRepository companyReviewRepository;
+  private final CompanyFollowRepository companyFollowRepository;
+
   @PostMapping("/forgot-password")
   public ResponseEntity<MessageResponse> forgotPassword(
       @Valid @RequestBody ForgotPasswordRequest request) {
@@ -307,11 +310,10 @@ public class UserController {
     return new ResponseEntity<>(userService.uploadUserCv(fileCv), HttpStatus.OK);
   }
 
-  @PostMapping("/reset-password/{email}")
+  @PostMapping("/reset-password")
   @Valid
-  public ResponseEntity<MessageResponse> resetPassword(@PathVariable String email,
-      @RequestBody ResetPasswordRequest request) {
-    Optional<User> user = userRepository.findByUsername(email);
+  public ResponseEntity<MessageResponse> resetPassword(@RequestBody ResetPasswordRequest request) {
+    Optional<User> user = userRepository.findByUsername(request.getEmail());
     if (user.isEmpty()) {
       return new ResponseEntity<>(
           (new MessageResponse("Người dùng không tồn tại", HttpStatus.NOT_FOUND)),
@@ -336,7 +338,7 @@ public class UserController {
           HttpStatus.BAD_REQUEST);
     }
 
-    var resetPassword = userService.resetPassword(email, request.getCurrentPassword(),
+    var resetPassword = userService.resetPassword(request.getEmail(), request.getCurrentPassword(),
         request.getNewPassword(), request.getConfirmPassword());
     return new ResponseEntity<>(resetPassword, HttpStatus.OK);
   }
@@ -495,16 +497,16 @@ public class UserController {
     return new ResponseEntity<>(saveJob, HttpStatus.OK);
   }
 
-  @PostMapping(value = "/writeCompanyReview", consumes = {"multipart/form-data"})
-  public ResponseEntity<MessageResponse> writeCompanyReview(
-      @Valid @ModelAttribute WriteReviewRequest content) {
+  @PostMapping(value = "/{companyId}/writeCompanyReview")
+  public ResponseEntity<MessageResponse> writeCompanyReview(@PathVariable Integer companyId,
+      @Valid @RequestBody WriteReviewRequest content) {
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
     if (userName == null) {
       return new ResponseEntity<>(
           new MessageResponse("Người dùng không tồn tại", HttpStatus.NOT_FOUND),
           HttpStatus.NOT_FOUND);
     }
-    var company = companyRepository.findById(content.getCompanyId());
+    var company = companyRepository.findById(companyId);
     if (company.isEmpty()) {
       return new ResponseEntity<>(
           (new MessageResponse("Công ty không tồn tại", HttpStatus.NOT_FOUND)),
@@ -526,8 +528,9 @@ public class UserController {
           (new MessageResponse("Nội dung đánh giá không được quá 500 ký tự",
               HttpStatus.BAD_REQUEST)), HttpStatus.BAD_REQUEST);
     }
+    var writeReview = userService.writeCompanyReview(companyId, content);
 
-    return new ResponseEntity<>(userService.writeCompanyReview(content), HttpStatus.OK);
+    return new ResponseEntity<>(writeReview, HttpStatus.OK);
   }
 
   @GetMapping("/companyReview/{companyId}")
@@ -563,39 +566,47 @@ public class UserController {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     var user = userRepository.findByUsername(authentication.getName());
-    if(user.isEmpty()){
+    if (user.isEmpty()) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(new MessageResponse("Người dùng không tồn tại", HttpStatus.NOT_FOUND));
     }
     var company = companyRepository.findById(companyId);
-    if(company.isEmpty()){
+    if (company.isEmpty()) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(new MessageResponse("Công ty không tồn tại", HttpStatus.NOT_FOUND));
+    }
+    var existingFollow = companyFollowRepository.findByUserIdAndCompanyId(user.get().getId(),
+        company.get().getId());
+    if (existingFollow != null) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(
+              new MessageResponse("Bạn đã theo dõi công ty này trước đó", HttpStatus.BAD_REQUEST));
     }
     userService.followCompany(company.get().getId());
     return ResponseEntity.ok(new MessageResponse("Theo dõi thành công", HttpStatus.OK));
 
   }
+
   @DeleteMapping("/removeFollowCompany/{companyId}")
   public ResponseEntity<MessageResponse> removeFollowCompany(@PathVariable Integer companyId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     var user = userRepository.findByUsername(authentication.getName());
-    if(user.isEmpty()){
+    if (user.isEmpty()) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(new MessageResponse("Người dùng chưa đăng nhập", HttpStatus.NOT_FOUND));
     }
-    var company = companyRepository.findById(companyId);
-    if(company.isEmpty()){
+    var company = companyFollowRepository.findById(companyId);
+    if (company.isEmpty()) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(new MessageResponse("Công ty không tồn tại", HttpStatus.NOT_FOUND));
     }
     var isFollowed = userService.followCompany(company.get().getId());
-    if(isFollowed!=null){
-      company.get().setIsFollowed(false);
+    if (isFollowed != null) {
       company.get().setUser(null);
-      company.get().setIsFollowedAt(null);
-      companyRepository.save(company.get());
+      company.get().setFollowedAt(null);
+      company.get().setCompany(null);
+      companyFollowRepository.save(company.get());
     }
     return ResponseEntity.ok(new MessageResponse("Bỏ theo dõi thành công", HttpStatus.OK));
 

@@ -12,11 +12,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
-import java.util.Date;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import lombok.*;
 
 @Entity
 @Table(name = "company")
@@ -24,6 +21,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Company {
 
   @Id
@@ -46,38 +44,40 @@ public class Company {
   private String industry;
 
   @Column(name = "founded_date")
-  private Date foundedDate;
+  private LocalDate foundedDate;
 
   @Column(name = "description")
   private String description;
 
-  @Column(name = "created_by")
-  private String createdBy;
-
   @Column(name = "created_date")
-  private Date createdDate;
+  private LocalDate createdDate;
 
   @Column(name = "last_modified_by")
   private String lastModifiedBy;
 
   @Column(name = "last_modified_date")
-  private Date lastModifiedDate;
-
-  @Column(name="is_followed")
-  private Boolean isFollowed;
-
-  @Column(name="is_followed_at")
-  private LocalDate isFollowedAt;
-
-  @ManyToOne
-  @JoinColumn(name = "user_follow_id")
-  @JsonIgnore
-  private User user;
+  private LocalDate lastModifiedDate;
 
   @OneToOne
   @JoinColumn(name = "recruiter_id")
   @JsonIgnore
   private Recruiters recruiter;
 
+
+  @Column(name="count_job_opening")
+  private Integer countJobOpening;
+
+  @Column(name="logo")
+  private String logo;
+
+  @ManyToOne
+  @JoinColumn(name = "companyType_id")
+  private CompanyType companyType;
+
+  @Column(name="country")
+  private String country;
+
+  @Column(name="company_size")
+  private Integer companySize;
 }
 

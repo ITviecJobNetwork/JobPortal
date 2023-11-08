@@ -1,6 +1,5 @@
 package vn.hcmute.springboot.controller;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +9,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +20,6 @@ import vn.hcmute.springboot.model.Job;
 import vn.hcmute.springboot.repository.JobRepository;
 import vn.hcmute.springboot.repository.UserRepository;
 import vn.hcmute.springboot.response.JobResponse;
-import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.serviceImpl.JobServiceImpl;
 
 @RestController
@@ -142,63 +139,66 @@ public class JobController {
     Job job = jobOptional.get();
     return new ResponseEntity<>(job, HttpStatus.OK);
   }
+
   @PostMapping("/{id}/readAt")
-  public ResponseEntity<JobResponse> isReadAtJob(@PathVariable Integer id){
+  public ResponseEntity<JobResponse> isReadAtJob(@PathVariable Integer id) {
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
-    if(userName == null) {
-      return new ResponseEntity<>(new JobResponse("Người dùng không tồn tại", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+    if (userName == null) {
+      return new ResponseEntity<>(new JobResponse("Người dùng không tồn tại", HttpStatus.NOT_FOUND),
+          HttpStatus.NOT_FOUND);
     }
     var user = userRepository.findByUsername(userName);
-    if(user.isEmpty()){
-      return new ResponseEntity<>((new JobResponse("Bạn chưa đăng nhập",HttpStatus.UNAUTHORIZED)),HttpStatus.UNAUTHORIZED);
+    if (user.isEmpty()) {
+      return new ResponseEntity<>((new JobResponse("Bạn chưa đăng nhập", HttpStatus.UNAUTHORIZED)),
+          HttpStatus.UNAUTHORIZED);
 
     }
     var job = jobRepository.findById(id);
-    if(job.isEmpty()){
-      return new ResponseEntity<>((new JobResponse("Công việc không tồn tại",HttpStatus.NOT_FOUND)),HttpStatus.NOT_FOUND);
-    }
-    else{
+    if (job.isEmpty()) {
+      return new ResponseEntity<>(
+          (new JobResponse("Công việc không tồn tại", HttpStatus.NOT_FOUND)), HttpStatus.NOT_FOUND);
+    } else {
       job.get().setReadAt(LocalDateTime.now());
       job.get().setIsReadAt(true);
       jobRepository.save(job.get());
     }
-    return new ResponseEntity<>((new JobResponse("Bạn đã đọc công việc này",HttpStatus.OK)),HttpStatus.OK);
+    return new ResponseEntity<>((new JobResponse("Bạn đã đọc công việc này", HttpStatus.OK)),
+        HttpStatus.OK);
   }
 
   @GetMapping("/isReadAt")
   public ResponseEntity<JobResponse> getReadAtJob(
       @RequestParam(value = "page", defaultValue = "0") int page,
       @RequestParam(value = "size", defaultValue = "20") int size,
-      @RequestParam(value="sort", defaultValue = "Xem gần nhất") String sort){
+      @RequestParam(value = "sort", defaultValue = "Xem gần nhất") String sort) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var userName = authentication.getName();
     var user = userRepository.findByUsername(userName);
-    if(user.isEmpty()){
-      return new ResponseEntity<>((new JobResponse("Bạn chưa đăng nhập",HttpStatus.UNAUTHORIZED)),HttpStatus.UNAUTHORIZED);
+    if (user.isEmpty()) {
+      return new ResponseEntity<>((new JobResponse("Bạn chưa đăng nhập", HttpStatus.UNAUTHORIZED)),
+          HttpStatus.UNAUTHORIZED);
     }
-    PageRequest request = PageRequest.of(page,size);
+    PageRequest request = PageRequest.of(page, size);
 
-
-    if("Sắp hết hạn".equals(sort)){
-      request = PageRequest.of(page,size, Sort.by(Order.asc("expireAt")));
+    if ("Sắp hết hạn".equals(sort)) {
+      request = PageRequest.of(page, size, Sort.by(Order.asc("expireAt")));
     }
-    if("Đăng mới nhất".equals(sort)){
-      request = PageRequest.of(page,size, Sort.by(Order.desc("createdAt")));
+    if ("Đăng mới nhất".equals(sort)) {
+      request = PageRequest.of(page, size, Sort.by(Order.desc("createdAt")));
     }
-    if("Xem gần nhất".equals(sort)){
-      request = PageRequest.of(page,size, Sort.by(Order.desc("readAt")));
+    if ("Xem gần nhất".equals(sort)) {
+      request = PageRequest.of(page, size, Sort.by(Order.desc("readAt")));
     }
     Page<Job> job = jobRepository.findJobByIsReadAtTrue(request);
-    if(job.isEmpty()){
-      return new ResponseEntity<>((new JobResponse("Bạn chưa xem công việc nào",HttpStatus.NOT_FOUND)),HttpStatus.NOT_FOUND);
-    }
-    else{
+    if (job.isEmpty()) {
+      return new ResponseEntity<>(
+          (new JobResponse("Bạn chưa xem công việc nào", HttpStatus.NOT_FOUND)),
+          HttpStatus.NOT_FOUND);
+    } else {
 
-      return new ResponseEntity<>((new JobResponse(job)),HttpStatus.OK);
+      return new ResponseEntity<>((new JobResponse(job)), HttpStatus.OK);
     }
   }
-
-
 
 
 }

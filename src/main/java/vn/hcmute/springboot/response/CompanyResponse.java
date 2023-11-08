@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import vn.hcmute.springboot.model.Company;
 import vn.hcmute.springboot.model.Job;
 
+import java.util.List;
+
 @Getter
 @AllArgsConstructor
 @Setter
@@ -17,6 +19,7 @@ public class CompanyResponse {
   private Page<Company> company;
   private String message;
   private HttpStatus status;
+
   public CompanyResponse(String message, HttpStatus status) {
     this.message = message;
     this.status = status;
@@ -32,4 +35,5 @@ public class CompanyResponse {
   public void setCompany(Page<Company> company) {
     this.company = company;
   }
+
 }

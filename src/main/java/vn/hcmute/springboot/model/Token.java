@@ -53,7 +53,9 @@ public class Token {
   @JoinColumn(name = "user_id")
   public User user;
 
-
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "recruiter_id")
+  public Recruiters recruiters;
   @Override
   public final boolean equals(Object o) {
     if (this == o) {
