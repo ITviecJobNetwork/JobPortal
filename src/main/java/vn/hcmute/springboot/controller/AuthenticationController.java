@@ -103,7 +103,7 @@ public class AuthenticationController {
     var userLogin = service.authenticate(request);
     if (jwtService.isTokenExpired(userLogin.getAccessToken())) {
       return new ResponseEntity<>(
-          new JwtResponse("Token đã hết hạn vui lòng đăng nhập lại", HttpStatus.UNAUTHORIZED),
+          new JwtResponse("Phiên làm việc đã hết hạn, vui lòng đăng nhập lại", HttpStatus.UNAUTHORIZED),
           HttpStatus.UNAUTHORIZED
       );
     }

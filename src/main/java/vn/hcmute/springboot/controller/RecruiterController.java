@@ -244,6 +244,7 @@ public class RecruiterController {
     return new ResponseEntity<>(new MessageResponse("Tạo thông tin công ty thành công", HttpStatus.OK),
             HttpStatus.OK);
   }
+
   @PostMapping(value="/update-company",consumes = {"multipart/form-data"})
   public ResponseEntity<MessageResponse> updateCompany(@Valid @ModelAttribute UpdateInfoCompanyRequest request) throws IOException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -258,8 +259,20 @@ public class RecruiterController {
               new MessageResponse("Nhà tuyển dụng không tồn tại", HttpStatus.NOT_FOUND),
               HttpStatus.NOT_FOUND);
     }
+    var company = companyRepository.finCompanyByRecruiter(recruiter.get());
+    if(company.isEmpty()){
+      return new ResponseEntity<>(
+              new MessageResponse("Bạn chưa có thông tin công ty", HttpStatus.NOT_FOUND),
+              HttpStatus.NOT_FOUND);
+    }
+    if(!company.get().getRecruiter().getId().equals(recruiter.get().getId())){
+      return new ResponseEntity<>(
+              new MessageResponse("Bạn không có quyền cập nhật công ty này", HttpStatus.NOT_FOUND),
+              HttpStatus.NOT_FOUND);
+    }
+
     recruiterService.updateCompany(request);
-    return new ResponseEntity<>(new MessageResponse("Tạo thông tin công ty thành công", HttpStatus.OK),
+    return new ResponseEntity<>(new MessageResponse("Cập nhât thông tin công ty thành công", HttpStatus.OK),
             HttpStatus.OK);
   }
   @DeleteMapping("/delete-company")
@@ -277,6 +290,11 @@ public class RecruiterController {
               HttpStatus.NOT_FOUND);
     }
     var company = companyRepository.finCompanyByRecruiter(recruiter.get());
+    if(company.isEmpty()){
+      return new ResponseEntity<>(
+              new MessageResponse("Bạn chưa có thông tin công ty", HttpStatus.NOT_FOUND),
+              HttpStatus.NOT_FOUND);
+    }
     if(!company.get().getRecruiter().getId().equals(recruiter.get().getId())){
       return new ResponseEntity<>(
               new MessageResponse("Bạn không có quyền xóa công ty này", HttpStatus.NOT_FOUND),
@@ -284,7 +302,7 @@ public class RecruiterController {
     }
 
     recruiterService.deleteCompany();
-    return new ResponseEntity<>(new MessageResponse("Tạo thông tin công ty thành công", HttpStatus.OK),
+    return new ResponseEntity<>(new MessageResponse("Xóa thông tin công ty thành công", HttpStatus.OK),
             HttpStatus.OK);
   }
 }

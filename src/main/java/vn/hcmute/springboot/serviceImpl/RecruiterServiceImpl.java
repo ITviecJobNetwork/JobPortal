@@ -344,36 +344,38 @@ public class RecruiterServiceImpl implements RecruiterService {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
             .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
-
+    var company = companyRepository.findById(recruiter.getCompany().getId())
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
     var findCompany = companyRepository.finCompanyByRecruiter(recruiter)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
+    if(findCompany.getId().equals(company.getId())){
+      MultipartFile companyLogo = request.getCompanyLogo();
 
-    MultipartFile companyLogo = request.getCompanyLogo();
-
-    if(request.getCompanyLogo()!=null) {
-      if (!isImageFile(companyLogo.getOriginalFilename())) {
-        MessageResponse.builder()
-                .message("không-phải-file-ảnh")
-                .status(HttpStatus.BAD_REQUEST)
-                .build();
+      if(request.getCompanyLogo()!=null) {
+        if (!isImageFile(companyLogo.getOriginalFilename())) {
+          MessageResponse.builder()
+                  .message("không-phải-file-ảnh")
+                  .status(HttpStatus.BAD_REQUEST)
+                  .build();
+        }
       }
+
+      String logo = fileUploadService.uploadFile(companyLogo);
+      findCompany.setAddress(request.getAddress());
+      findCompany.setDescription(request.getDescription());
+      findCompany.setFoundedDate(request.getFoundedDate());
+      findCompany.setIndustry(request.getIndustry());
+      findCompany.setName(request.getCompanyName());
+      findCompany.setPhoneNumber(request.getPhoneNumber());
+      findCompany.setWebsite(request.getWebsite());
+      findCompany.setLogo(logo);
+      findCompany.setCompanySize(request.getCompanySize());
+      findCompany.setCountry(request.getCountry());
+      companyRepository.save(findCompany);
+
     }
 
-    String logo = fileUploadService.uploadFile(companyLogo);
-    var company = Company.builder()
-            .address(request.getAddress())
-            .description(request.getDescription())
-            .foundedDate(request.getFoundedDate())
-            .industry(request.getIndustry())
-            .name(request.getCompanyName())
-            .phoneNumber(request.getPhoneNumber())
-            .website(request.getWebsite())
-            .recruiter(recruiter)
-            .logo(logo)
-            .companySize(request.getCompanySize())
-            .country(request.getCountry())
-            .build();
-    companyRepository.save(company);
+
 
   }
 

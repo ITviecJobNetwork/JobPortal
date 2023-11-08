@@ -596,18 +596,20 @@ public class UserController {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
           .body(new MessageResponse("Người dùng chưa đăng nhập", HttpStatus.NOT_FOUND));
     }
-    var company = companyFollowRepository.findById(companyId);
+    var company = companyRepository.findById(companyId);
     if (company.isEmpty()) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body(new MessageResponse("Công ty không tồn tại", HttpStatus.NOT_FOUND));
+              .body(new MessageResponse("Công ty không tồn tại", HttpStatus.NOT_FOUND));
     }
-    var isFollowed = userService.followCompany(company.get().getId());
-    if (isFollowed != null) {
-      company.get().setUser(null);
-      company.get().setFollowedAt(null);
-      company.get().setCompany(null);
-      companyFollowRepository.save(company.get());
+    var companyFollow = companyFollowRepository.findByUserIdAndCompanyId(user.get().getId(),
+        company.get().getId());
+    if (companyFollow == null) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(
+              new MessageResponse("Bạn chưa theo dõi công ty này", HttpStatus.BAD_REQUEST));
     }
+    companyFollowRepository.delete(companyFollow);
+
     return ResponseEntity.ok(new MessageResponse("Bỏ theo dõi thành công", HttpStatus.OK));
 
 
