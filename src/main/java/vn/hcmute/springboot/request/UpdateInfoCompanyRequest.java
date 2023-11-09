@@ -21,4 +21,5 @@ public class UpdateInfoCompanyRequest {
   private String website;
   private Integer companySize;
   private String country;
+  private String companyType;
 }

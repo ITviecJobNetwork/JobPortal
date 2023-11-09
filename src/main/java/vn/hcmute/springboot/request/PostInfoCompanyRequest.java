@@ -2,6 +2,7 @@ package vn.hcmute.springboot.request;
 
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
+import vn.hcmute.springboot.model.CompanyType;
 
 import java.time.LocalDate;
 
@@ -22,5 +23,6 @@ public class PostInfoCompanyRequest {
   private String website;
   private Integer companySize;
   private String country;
+  private String companyType;
 
 }

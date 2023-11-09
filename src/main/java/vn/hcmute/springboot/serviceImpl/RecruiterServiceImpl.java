@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.model.*;
 import vn.hcmute.springboot.repository.CompanyRepository;
+import vn.hcmute.springboot.repository.CompanyTypeRepository;
 import vn.hcmute.springboot.repository.RecruiterRepository;
 import vn.hcmute.springboot.repository.TokenRepository;
 import vn.hcmute.springboot.request.*;
@@ -45,6 +46,7 @@ public class RecruiterServiceImpl implements RecruiterService {
   private final PasswordEncoder encoder;
   private final FileUploadService fileUploadService;
   private final CompanyRepository companyRepository;
+  private final CompanyTypeRepository companyTypeRepository;
 
   @Override
   public MessageResponse registerRecruiter(RecruiterRegisterRequest recruiterRegisterRequest) {
@@ -323,6 +325,16 @@ public class RecruiterServiceImpl implements RecruiterService {
 
     }
     String logo = fileUploadService.uploadFile(companyLogo);
+    String companyTypeName = request.getCompanyType();
+    CompanyType companyType = companyTypeRepository.findByType(companyTypeName);
+
+    if(companyType==null){
+      CompanyType newCompanyType = CompanyType.builder()
+              .type(companyTypeName)
+              .build();
+      companyTypeRepository.save(newCompanyType);
+
+    }
     var company = Company.builder()
             .address(request.getAddress())
             .description(request.getDescription())
@@ -333,6 +345,7 @@ public class RecruiterServiceImpl implements RecruiterService {
             .website(request.getWebsite())
             .recruiter(recruiter)
             .logo(logo)
+            .companyType(companyType)
             .companySize(request.getCompanySize())
             .country(request.getCountry())
             .build();
@@ -361,6 +374,16 @@ public class RecruiterServiceImpl implements RecruiterService {
       }
 
       String logo = fileUploadService.uploadFile(companyLogo);
+      String companyTypeName = request.getCompanyType();
+      CompanyType companyType = companyTypeRepository.findByType(companyTypeName);
+
+      if(companyType==null){
+        CompanyType newCompanyType = CompanyType.builder()
+                .type(companyTypeName)
+                .build();
+        companyTypeRepository.save(newCompanyType);
+
+      }
       findCompany.setAddress(request.getAddress());
       findCompany.setDescription(request.getDescription());
       findCompany.setFoundedDate(request.getFoundedDate());
