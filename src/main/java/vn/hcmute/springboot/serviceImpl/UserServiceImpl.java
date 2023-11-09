@@ -479,32 +479,34 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public MessageResponse followCompany(Integer companyId) {
+  public void followCompany(Integer companyId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
         .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
     var company = companyRepository.findById(companyId);
     if(company.isEmpty()){
-      return MessageResponse.builder()
-          .message("Không tồn tại công ty này")
-          .status(HttpStatus.BAD_REQUEST)
-          .build();
+      MessageResponse.builder()
+              .message("Không tồn tại công ty này")
+              .status(HttpStatus.BAD_REQUEST)
+              .build();
+      return;
     }
     if(company.equals(user.getId())){
-      return MessageResponse.builder()
-          .message("Bạn đã theo dõi công ty này trước đó")
-          .status(HttpStatus.BAD_REQUEST)
-          .build();
+      MessageResponse.builder()
+              .message("Bạn đã theo dõi công ty này trước đó")
+              .status(HttpStatus.BAD_REQUEST)
+              .build();
+      return;
     }
     CompanyFollow companyFollow = new CompanyFollow();
     companyFollow.setFollowedAt(LocalDate.now().atStartOfDay());
     companyFollow.setUser(user);
     companyFollow.setCompany(company.get());
     companyFollowRepository.save(companyFollow);
-    return MessageResponse.builder()
-        .message("Theo dõi công ty thành công")
-        .status(HttpStatus.OK)
-        .build();
+    MessageResponse.builder()
+            .message("Theo dõi công ty thành công")
+            .status(HttpStatus.OK)
+            .build();
   }
 
   private List<Skill> updateSkills(List<String> skillNames) {

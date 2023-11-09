@@ -69,4 +69,6 @@ public class ApplicationForm {
   @Column(name="cover_letter")
   private String coverLetter;
 
+  @Column(name="is_applied")
+  private Boolean isApplied;
 }

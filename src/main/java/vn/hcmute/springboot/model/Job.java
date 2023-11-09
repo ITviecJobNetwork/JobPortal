@@ -95,6 +95,12 @@ public class Job {
   @OneToMany(mappedBy = "job",fetch = FetchType.EAGER)
   private List<ApplicationForm> applicationForms;
 
+  @Column(name="is_saved")
+  private Boolean isSaved;
+
+  @Column(name="is_applied")
+  private Boolean isApplied;
+
 
 
 }

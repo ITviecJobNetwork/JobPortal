@@ -18,9 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import vn.hcmute.springboot.model.Job;
 import vn.hcmute.springboot.model.ViewJobs;
-import vn.hcmute.springboot.repository.JobRepository;
-import vn.hcmute.springboot.repository.UserRepository;
-import vn.hcmute.springboot.repository.ViewJobRepository;
+import vn.hcmute.springboot.repository.*;
 import vn.hcmute.springboot.response.JobResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.response.ViewJobResponse;
@@ -35,6 +33,9 @@ public class JobController {
   private final JobRepository jobRepository;
   private final UserRepository userRepository;
   private final ViewJobRepository viewJobRepository;
+  private final SaveJobRepository saveJobsRepository;
+  private final ApplyJobRepository applyJobRepository;
+
 
   @GetMapping()
   public ResponseEntity<JobResponse> getAllJobs(
@@ -45,6 +46,22 @@ public class JobController {
       return new ResponseEntity<>(
           new JobResponse(jobs, "Không tìm thấy công việc", HttpStatus.NOT_FOUND),
           HttpStatus.NOT_FOUND);
+    }
+    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    if (userName == null) {
+      return new ResponseEntity<>(new JobResponse(jobs), HttpStatus.OK);
+    }
+    var user = userRepository.findByUsername(userName);
+    if (user.isEmpty()) {
+      return new ResponseEntity<>(new JobResponse("Bạn chưa đăng nhập", HttpStatus.UNAUTHORIZED), HttpStatus.UNAUTHORIZED);
+    }
+    for (Job job : jobs) {
+      var savedJob = saveJobsRepository.findByCandidateAndJob(user.get(), job);
+      var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
+      boolean isSaved = savedJob != null && savedJob.getIsSaved();
+      boolean isApplied = applyJob != null && applyJob.getIsApplied();
+      job.setIsSaved(isSaved);
+      job.setIsApplied(isApplied);
     }
 
     return new ResponseEntity<>(new JobResponse(jobs), HttpStatus.OK);
@@ -61,7 +78,22 @@ public class JobController {
           new JobResponse(jobs, "Không tìm thấy công việc", HttpStatus.NOT_FOUND),
           HttpStatus.NOT_FOUND);
     }
-
+    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    if (userName == null) {
+      return new ResponseEntity<>(new JobResponse(jobs), HttpStatus.OK);
+    }
+    var user = userRepository.findByUsername(userName);
+    if (user.isEmpty()) {
+      return new ResponseEntity<>(new JobResponse("Bạn chưa đăng nhập", HttpStatus.UNAUTHORIZED), HttpStatus.UNAUTHORIZED);
+    }
+    for (Job job : jobs) {
+      var savedJob = saveJobsRepository.findByCandidateAndJob(user.get(), job);
+      var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
+      boolean isSaved = savedJob != null && savedJob.getIsSaved();
+      boolean isApplied = applyJob != null && applyJob.getIsApplied();
+      job.setIsSaved(isSaved);
+      job.setIsApplied(isApplied);
+    }
     return new ResponseEntity<>(new JobResponse(jobs), HttpStatus.OK);
   }
 
@@ -76,7 +108,22 @@ public class JobController {
           new JobResponse(jobs, "Không tìm thấy công việc", HttpStatus.NOT_FOUND),
           HttpStatus.NOT_FOUND);
     }
-
+    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    if (userName == null) {
+      return new ResponseEntity<>(new JobResponse(jobs), HttpStatus.OK);
+    }
+    var user = userRepository.findByUsername(userName);
+    if (user.isEmpty()) {
+      return new ResponseEntity<>(new JobResponse("Bạn chưa đăng nhập", HttpStatus.UNAUTHORIZED), HttpStatus.UNAUTHORIZED);
+    }
+    for (Job job : jobs) {
+      var savedJob = saveJobsRepository.findByCandidateAndJob(user.get(), job);
+      var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
+      boolean isSaved = savedJob != null && savedJob.getIsSaved();
+      boolean isApplied = applyJob != null && applyJob.getIsApplied();
+      job.setIsSaved(isSaved);
+      job.setIsApplied(isApplied);
+    }
     return new ResponseEntity<>(new JobResponse(jobs), HttpStatus.OK);
   }
 
@@ -90,7 +137,22 @@ public class JobController {
           new JobResponse(jobs, "Không tìm thấy công việc", HttpStatus.NOT_FOUND),
           HttpStatus.NOT_FOUND);
     }
-
+    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    if (userName == null) {
+      return new ResponseEntity<>(new JobResponse(jobs), HttpStatus.OK);
+    }
+    var user = userRepository.findByUsername(userName);
+    if (user.isEmpty()) {
+      return new ResponseEntity<>(new JobResponse("Bạn chưa đăng nhập", HttpStatus.UNAUTHORIZED), HttpStatus.UNAUTHORIZED);
+    }
+    for (Job job : jobs) {
+      var savedJob = saveJobsRepository.findByCandidateAndJob(user.get(), job);
+      var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
+      boolean isSaved = savedJob != null && savedJob.getIsSaved();
+      boolean isApplied = applyJob != null && applyJob.getIsApplied();
+      job.setIsSaved(isSaved);
+      job.setIsApplied(isApplied);
+    }
     return new ResponseEntity<>(new JobResponse(jobs), HttpStatus.OK);
   }
 
@@ -105,7 +167,22 @@ public class JobController {
           new JobResponse(jobs, "Không tìm thấy công việc", HttpStatus.NOT_FOUND),
           HttpStatus.NOT_FOUND);
     }
-
+    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    if (userName == null) {
+      return new ResponseEntity<>(new JobResponse(jobs), HttpStatus.OK);
+    }
+    var user = userRepository.findByUsername(userName);
+    if (user.isEmpty()) {
+      return new ResponseEntity<>(new JobResponse("Bạn chưa đăng nhập", HttpStatus.UNAUTHORIZED), HttpStatus.UNAUTHORIZED);
+    }
+    for (Job job : jobs) {
+      var savedJob = saveJobsRepository.findByCandidateAndJob(user.get(), job);
+      var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
+      boolean isSaved = savedJob != null && savedJob.getIsSaved();
+      boolean isApplied = applyJob != null && applyJob.getIsApplied();
+      job.setIsSaved(isSaved);
+      job.setIsApplied(isApplied);
+    }
     return new ResponseEntity<>(new JobResponse(jobs), HttpStatus.OK);
   }
 
@@ -129,7 +206,22 @@ public class JobController {
           new JobResponse(jobs, "Không tìm thấy công việc", HttpStatus.NOT_FOUND),
           HttpStatus.NOT_FOUND);
     }
-
+    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    if (userName == null) {
+      return new ResponseEntity<>(new JobResponse(jobs), HttpStatus.OK);
+    }
+    var user = userRepository.findByUsername(userName);
+    if (user.isEmpty()) {
+      return new ResponseEntity<>(new JobResponse("Bạn chưa đăng nhập", HttpStatus.UNAUTHORIZED), HttpStatus.UNAUTHORIZED);
+    }
+    for (Job job : jobs) {
+      var savedJob = saveJobsRepository.findByCandidateAndJob(user.get(), job);
+      var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
+      boolean isSaved = savedJob != null && savedJob.getIsSaved();
+      boolean isApplied = applyJob != null && applyJob.getIsApplied();
+      job.setIsSaved(isSaved);
+      job.setIsApplied(isApplied);
+    }
     return new ResponseEntity<>(new JobResponse(jobs), HttpStatus.OK);
   }
 
@@ -140,8 +232,21 @@ public class JobController {
     if (jobOptional.isEmpty()) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-
-    Job job = jobOptional.get();
+    var job = jobOptional.get();
+    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    if (userName == null) {
+      return new ResponseEntity<>(job, HttpStatus.OK);
+    }
+    var user = userRepository.findByUsername(userName);
+    if (user.isEmpty()) {
+      return new ResponseEntity<>(job, HttpStatus.OK);
+    }
+    var savedJob = saveJobsRepository.findByCandidateAndJob(user.get(), job);
+    var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
+    boolean isSaved = savedJob != null && savedJob.getIsSaved();
+    boolean isApplied = applyJob != null && applyJob.getIsApplied();
+    job.setIsSaved(isSaved);
+    job.setIsApplied(isApplied);
     return new ResponseEntity<>(job, HttpStatus.OK);
   }
 

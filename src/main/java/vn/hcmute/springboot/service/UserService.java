@@ -5,8 +5,6 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
-import vn.hcmute.springboot.model.ApplicationForm;
-import vn.hcmute.springboot.model.CompanyReview;
 import vn.hcmute.springboot.model.Job;
 import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.request.ApplyJobRequest;
@@ -42,5 +40,5 @@ public interface UserService {
 
   MessageResponse writeCompanyReview(Integer companyId,WriteReviewRequest request);
 
-  MessageResponse followCompany(Integer companyId);
+  void followCompany(Integer companyId);
 }
