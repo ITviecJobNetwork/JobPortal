@@ -12,6 +12,8 @@ import vn.hcmute.springboot.model.User;
 public interface SaveJobRepository extends JpaRepository<SaveJobs, Integer> {
   List<SaveJobs> findByCandidate(User candidate);
   SaveJobs findByCandidateAndJob(User user,Job job);
-  Page<SaveJobs> findJobByCandidate(User user, Pageable pageable);
+  Page<SaveJobs> findJobByIsSavedTrue( Pageable pageable);
   boolean existsByCandidateAndJob(User user,Job job);
+
+
 }

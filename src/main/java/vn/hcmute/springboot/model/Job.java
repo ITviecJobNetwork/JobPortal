@@ -100,10 +100,6 @@ public class Job {
   @OneToMany(mappedBy = "job",fetch = FetchType.EAGER)
   private List<ApplicationForm> applicationForms;
 
-  @Column(name="is_read")
-  private Boolean isReadAt;
 
-  @Column (name ="readAt")
-  private LocalDateTime readAt;
 
 }

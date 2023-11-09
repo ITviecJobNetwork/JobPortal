@@ -212,9 +212,6 @@ public class UserController {
     SaveJobs saveJobs = saveJobRepository.findByCandidateAndJob(user.get(), job.get());
     if (saveJobs != null) {
       saveJobRepository.delete(saveJobs);
-      job.get().setIsReadAt(null);
-      job.get().setReadAt(null);
-      jobRepository.save(job.get());
     }
     return new ResponseEntity<>(new ApplyJobResponse(message, HttpStatus.OK, top5RelatedJobs),
         HttpStatus.OK);

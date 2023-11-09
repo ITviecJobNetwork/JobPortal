@@ -319,10 +319,9 @@ public class UserServiceImpl implements UserService {
       SaveJobs saveJobs = new SaveJobs();
       saveJobs.setJob(job);
       saveJobs.setCandidate(user);
-      job.setIsReadAt(true);
-      job.setReadAt(LocalDate.now().atStartOfDay());
+      saveJobs.setIsSaved(true);
+      saveJobs.setSaveAt(LocalDateTime.now());
       saveJobRepository.save(saveJobs);
-      jobRepository.save(job);
 
     }
     MessageResponse.builder()
