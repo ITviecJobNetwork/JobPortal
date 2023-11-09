@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.hcmute.springboot.model.RecruiterStatus;
 import vn.hcmute.springboot.model.Recruiters;
 import vn.hcmute.springboot.repository.CompanyRepository;
+import vn.hcmute.springboot.repository.JobRepository;
 import vn.hcmute.springboot.repository.RecruiterRepository;
 import vn.hcmute.springboot.request.*;
 import vn.hcmute.springboot.response.JwtResponse;
@@ -39,6 +40,7 @@ public class RecruiterController {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final CompanyRepository companyRepository;
+  private final JobRepository jobRepository;
   @PostMapping("/register")
   public ResponseEntity<MessageResponse> register(@RequestBody RecruiterRegisterRequest request) {
     var username = recruiterRepository.existsByUsername(request.getUsername());
@@ -303,6 +305,86 @@ public class RecruiterController {
 
     recruiterService.deleteCompany();
     return new ResponseEntity<>(new MessageResponse("Xóa thông tin công ty thành công", HttpStatus.OK),
+            HttpStatus.OK);
+  }
+  @PostMapping(value="/post-job")
+  public ResponseEntity<MessageResponse> postJob(@Valid @RequestBody PostJobRequest request) throws IOException {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if(authentication instanceof AnonymousAuthenticationToken){
+      return new ResponseEntity<>(
+              new MessageResponse("Nhà tuyển dụng chưa đăng nhâp", HttpStatus.NOT_FOUND),
+              HttpStatus.NOT_FOUND);
+    }
+    var recruiter = recruiterRepository.findByUsername(authentication.getName());
+    if (recruiter.isEmpty()) {
+      return new ResponseEntity<>(
+              new MessageResponse("Nhà tuyển dụng không tồn tại", HttpStatus.NOT_FOUND),
+              HttpStatus.NOT_FOUND);
+    }
+    recruiterService.postJob(request);
+    return new ResponseEntity<>(new MessageResponse("Tạo thông tin công việc thành công", HttpStatus.OK),
+            HttpStatus.OK);
+  }
+  @PostMapping(value="/update-job")
+  public ResponseEntity<MessageResponse> updateJob(@RequestParam("id")Integer jobId,@Valid @RequestBody UpdateJobRequest request) throws IOException {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if(authentication instanceof AnonymousAuthenticationToken){
+      return new ResponseEntity<>(
+              new MessageResponse("Nhà tuyển dụng chưa đăng nhâp", HttpStatus.NOT_FOUND),
+              HttpStatus.NOT_FOUND);
+    }
+    var recruiter = recruiterRepository.findByUsername(authentication.getName());
+    if (recruiter.isEmpty()) {
+      return new ResponseEntity<>(
+              new MessageResponse("Nhà tuyển dụng không tồn tại", HttpStatus.NOT_FOUND),
+              HttpStatus.NOT_FOUND);
+    }
+    var company = companyRepository.finCompanyByRecruiter(recruiter.get());
+    if(company.isEmpty()){
+      return new ResponseEntity<>(
+              new MessageResponse("Bạn chưa có thông tin công ty", HttpStatus.NOT_FOUND),
+              HttpStatus.NOT_FOUND);
+    }
+    var job = jobRepository.findByIdAndRecruiter(jobId, recruiter.get());
+    if(job.isEmpty()){
+      return new ResponseEntity<>(
+              new MessageResponse("Bạn chưa có thông tin công việc", HttpStatus.NOT_FOUND),
+              HttpStatus.NOT_FOUND);
+    }
+
+
+    recruiterService.updateJob(jobId,request);
+    return new ResponseEntity<>(new MessageResponse("Cập nhât thông tin công việc thành công", HttpStatus.OK),
+            HttpStatus.OK);
+  }
+  @DeleteMapping("/delete-job")
+  public ResponseEntity<MessageResponse> deleteJob(@RequestParam("id") Integer jobId) throws IOException {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if(authentication instanceof AnonymousAuthenticationToken){
+      return new ResponseEntity<>(
+              new MessageResponse("Nhà tuyển dụng chưa đăng nhâp", HttpStatus.NOT_FOUND),
+              HttpStatus.NOT_FOUND);
+    }
+    var recruiter = recruiterRepository.findByUsername(authentication.getName());
+    if (recruiter.isEmpty()) {
+      return new ResponseEntity<>(
+              new MessageResponse("Nhà tuyển dụng không tồn tại", HttpStatus.NOT_FOUND),
+              HttpStatus.NOT_FOUND);
+    }
+    var company = companyRepository.finCompanyByRecruiter(recruiter.get());
+    if(company.isEmpty()){
+      return new ResponseEntity<>(
+              new MessageResponse("Bạn chưa có thông tin công ty", HttpStatus.NOT_FOUND),
+              HttpStatus.NOT_FOUND);
+    }
+    var job = jobRepository.findByIdAndRecruiter(jobId, recruiter.get());
+    if(job.isEmpty()){
+      return new ResponseEntity<>(
+              new MessageResponse("Bạn chưa có thông tin công việc", HttpStatus.NOT_FOUND),
+              HttpStatus.NOT_FOUND);
+    }
+    recruiterService.deleteJob(jobId);
+    return new ResponseEntity<>(new MessageResponse("Xóa thông tin công việc thành công", HttpStatus.OK),
             HttpStatus.OK);
   }
 }

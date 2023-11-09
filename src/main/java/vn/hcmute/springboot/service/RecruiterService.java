@@ -31,4 +31,8 @@ public interface RecruiterService {
   void createCompany(PostInfoCompanyRequest request) throws IOException;
   void updateCompany(UpdateInfoCompanyRequest request) throws IOException;
   void deleteCompany();
+
+  void postJob(PostJobRequest request);
+  void updateJob(Integer jobId, UpdateJobRequest request);
+  void deleteJob(Integer jobId);
 }

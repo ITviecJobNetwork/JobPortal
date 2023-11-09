@@ -15,14 +15,11 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import lombok.*;
 
 
 @Entity
@@ -31,6 +28,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Job {
 
   @Id
@@ -44,9 +42,6 @@ public class Job {
   @JoinColumn(name = "company_id")
   private Company company;
 
-  @ManyToOne
-  @JoinColumn(name = "company_type_id")
-  private CompanyType companyType;
 
   @ManyToOne
   @JoinColumn(name = "job_type_id")
@@ -91,7 +86,7 @@ public class Job {
   private String createdBy;
 
   @Column(name = "created_at")
-  private LocalDate createdAt;
+  private LocalDateTime createdAt;
 
   @Column(name = "expire_at")
   private LocalDate expireAt;

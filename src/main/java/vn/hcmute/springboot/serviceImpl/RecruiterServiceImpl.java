@@ -14,11 +14,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import vn.hcmute.springboot.exception.NotFoundException;
+import vn.hcmute.springboot.exception.UnauthorizedException;
 import vn.hcmute.springboot.model.*;
-import vn.hcmute.springboot.repository.CompanyRepository;
-import vn.hcmute.springboot.repository.CompanyTypeRepository;
-import vn.hcmute.springboot.repository.RecruiterRepository;
-import vn.hcmute.springboot.repository.TokenRepository;
+import vn.hcmute.springboot.repository.*;
 import vn.hcmute.springboot.request.*;
 import vn.hcmute.springboot.response.AuthenticationResponse;
 import vn.hcmute.springboot.response.JwtResponse;
@@ -47,6 +45,9 @@ public class RecruiterServiceImpl implements RecruiterService {
   private final FileUploadService fileUploadService;
   private final CompanyRepository companyRepository;
   private final CompanyTypeRepository companyTypeRepository;
+  private final JobTypeRepository jobTypeRepository;
+  private final LocationRepository locationRepository;
+  private final JobRepository jobRepository;
 
   @Override
   public MessageResponse registerRecruiter(RecruiterRegisterRequest recruiterRegisterRequest) {
@@ -389,7 +390,6 @@ public class RecruiterServiceImpl implements RecruiterService {
       findCompany.setName(request.getCompanyName());
       findCompany.setPhoneNumber(request.getPhoneNumber());
       findCompany.setWebsite(request.getWebsite());
-
       findCompany.setCompanySize(request.getCompanySize());
       findCompany.setCountry(request.getCountry());
       companyRepository.save(findCompany);
@@ -410,6 +410,104 @@ public class RecruiterServiceImpl implements RecruiterService {
 
     companyRepository.delete(company);
   }
+
+  @Override
+  public void postJob(PostJobRequest request) {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    var recruiter = recruiterRepository.findByUsername(authentication.getName())
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
+
+    var company = companyRepository.finCompanyByRecruiter(recruiter)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
+
+    // Check if the JobType already exists, and if not, create and save a new one
+    JobType jobType = jobTypeRepository.findByJobType(request.getJobType());
+    if (jobType == null) {
+      jobType = JobType.builder()
+              .jobType(request.getJobType())
+              .build();
+      jobType = jobTypeRepository.save(jobType);
+    }
+
+    Location location = locationRepository.findByCityName(request.getLocation());
+    if (location == null) {
+      location = Location.builder()
+              .cityName(request.getLocation())
+              .build();
+      location = locationRepository.save(location);
+    }
+
+    var job = Job.builder()
+            .description(request.getDescription())
+            .expireAt(request.getExpireAt())
+            .minSalary(request.getMinSalary())
+            .maxSalary(request.getMaxSalary())
+            .title(request.getJobTitle())
+            .createdBy(recruiter.getUsername())
+            .createdAt(LocalDateTime.now())
+            .jobType(jobType) // Set the JobType
+            .location(location) // Set the Location
+            .requirements(request.getRequirements())
+            .company(company)
+            .build();
+    jobRepository.save(job);
+  }
+
+
+  @Override
+  public void updateJob(Integer jobId,UpdateJobRequest request) {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    var recruiter = recruiterRepository.findByUsername(authentication.getName())
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
+
+    var company = companyRepository.finCompanyByRecruiter(recruiter)
+            .orElseThrow(() -> new NotFoundException("Bạn chưa có thông tin công ty"));
+
+    // Query the job based on the job ID or some other unique identifier
+    var findJob = jobRepository.findByIdAndRecruiter(jobId, recruiter)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy công việc"));
+
+    var jobType = jobTypeRepository.findByJobType(findJob.getJobType().getJobType());
+    if (jobType != null) {
+      jobType.setJobType(request.getJobType());
+      jobTypeRepository.save(jobType);
+    }
+
+    var location = locationRepository.findByCityName(findJob.getLocation().getCityName());
+    if (location != null) {
+      location.setCityName(request.getLocation());
+      locationRepository.save(location);
+    }
+
+    findJob.setDescription(request.getDescription());
+    findJob.setExpireAt(request.getExpireAt());
+    findJob.setMinSalary(request.getMinSalary());
+    findJob.setMaxSalary(request.getMaxSalary());
+    findJob.setTitle(request.getJobTitle());
+    findJob.setRequirements(request.getRequirements());
+    findJob.setLocation(location);
+    findJob.setJobType(jobType);
+    findJob.setCompany(company);
+    jobRepository.save(findJob);
+  }
+
+
+
+  @Override
+  public void deleteJob(Integer jobId) {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    var recruiter = recruiterRepository.findByUsername(authentication.getName())
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
+
+    var existingJob = jobRepository.findByIdAndRecruiter(jobId, recruiter)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy công việc "));
+
+    if (!existingJob.getCreatedBy().equals(recruiter.getUsername())) {
+      throw new UnauthorizedException("Bạn không có quyền xóa công việc này");
+    }
+    jobRepository.delete(existingJob);
+  }
+
   private boolean isImageFile(String fileName) {
     String[] imageExtensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp"};
 

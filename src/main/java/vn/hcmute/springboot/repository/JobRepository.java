@@ -4,20 +4,19 @@ package vn.hcmute.springboot.repository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import vn.hcmute.springboot.model.Job;
-import vn.hcmute.springboot.model.Skill;
-import vn.hcmute.springboot.model.User;
+import vn.hcmute.springboot.model.*;
 
 public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecificationExecutor<Job> {
 
-  @PersistenceContext
-  EntityManager entityManager = null;
+
 
   @Query("SELECT j FROM Job j JOIN j.skills s WHERE s = :skill")
   Page<Job> findJobsBySkills(@Param("skill") Skill skill, Pageable pageable);
@@ -50,7 +49,7 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
           "OR REPLACE(s.title, ' ', '') LIKE CONCAT('%', REPLACE(:keyword, ' ', ''), '%')) " +
           "AND (:salaryMin is null OR j.minSalary >= :salaryMin) " +
           "AND (:salaryMax is null OR j.maxSalary <= :salaryMax) " +
-          "AND (:companyType is null OR j.companyType.type IN :companyType) " +
+          "AND (:companyType is null OR j.company.companyType.type IN :companyType) " +
           "AND (:jobType is null OR j.jobType.jobType IN :jobType) " +
           "AND (:candidateLevel is null OR REPLACE(cl.candidateLevel, ' ', '') IN :candidateLevel)")
   Page<Job> findByKeywordAndFilters(
@@ -69,6 +68,14 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
 
 
   List<Job> findJobByCompanyId(Integer id);
+
+  Optional<Job> findJobByCompany(Company company);
+
+  @Query("SELECT j FROM Job j WHERE j.id = :jobId AND j.company.recruiter = :recruiter")
+  Optional<Job> findByIdAndRecruiter(
+          @Param("jobId") Integer jobId,
+          @Param("recruiter") Recruiters recruiter
+  );
 
 }
 

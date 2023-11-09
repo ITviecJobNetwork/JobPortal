@@ -78,7 +78,7 @@ public class CompanyController {
       response.setSkills(job.getSkills());
       response.setDescription(job.getDescription());
       response.setCompanyLogo(company.getLogo());
-      response.setCreatedDate(job.getCreatedAt());
+      response.setCreatedDate(job.getCreatedAt().toLocalDate());
       response.setCompany(company);
       jobOpeningResponses.add(response);
     }
@@ -114,7 +114,7 @@ public class CompanyController {
       response.setSkills(job.getSkills());
       response.setDescription(job.getDescription());
       response.setCompanyLogo(company.get().getLogo());
-      response.setCreatedDate(job.getCreatedAt());
+      response.setCreatedDate(job.getCreatedAt().toLocalDate());
       jobOpeningResponses.add(response);
     }
     companyRepository.save(company.get());

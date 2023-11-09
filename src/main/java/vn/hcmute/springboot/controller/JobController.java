@@ -17,10 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import vn.hcmute.springboot.model.Job;
-import vn.hcmute.springboot.model.SaveJobs;
 import vn.hcmute.springboot.model.ViewJobs;
 import vn.hcmute.springboot.repository.JobRepository;
-import vn.hcmute.springboot.repository.SaveJobRepository;
 import vn.hcmute.springboot.repository.UserRepository;
 import vn.hcmute.springboot.repository.ViewJobRepository;
 import vn.hcmute.springboot.response.JobResponse;
@@ -36,7 +34,6 @@ public class JobController {
   private final JobServiceImpl jobService;
   private final JobRepository jobRepository;
   private final UserRepository userRepository;
-  private final SaveJobRepository saveJobRepository;
   private final ViewJobRepository viewJobRepository;
 
   @GetMapping()
