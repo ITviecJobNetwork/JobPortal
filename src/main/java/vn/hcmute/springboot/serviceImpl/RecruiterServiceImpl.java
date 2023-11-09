@@ -361,27 +361,25 @@ public class RecruiterServiceImpl implements RecruiterService {
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
     var findCompany = companyRepository.finCompanyByRecruiter(recruiter)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
-    if(findCompany.getId().equals(company.getId())){
-      MultipartFile companyLogo = request.getCompanyLogo();
+    MultipartFile companyLogo = request.getCompanyLogo();
 
-      if(request.getCompanyLogo()!=null) {
-        if (!isImageFile(companyLogo.getOriginalFilename())) {
-          MessageResponse.builder()
-                  .message("không-phải-file-ảnh")
-                  .status(HttpStatus.BAD_REQUEST)
-                  .build();
-        }
-      }
-
-      String logo = fileUploadService.uploadFile(companyLogo);
-      String companyTypeName = request.getCompanyType();
-      CompanyType companyType = companyTypeRepository.findByType(companyTypeName);
-
-      if(companyType==null){
-        CompanyType newCompanyType = CompanyType.builder()
-                .type(companyTypeName)
+    if(request.getCompanyLogo()!=null) {
+      if (!isImageFile(companyLogo.getOriginalFilename())) {
+        MessageResponse.builder()
+                .message("không-phải-file-ảnh")
+                .status(HttpStatus.BAD_REQUEST)
                 .build();
-        companyTypeRepository.save(newCompanyType);
+        }
+      String logo = fileUploadService.uploadFile(companyLogo);
+      findCompany.setLogo(logo);
+    }
+
+
+      var companyType = companyTypeRepository.findByType(company.getCompanyType().getType());
+
+      if(companyType!=null){
+        companyType.setType(request.getCompanyType());
+        companyTypeRepository.save(companyType);
 
       }
       findCompany.setAddress(request.getAddress());
@@ -391,12 +389,11 @@ public class RecruiterServiceImpl implements RecruiterService {
       findCompany.setName(request.getCompanyName());
       findCompany.setPhoneNumber(request.getPhoneNumber());
       findCompany.setWebsite(request.getWebsite());
-      findCompany.setLogo(logo);
+
       findCompany.setCompanySize(request.getCompanySize());
       findCompany.setCountry(request.getCountry());
       companyRepository.save(findCompany);
 
-    }
 
 
 

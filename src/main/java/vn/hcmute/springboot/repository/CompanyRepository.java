@@ -15,6 +15,7 @@ public interface CompanyRepository extends JpaRepository<Company, Integer> {
 
 
   Company findByName(String name);
+
   @Query("SELECT j FROM Company j")
   Page<Company> findAllCompanies(Pageable pageable);
 
@@ -22,5 +23,5 @@ public interface CompanyRepository extends JpaRepository<Company, Integer> {
   @Query("SELECT j FROM Company j WHERE j.recruiter = ?1")
   Optional<Company> finCompanyByRecruiter(Recruiters recruiters);
 
-;
+
 }
