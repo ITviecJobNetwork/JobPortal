@@ -45,7 +45,7 @@
                     <jsp:include page="../../../common/modal.jsp">
                         <jsp:param name="id" value="delete-${ item.code }"/>
                         <jsp:param name="_title" value="${ item.active ? 'Xác nhận xóa danh mục' : 'Xác nhận mở danh mục'}"/>
-                        <jsp:param name="content" value="Bạn có chắc chắn muốn ${ item.active ? 'xóa' : 'mở' } danh mục ${ item.code } không?"/>
+                        <jsp:param name="content" value="Bạn có chắc chắn muốn ${ item.active ? 'khóa' : 'mở' } danh mục ${ item.code } không?"/>
                         <jsp:param name="successUrl" value="${ contextPath }/admin/category/delete?code=${ item.code }"/>
                     </jsp:include>
                 </td>

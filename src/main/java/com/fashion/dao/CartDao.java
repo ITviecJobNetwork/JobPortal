@@ -34,7 +34,7 @@ public class CartDao extends BaseDao<Cart, Long> {
     }
 
     public void deleteByEmail(String email, Session session) {
-        Query query = session.createQuery("DELETE FROM Cart c WHERE c.email = :email");
+        var query = session.createQuery("DELETE FROM Cart c WHERE c.email = :email");
         query.setParameter("email", email);
         query.executeUpdate();
     }

@@ -34,13 +34,28 @@
     <li><p><b>Email:</b>
         <%= request.getParameter("email")%>
     </p></li>
+    <%
+        GregorianCalendar date = new GregorianCalendar();
+        int currentDay = date.get(Calendar.DATE);
+        int currentMonth=date.get(Calendar.MONTH)+1;
+        int currentYearNow=date.get(Calendar.YEAR);
+    %>
+    <p>Your information was added into my club at <%=currentDay+"/"+currentMonth+"/"+currentYearNow%></p>
 
 </ul>
 <p>To enter another email address, click on back button in your browser or the return button show below </p>
-<form action="5.1.html" method="get">
+<form action="5.1+6.1+8.1.jsp" method="get" id="myForm">
     <input type="hidden" name="action" value="join">
     <input type="submit" value="Return" class="btn btn-primary">
-    <input type="submit" value="Home" class="btn btn-success">
+    <input type="submit" value="Home" class="btn btn-success" onclick="goToHomePage()">
+
 </form>
+<script>
+    function goToHomePage(){
+        document.getElementById("myForm").action="index.html";
+        document.getElementById("myForm").submit();
+    }
+</script>
 </body>
+<%@include file="footer.jsp" %>
 </html>

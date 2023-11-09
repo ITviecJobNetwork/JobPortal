@@ -114,6 +114,7 @@ public class ProductServlet extends AdminLayoutServlet {
                 .build();
     }
 
+
     @HttpMethod(method = HttpMethod.Method.POST, value = "/create")
     public Result<CreateProductRequest> createProduct(
             HttpServletRequest req,
@@ -180,6 +181,14 @@ public class ProductServlet extends AdminLayoutServlet {
     @HttpMethod(value = "/lock")
     public Result<String> lockOrUnlockProduct(@RequestParam("code") String code, Map<String, Object> state) {
         Result<String> result = this.productService.lockOrUnlockProduct(code);
+        result.setSuccessUrl(REDIRECT_PRODUCT_HOME);
+        result.setFailUrl(REDIRECT_PRODUCT_HOME);
+        state.put(AppConstant.RESULT_KEY, result);
+        return result;
+    }
+    @HttpMethod(value = "/delete")
+    public Result<String> deleteProduct(@RequestParam("code") String code, Map<String, Object> state) {
+        Result<String> result = this.productService.deleteProduct(code);
         result.setSuccessUrl(REDIRECT_PRODUCT_HOME);
         result.setFailUrl(REDIRECT_PRODUCT_HOME);
         state.put(AppConstant.RESULT_KEY, result);

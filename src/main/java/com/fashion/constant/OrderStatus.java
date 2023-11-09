@@ -4,6 +4,7 @@ import com.fashion.dto.user.UserResponse;
 import com.fashion.entity.Order;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import static com.fashion.constant.OrderStatus.UpdateStatusCondition.*;
 

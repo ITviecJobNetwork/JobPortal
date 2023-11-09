@@ -6,23 +6,23 @@
         <thead>
         <tr>
             <td class="table-column-header" data-col="stt" data-show="true">STT
-            </th>
+            </td>
             <th class="table-column-header" data-col="image" data-show="true">Hình ảnh</th>
             <td class="table-column-header" data-col="code" data-show="true">Mã sản phẩm
+            </td>
+            <th class="table-column-header" data-col="name" data-show="true">Tên sản phẩm
             </th>
-            <td class="table-column-header" data-col="name" data-show="true">Tên sản phẩm
+            <th class="table-column-header" data-col="price" data-show="true">Giá
             </th>
-            <td class="table-column-header" data-col="price" data-show="true">Giá
+            <th class="table-column-header" data-col="categoryName" data-show="true">Loại sản phẩm
             </th>
-            <td class="table-column-header" data-col="categoryName" data-show="true">Loại sản phẩm
+            <th class="table-column-header" data-col="createdDate" data-show="true">Ngày tạo
             </th>
-            <td class="table-column-header" data-col="createdDate" data-show="true">Ngày tạo
+            <th class="table-column-header" data-col="updatedDate" data-show="true">Ngày cập nhật
             </th>
-            <td class="table-column-header" data-col="updatedDate" data-show="true">Ngày cập nhật
+            <th class="table-column-header" data-col="status" data-show="true">Trạng thái
             </th>
-            <td class="table-column-header" data-col="status" data-show="true">Trạng thái
-            </th>
-            <td>Thao tác
+            <th>Thao tác
             </th>
         </tr>
         </thead>

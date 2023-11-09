@@ -8,6 +8,7 @@ import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 
 import javax.persistence.Parameter;
+import javax.servlet.http.HttpSession;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;

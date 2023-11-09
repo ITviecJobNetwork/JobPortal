@@ -2,6 +2,20 @@
 <%@ taglib uri = "http://java.sun.com/jsp/jstl/functions" prefix = "fn" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
+
+<style>
+  .cart-link {
+    display: flex;
+  }
+
+
+
+    .cart-label {
+      margin-left: 5px; /* Điều chỉnh khoảng cách từ biểu tượng */
+    }
+
+</style>
+
 <div class="offcanvas-menu-overlay"></div>
 <div class="offcanvas-menu-wrapper">
     <div class="offcanvas__option">
@@ -56,7 +70,7 @@
                 </div>
                 <div class="col-md-2">
                     <div class="header__nav__option">
-                        <a href="${contextPath}/cart"><img src="${contextPathStatic}/img/icon/cart.png" alt=""></a>
+                        <a href="${contextPath}/cart" class="cart-link"><img src="${contextPathStatic}/img/icon/cart.png" alt=""></a>
                     </div>
                 </div>
             </div>

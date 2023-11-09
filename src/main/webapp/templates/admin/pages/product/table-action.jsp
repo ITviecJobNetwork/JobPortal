@@ -33,4 +33,12 @@
             </div>
         </li>
     </c:if>
+    <c:if test="${ requestScope._item.active }">
+        <li class="border-bottom">
+            <div class="p-2 d-flex align-items-center">
+                <i class="fa fa-unlock-alt mr-2" aria-hidden="true"></i>
+                <a href="${ contextPath }/admin/product/delete?code=${ _item.code }" title="Xóa sản phẩm">Xóa Sản Phẩm</a>
+            </div>
+        </li>
+    </c:if>
 </ul>

@@ -18,9 +18,16 @@
   <servlet>
   	<servlet-name>TestServlet</servlet-name>
   	<display-name>TestServlet</display-name>
-  	<description></description>
   	<servlet-class>TestServlet</servlet-class>
   </servlet>
+  <servlet>
+  	<servlet-name>DownloadServlet</servlet-name>
+  	<display-name>DownloadServlet</display-name>
+  	<description></description>
+  	<servlet-class>download.DownloadServlet</servlet-class>
+  </servlet>
+  
+ 
 
   <servlet-mapping>
     <servlet-name>mailList</servlet-name>
@@ -34,9 +41,16 @@
   	<servlet-name>TestServlet</servlet-name>
   	<url-pattern>/test</url-pattern>
   </servlet-mapping>
+  <servlet-mapping>
+  	<servlet-name>DownloadServlet</servlet-name>
+  	<url-pattern>/download</url-pattern>
+  </servlet-mapping>
+ 
+ 
 
   <welcome-file-list>
     <welcome-file>index.html</welcome-file>
+    <welcome-file>7.1+7.2+9.1.jsp</welcome-file>
   </welcome-file-list>
 </web-app>
 

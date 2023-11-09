@@ -9,7 +9,7 @@ import java.util.Objects;
 @UtilityClass
 public class PagingUtil {
 
-    public List<Object> getPages(int currentPage, int lastPage) {
+    public static List<Object> getPages(int currentPage, int lastPage) {
         int _x = 2;
         Integer x = null;
         int start = currentPage - _x;

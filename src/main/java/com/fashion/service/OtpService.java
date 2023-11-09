@@ -48,7 +48,6 @@ public class OtpService extends BaseService {
         httpSession.setAttribute(AppConstant.SessionKey.OPT_ACTIVE_ACCOUNT_KEY, otpDTO);
         return otpDTO;
     }
-
     public Result<String> verifyOtp(OtpDTO otpDTO, String otp, HttpSession httpSession) {
         return this.tryCatchWithTransaction(session -> {
             Calendar instance = Calendar.getInstance();

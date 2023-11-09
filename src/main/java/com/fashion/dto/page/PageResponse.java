@@ -1,10 +1,7 @@
 package com.fashion.dto.page;
 
 import com.fashion.utils.PagingUtil;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -12,6 +9,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 public class PageResponse<T> {
     private int page;
     private int pageSize;

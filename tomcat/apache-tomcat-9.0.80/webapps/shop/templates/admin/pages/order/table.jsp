@@ -12,8 +12,8 @@
             <th class="table-column-header" data-col="address" data-show="true">Địa chỉ</th>
             <th class="table-column-header" data-col="createdDate" data-show="true">Ngày mua</th>
             <th class="table-column-header" data-col="method" data-show="true">Hình thức TT</th>
-            <th class="table-column-header" data-col="userNote" data-show="false">User lý do</th>
-            <th class="table-column-header" data-col="adminNote" data-show="false">Admin lý do</th>
+            <th class="table-column-header" data-col="userNote" data-show="false">Lý do User</th>
+            <th class="table-column-header" data-col="adminNote" data-show="false">Lý do Admin</th>
             <th class="table-column-header" data-col="status" data-show="true">Trạng thái</th>
             <th class="table-column-header" data-col="total" data-show="true">Tổng tiền</th>
             <th></th>

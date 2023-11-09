@@ -1,4 +1,7 @@
+
 <!DOCTYPE html>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -6,6 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap/dist/js/bootstrap.min.js"></script>
 </head>
+
 <style>
     h1{
         color:teal;
@@ -15,6 +19,10 @@
     }
     a{
         margin-top: 2rem;
+    }
+    body{
+        padding:2rem;
+        margin: 2rem;
     }
 </style>
 <body>
@@ -27,20 +35,21 @@
         <input type="hidden" name="myExercise" value="ch05ex1View">
         <div class="form-group">
             <label>Email:</label>
-            <input type="email" class="form-control" name="email" value="">
+            <input type="email" class="form-control" name="email" value="" required>
         </div>
         <div class="form-group">
             <label>First Name:</label>
-            <input type="text" class="form-control" name="firstName" value="">
+            <input type="text" class="form-control" name="firstName" value="" required>
         </div>
         <div class="form-group">
             <label>Last Name:</label>
-            <input type="text" class="form-control" name="lastName" value="">
+            <input type="text" class="form-control" name="lastName" value="" required>
         </div>
         <button type="submit" class="btn btn-primary">Join Now</button>
         <a href="index.html" class="btn btn-secondary ml-2">Back Home</a>
     </form>
-</div>
 
+</div>
+<%@include file="footer.jsp" %>
 </body>
 </html>

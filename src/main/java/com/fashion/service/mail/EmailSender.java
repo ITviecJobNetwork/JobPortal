@@ -28,7 +28,7 @@ public class EmailSender {
     @SneakyThrows({ MessagingException.class, UnsupportedEncodingException.class })
     public void send(EmailNotification emailNotification) {
         MimeMessage msg = new MimeMessage(session);
-        msg.setFrom(new InternetAddress(properties.getProperty("mail.username"), "NoReply"));
+        msg.setFrom(new InternetAddress(properties.getProperty("mail.username"), "Fashion-Shop"));
         msg.setSubject(emailNotification.getTitle(), "UTF-8");
         msg.setSentDate(new Date());
         msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(emailNotification.getReceiver(), false));

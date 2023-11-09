@@ -63,7 +63,7 @@ public class CartService extends BaseService {
             ProductDetail productDetail = this.productDetailDao.findById(request.getProductDetailId(), session)
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm"));
             if (!productDetail.getActive()) {
-                throw new IllegalArgumentException("Sản phẩm không được phép");
+                throw new IllegalArgumentException("Sản phẩm đã bị khóa bởi admin");
             }
 
             Cart cart = this.cartDao.findByEmailAndProductDetailId(userResponse.getEmail(), request.getProductDetailId(), session)

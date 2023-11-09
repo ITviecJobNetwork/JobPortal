@@ -34,5 +34,6 @@ public class AppConstant {
 
     public static class SessionKey {
         public static final String OPT_ACTIVE_ACCOUNT_KEY = "OPT_ACTIVE_ACCOUNT_KEY";
+        public static final String OPT_ACTIVE_ACCOUNT_PASSWORD = "OPT_ACTIVE_ACCOUNT_PASSWORD";
     }
 }

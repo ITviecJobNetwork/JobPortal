@@ -282,4 +282,19 @@ public class ProductService extends BaseService {
             });
         };
     }
+    public Result<String> deleteProduct(String code) {
+        return this.tryCatchWithTransaction(session -> {
+            Product product = this.productDao.findByCode(code, session)
+                .orElseThrow(() -> new IllegalArgumentException(code + " không tìm thấy"));
+            this.productDetailDao.findByProductId(product.getId(), session)
+                .forEach(pd -> {
+                    this.productDetailDao.delete(pd, session);
+                });
+            this.productDao.save(product, session);
+            return Result.<String>builder()
+                .message( "Xóa sản phẩm thành công")
+                .data(code)
+                .build();
+        }, code);
+    }
 }

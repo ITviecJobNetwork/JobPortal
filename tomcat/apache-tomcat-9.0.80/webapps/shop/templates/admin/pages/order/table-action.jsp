@@ -31,7 +31,7 @@
         <li class="border-bottom">
             <div class="p-2 d-flex align-items-center">
                 <i class="fa fa-truck mr-2" aria-hidden="true"></i>
-                <a href="${ contextPath }/admin/order/change-status?status=DELIVERING&oCode=${ _item.code }">Vẩn chuyện</a>
+                <a href="${ contextPath }/admin/order/change-status?status=DELIVERING&oCode=${ _item.code }">Vận chuyển</a>
             </div>
         </li>
     </c:if>
