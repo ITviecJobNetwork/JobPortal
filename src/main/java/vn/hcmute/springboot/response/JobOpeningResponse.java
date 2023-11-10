@@ -20,7 +20,6 @@ public class JobOpeningResponse {
   private String description;
   private String companyLogo;
   private LocalDate createdDate;
-  private Company company;
 
 
 }

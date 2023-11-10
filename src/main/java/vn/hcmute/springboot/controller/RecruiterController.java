@@ -1,34 +1,38 @@
 package vn.hcmute.springboot.controller;
 
 
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import vn.hcmute.springboot.model.ApplicationForm;
+import vn.hcmute.springboot.model.Job;
 import vn.hcmute.springboot.model.RecruiterStatus;
 import vn.hcmute.springboot.model.Recruiters;
+import vn.hcmute.springboot.repository.ApplicationFormRepository;
 import vn.hcmute.springboot.repository.CompanyRepository;
 import vn.hcmute.springboot.repository.JobRepository;
 import vn.hcmute.springboot.repository.RecruiterRepository;
 import vn.hcmute.springboot.request.*;
+import vn.hcmute.springboot.response.ApplicationFormResponse;
 import vn.hcmute.springboot.response.JwtResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.security.JwtService;
+import vn.hcmute.springboot.service.EmailService;
 import vn.hcmute.springboot.service.RecruiterService;
 
 @RestController
@@ -41,6 +45,8 @@ public class RecruiterController {
   private final JwtService jwtService;
   private final CompanyRepository companyRepository;
   private final JobRepository jobRepository;
+  private final ApplicationFormRepository applicationFormRepository;
+  private final EmailService emailService;
   @PostMapping("/register")
   public ResponseEntity<MessageResponse> register(@RequestBody RecruiterRegisterRequest request) {
     var username = recruiterRepository.existsByUsername(request.getUsername());
@@ -386,5 +392,112 @@ public class RecruiterController {
     recruiterService.deleteJob(jobId);
     return new ResponseEntity<>(new MessageResponse("Xóa thông tin công việc thành công", HttpStatus.OK),
             HttpStatus.OK);
+  }
+
+  @GetMapping("/getJob/{jobId}")
+  public ResponseEntity<Job> getJobById(@PathVariable Integer jobId) {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication instanceof AnonymousAuthenticationToken) {
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+    var recruiter = recruiterRepository.findByUsername(authentication.getName());
+    if (recruiter.isEmpty()) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    if(recruiter.get().getStatus().equals(RecruiterStatus.INACTIVE)){
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+    var job = jobRepository.findByIdAndRecruiterId(jobId, recruiter.get().getId());
+    return job.map(value -> ResponseEntity.ok().body(value)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
+  }
+
+  @GetMapping("getAppliedJob")
+  public ResponseEntity<List<ApplicationFormResponse>> getAppliedJob() {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication instanceof AnonymousAuthenticationToken) {
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+    var recruiter = recruiterRepository.findByUsername(authentication.getName());
+    if (recruiter.isEmpty()) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    if (recruiter.get().getStatus().equals(RecruiterStatus.INACTIVE)) {
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+    var applicationForms = applicationFormRepository.findByJobCompanyRecruiter(recruiter.get());
+
+    List<ApplicationFormResponse> applicationFormResponses = applicationForms.stream()
+            .map(this::mapToApplicationFormResponse)
+            .collect(Collectors.toList());
+
+    return ResponseEntity.ok().body(applicationFormResponses);
+  }
+
+  private ApplicationFormResponse mapToApplicationFormResponse(ApplicationForm applicationForm) {
+    return ApplicationFormResponse.builder()
+            .linkCV(applicationForm.getLinkCV())
+            .jobId(applicationForm.getJob().getId())
+            .jobTitle(applicationForm.getJob().getTitle())
+            .candidateName(applicationForm.getCandidateName())
+            .submittedAt(applicationForm.getSubmittedAt())
+            .coverLetter(applicationForm.getCoverLetter())
+            .status(applicationForm.getStatus())
+            .build();
+  }
+  @GetMapping("/getApplicationById/{applicationId}")
+  public ResponseEntity<ApplicationForm> getApplicationById(@PathVariable Integer applicationId) {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication instanceof AnonymousAuthenticationToken) {
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+    var recruiter = recruiterRepository.findByUsername(authentication.getName());
+    if (recruiter.isEmpty()) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    if (recruiter.get().getStatus().equals(RecruiterStatus.INACTIVE)) {
+      return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+    Optional<ApplicationForm> optionalApplicationForm = Optional.ofNullable(applicationFormRepository.findByIdAndCompanyRecruiter(applicationId, recruiter.get()));
+    if (optionalApplicationForm.isEmpty()) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    ApplicationForm applicationForm = optionalApplicationForm.get();
+
+    return ResponseEntity.ok().body(applicationForm);
+  }
+  @PostMapping("/updateApplication/{applicationId}")
+  public ResponseEntity<MessageResponse> updateApplication(@PathVariable Integer applicationId, @RequestBody UpdateApplicationRequest updateRequest) throws MessagingException {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication instanceof AnonymousAuthenticationToken) {
+      return new ResponseEntity<>(new MessageResponse("Unauthorized", HttpStatus.UNAUTHORIZED), HttpStatus.UNAUTHORIZED);
+    }
+
+    var recruiter = recruiterRepository.findByUsername(authentication.getName());
+    if (recruiter.isEmpty()) {
+      return new ResponseEntity<>(new MessageResponse("Recruiter not found", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+    }
+
+    if (recruiter.get().getStatus().equals(RecruiterStatus.INACTIVE)) {
+      return new ResponseEntity<>(new MessageResponse("Recruiter is inactive", HttpStatus.UNAUTHORIZED), HttpStatus.UNAUTHORIZED);
+    }
+
+    Optional<ApplicationForm> optionalApplicationForm = Optional.ofNullable(applicationFormRepository.findByIdAndCompanyRecruiter(applicationId, recruiter.get()));
+    if (optionalApplicationForm.isEmpty()) {
+      return new ResponseEntity<>(new MessageResponse("Application not found", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+    }
+
+    ApplicationForm applicationForm = optionalApplicationForm.get();
+
+    applicationForm.setStatus(updateRequest.getStatus());
+    applicationFormRepository.save(applicationForm);
+    emailService.sendApplicationUpdateEmail(applicationForm);
+
+    return new ResponseEntity<>(new MessageResponse("Application updated successfully", HttpStatus.OK), HttpStatus.OK);
   }
 }

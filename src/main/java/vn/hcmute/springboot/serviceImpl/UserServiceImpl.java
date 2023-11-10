@@ -159,58 +159,54 @@ public class UserServiceImpl implements UserService {
   public void applyJob(ApplyJobRequest request) throws IOException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-        .orElseThrow(() -> new NotFoundException("Bạn chưa đăng nhập vui lòng đăng nhập"));
+            .orElseThrow(() -> new NotFoundException("Bạn chưa đăng nhập vui lòng đăng nhập"));
     var job = jobRepository.findById(request.getJobId()).orElse(null);
     if (job == null) {
       ApplyJobResponse.builder()
-          .message("Không tìm thấy công việc")
-          .status(HttpStatus.BAD_REQUEST)
-          .build();
+              .message("Không tìm thấy công việc")
+              .status(HttpStatus.BAD_REQUEST)
+              .build();
       return;
     }
     if (job.getExpireAt().isBefore(java.time.LocalDate.now())) {
       ApplyJobResponse.builder()
-          .message("Công việc đã hết hạn")
-          .status(HttpStatus.BAD_REQUEST)
-          .build();
+              .message("Công việc đã hết hạn")
+              .status(HttpStatus.BAD_REQUEST)
+              .build();
       return;
     }
     if (hasAlreadyApplied(user, job)) {
       ApplyJobResponse.builder()
-          .message("Bạn đã nộp đơn cho công việc này")
-          .status(HttpStatus.BAD_REQUEST)
-          .build();
+              .message("Bạn đã nộp đơn cho công việc này")
+              .status(HttpStatus.BAD_REQUEST)
+              .build();
       return;
     }
 
     ApplicationForm applicationForm = job.getApplicationForms().stream()
-        .filter(applicationForm1 -> Objects.equals(applicationForm1.getCandidate().getId(),
-            user.getId()))
-        .findFirst()
-        .orElseGet(() -> {
-          ApplicationForm newApplicationForm = new ApplicationForm();
-          newApplicationForm.setCandidate(user);
-          newApplicationForm.setJob(job);
-          return newApplicationForm;
-        });
+            .filter(applicationForm1 -> Objects.equals(applicationForm1.getCandidate().getId(),
+                    user.getId()))
+            .findFirst()
+            .orElseGet(() -> {
+              ApplicationForm newApplicationForm = new ApplicationForm();
+              newApplicationForm.setCandidate(user);
+              newApplicationForm.setJob(job);
+              return newApplicationForm;
+            });
 
     applicationForm.setCandidateName(request.getCandidateName());
     applicationForm.setCoverLetter(request.getCoverLetter());
     applicationForm.setStatus(ApplicationStatus.SUBMITTED);
-    //condition when upload CV
+    applicationForm.setIsApplied(true);
+
+
     if (user.getLinkCV() != null) {
-      if (request.getLinkCv() == null && request.getLinkNewCv() != null) {
-        String linkNewCv = fileService.uploadCv(request.getLinkNewCv());
-        applicationForm.setLinkCV(linkNewCv);
-      } else if (request.getLinkCv() != null && request.getLinkNewCv() == null) {
-        String linkCv = user.getLinkCV();
-        applicationForm.setLinkCV(linkCv);
+      if (request.getLinkNewCv() != null) {
+        String urlCv = fileService.uploadCv(request.getLinkNewCv());
+        applicationForm.setLinkCV(urlCv);
+        user.setLinkCV(urlCv);
       } else {
-        ApplyJobResponse.builder()
-            .message("Bạn chỉ được upload 1 file")
-            .status(HttpStatus.BAD_REQUEST)
-            .build();
-        return;
+        applicationForm.setLinkCV(user.getLinkCV());
       }
     } else {
       if (request.getLinkNewCv() != null) {
@@ -219,24 +215,25 @@ public class UserServiceImpl implements UserService {
         user.setLinkCV(urlCv);
       } else {
         ApplyJobResponse.builder()
-            .message("Bạn cần tải lên một liên kết CV mới")
-            .status(HttpStatus.BAD_REQUEST)
-            .build();
+                .message("Bạn cần tải lên một liên kết CV mới")
+                .status(HttpStatus.BAD_REQUEST)
+                .build();
         return;
       }
     }
 
-
     applicationForm.setSubmittedAt(LocalDate.from(LocalDateTime.now()));
-    List<Job> relatedJobs = jobRepository.findSimilarJobsByTitleAndLocation(request.getJobId(),job.getTitle(),job.getLocation().getCityName());
+    List<Job> relatedJobs = jobRepository.findSimilarJobsByTitleAndLocation(request.getJobId(), job.getTitle(), job.getLocation().getCityName());
     applicationFormRepository.save(applicationForm);
+
     ApplyJobResponse.builder()
-        .message("Nộp đơn thành công")
-        .relatedJobs(relatedJobs)
-        .status(HttpStatus.OK)
-        .relatedJobs(relatedJobs)
-        .build();
+            .message("Nộp đơn thành công")
+            .relatedJobs(relatedJobs)
+            .status(HttpStatus.OK)
+            .relatedJobs(relatedJobs)
+            .build();
   }
+
 
   @Override
   public MessageResponse uploadUserCv(MultipartFile fileCv) throws IOException {

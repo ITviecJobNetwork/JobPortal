@@ -76,6 +76,13 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
           @Param("jobId") Integer jobId,
           @Param("recruiter") Recruiters recruiter
   );
+  @Query("SELECT j FROM Job j WHERE j.id = :id AND j.company = :company")
+  Optional<Job> findJobByIdAndCompany(@Param("id") Integer id, @Param("company") Company company);
+  @Query("SELECT j FROM Job j WHERE j.id = :jobId AND j.company.recruiter.id = :recruiterId")
+  Optional<Job> findByIdAndRecruiterId(
+          @Param("jobId") Integer jobId,
+          @Param("recruiterId") Integer recruiterId
+  );
 
 }
 

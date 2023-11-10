@@ -48,6 +48,7 @@ public class RecruiterServiceImpl implements RecruiterService {
   private final JobTypeRepository jobTypeRepository;
   private final LocationRepository locationRepository;
   private final JobRepository jobRepository;
+  private final ApplicationFormRepository applicationFormRepository;
 
   @Override
   public MessageResponse registerRecruiter(RecruiterRegisterRequest recruiterRegisterRequest) {
@@ -450,6 +451,14 @@ public class RecruiterServiceImpl implements RecruiterService {
             .requirements(request.getRequirements())
             .company(company)
             .build();
+    var jobOpening = company.getCountJobOpening();
+    if(jobOpening==null){
+      company.setCountJobOpening(1);
+    }
+    else{
+      company.setCountJobOpening(company.getCountJobOpening() + 1);
+    }
+    companyRepository.save(company);
     jobRepository.save(job);
   }
 
@@ -507,6 +516,9 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
     jobRepository.delete(existingJob);
   }
+
+
+
 
   private boolean isImageFile(String fileName) {
     String[] imageExtensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp"};

@@ -1,7 +1,12 @@
 package vn.hcmute.springboot.controller;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -20,6 +25,7 @@ import vn.hcmute.springboot.repository.CompanyRepository;
 import vn.hcmute.springboot.repository.JobRepository;
 import vn.hcmute.springboot.repository.RecruiterRepository;
 import vn.hcmute.springboot.response.CompanyResponse;
+import vn.hcmute.springboot.response.CompanyWithJobsResponse;
 import vn.hcmute.springboot.response.JobOpeningResponse;
 import vn.hcmute.springboot.serviceImpl.CompanyServiceImpl;
 
@@ -53,38 +59,79 @@ public class CompanyController {
     return new ResponseEntity<>(new CompanyResponse(company), HttpStatus.OK);
   }
 
+
   @GetMapping("{id}")
-  public ResponseEntity<List<JobOpeningResponse>> findCompanyById(@PathVariable Integer id){
+  public ResponseEntity<CompanyWithJobsResponse> findCompanyById(@PathVariable Integer id) {
     var company = companyServiceImpl.findCompanyById(id);
-    if(company == null) {
+    if (company == null) {
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
     List<Job> jobOpenings = jobRepository.findJobByCompanyId(company.getId());
     if (jobOpenings.isEmpty()) {
       company.setCountJobOpening(0);
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-    else{
+    } else {
       company.setCountJobOpening(jobOpenings.size());
     }
+
+    CompanyWithJobsResponse response = createCompanyWithJobsResponse(company, jobOpenings);
+    companyRepository.save(company);
+    return ResponseEntity.ok().body(response);
+  }
+
+  private CompanyWithJobsResponse createCompanyWithJobsResponse(Company company, List<Job> jobOpenings) {
+    CompanyWithJobsResponse response = new CompanyWithJobsResponse();
+
+    response.setCompany(cloneCompany(company));
+
     List<JobOpeningResponse> jobOpeningResponses = new ArrayList<>();
     for (Job job : jobOpenings) {
-      JobOpeningResponse response = new JobOpeningResponse();
-      response.setJobId(job.getId());
-      response.setTitle(job.getTitle());
-      response.setCompanyName(company.getName());
-      response.setAddress(company.getAddress());
-      response.setCompanyType(company.getCompanyType().getType());
-      response.setSkills(job.getSkills());
-      response.setDescription(job.getDescription());
-      response.setCompanyLogo(company.getLogo());
-      response.setCreatedDate(job.getCreatedAt().toLocalDate());
-      response.setCompany(company);
-      jobOpeningResponses.add(response);
+      JobOpeningResponse jobResponse = createJobOpeningResponse(job, company);
+      jobOpeningResponses.add(jobResponse);
     }
-    companyRepository.save(company);
-    return ResponseEntity.ok().body(jobOpeningResponses);
+    response.setJobOpenings(jobOpeningResponses);
+
+    return response;
   }
+
+  private JobOpeningResponse createJobOpeningResponse(Job job, Company company) {
+    JobOpeningResponse response = new JobOpeningResponse();
+    response.setJobId(job.getId());
+    response.setTitle(job.getTitle());
+    response.setCompanyName(company.getName());
+    response.setAddress(company.getAddress());
+    response.setCompanyType(company.getCompanyType().getType());
+    response.setSkills(job.getSkills());
+    response.setDescription(job.getDescription());
+    response.setCompanyLogo(company.getLogo());
+    response.setCreatedDate(job.getCreatedAt().toLocalDate());
+    return response;
+  }
+
+  private Company cloneCompany(Company original) {
+    Company clonedCompany = new Company();
+
+    Field[] fields = Company.class.getDeclaredFields();
+
+    for (Field field : fields) {
+      try {
+        String getterMethodName = "get" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+        Method getterMethod = Company.class.getMethod(getterMethodName);
+        Object value = getterMethod.invoke(original);
+        String setterMethodName = "set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+        Method setterMethod = Company.class.getMethod(setterMethodName, field.getType());
+        setterMethod.invoke(clonedCompany, value);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
+    return clonedCompany;
+  }
+
+
+
   @GetMapping("/{id}/jobOpenings")
   public ResponseEntity<List<JobOpeningResponse>> listJobOpenings(@PathVariable Integer id) {
     var company = companyRepository.findById(id);

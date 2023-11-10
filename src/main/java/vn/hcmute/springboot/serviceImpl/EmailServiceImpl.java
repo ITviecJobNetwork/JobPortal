@@ -4,7 +4,10 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import vn.hcmute.springboot.model.ApplicationForm;
+import vn.hcmute.springboot.model.ApplicationStatus;
 import vn.hcmute.springboot.service.EmailService;
 
 
@@ -169,6 +172,33 @@ public class EmailServiceImpl implements EmailService {
             </html>
         """.formatted(email, password);
     mimeMessageHelper.setText(htmlContent, true);
+    javaMailSender.send(mimeMessage);
+  }
+
+  @Override
+  @Async
+  public void sendApplicationUpdateEmail(ApplicationForm applicationForm) throws MessagingException {
+    MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+    MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
+    mimeMessageHelper.setTo(applicationForm.getCandidate().getUsername());
+    mimeMessageHelper.setSubject("Application Status Update");
+
+    if(applicationForm.getStatus().equals(ApplicationStatus.REJECTED)){
+      mimeMessageHelper.setText("Đơn ứng tuyển của bạn đã bị từ chối. Trạng thái mới: " + applicationForm.getStatus());
+    }
+    if(applicationForm.getStatus().equals(ApplicationStatus.APPROVED)){
+      mimeMessageHelper.setText("Đơn ứng tuyển của bạn đã được chấp nhận. Trạng thái mới: " + applicationForm.getStatus());
+    }
+    if(applicationForm.getStatus().equals(ApplicationStatus.DELIVERED)){
+      mimeMessageHelper.setText("Đơn ứng tuyển của bạn đã được gửi. Trạng thái mới: " + applicationForm.getStatus());
+    }
+    if(applicationForm.getStatus().equals(ApplicationStatus.SUBMITTED)){
+      mimeMessageHelper.setText("Đơn ứng tuyển của bạn đã được nộp. Trạng thái mới: " + applicationForm.getStatus());
+    }
+    if(applicationForm.getStatus().equals(ApplicationStatus.PENDING)){
+      mimeMessageHelper.setText("Đơn ứng tuyển của bạn đang chờ duyệt. Trạng thái mới: " + applicationForm.getStatus());
+    }
+
     javaMailSender.send(mimeMessage);
   }
 }

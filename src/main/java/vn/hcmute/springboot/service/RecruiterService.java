@@ -35,4 +35,6 @@ public interface RecruiterService {
   void postJob(PostJobRequest request);
   void updateJob(Integer jobId, UpdateJobRequest request);
   void deleteJob(Integer jobId);
+
+
 }
