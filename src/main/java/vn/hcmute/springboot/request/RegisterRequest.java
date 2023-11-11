@@ -3,15 +3,11 @@ package vn.hcmute.springboot.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import vn.hcmute.springboot.model.Gender;
-import vn.hcmute.springboot.model.Role;
-import vn.hcmute.springboot.valid.ValidEmail;
-import java.util.Date;
+
 
 @Data
 @Builder

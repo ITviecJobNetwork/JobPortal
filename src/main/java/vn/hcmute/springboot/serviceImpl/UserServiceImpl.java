@@ -206,11 +206,12 @@ public class UserServiceImpl implements UserService {
         applicationForm.setLinkCV(urlCv);
         user.setLinkCV(urlCv);
       } else {
-        applicationForm.setLinkCV(user.getLinkCV());
+        String urlCv = fileService.uploadCv(request.getLinkCv());
+        applicationForm.setLinkCV(urlCv);
       }
     } else {
-      if (request.getLinkNewCv() != null) {
-        String urlCv = fileService.uploadCv(request.getLinkNewCv());
+      if (request.getLinkCv() != null) {
+        String urlCv = fileService.uploadCv(request.getLinkCv());
         applicationForm.setLinkCV(urlCv);
         user.setLinkCV(urlCv);
       } else {
@@ -228,9 +229,7 @@ public class UserServiceImpl implements UserService {
 
     ApplyJobResponse.builder()
             .message("Nộp đơn thành công")
-            .relatedJobs(relatedJobs)
             .status(HttpStatus.OK)
-            .relatedJobs(relatedJobs)
             .build();
   }
 
@@ -274,8 +273,7 @@ public class UserServiceImpl implements UserService {
     var user = userRepository.findByUsername(email)
         .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
 
-    if (!passwordEncoder.matches(currentPassword, user.getPassword())
-        && !Objects.equals(currentPassword, newPassword)) {
+    if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
       String message = "Mật khẩu hiện tại không đúng";
       return MessageResponse.builder()
           .message(message)

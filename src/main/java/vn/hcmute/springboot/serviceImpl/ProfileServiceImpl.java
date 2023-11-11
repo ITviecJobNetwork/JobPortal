@@ -2,12 +2,9 @@ package vn.hcmute.springboot.serviceImpl;
 
 import jakarta.transaction.Transactional;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -78,14 +75,12 @@ public class ProfileServiceImpl implements ProfileService {
       user.setBirthDate(request.getBirthdate());
       user.setLinkWebsiteProfile(request.getLinkWebsiteProfile());
       user.setCoverLetter(request.getCoverLetter());
+      user.setCity(request.getCity());
+      user.setGender(request.getGender());
       if (request.getSkills() != null && !request.getSkills().isEmpty()) {
         List<Skill> existingSkills = skillRepository.findByTitleIn(request.getSkills());
         user.setSkills(existingSkills);
       }
-
-      user.setCity(request.getCity());
-      user.setGender(request.getGender());
-
 
       userRepository.save(user);
       return MessageResponse.builder()

@@ -19,16 +19,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import vn.hcmute.springboot.model.ApplicationForm;
-import vn.hcmute.springboot.model.Job;
-import vn.hcmute.springboot.model.RecruiterStatus;
-import vn.hcmute.springboot.model.Recruiters;
-import vn.hcmute.springboot.repository.ApplicationFormRepository;
-import vn.hcmute.springboot.repository.CompanyRepository;
-import vn.hcmute.springboot.repository.JobRepository;
-import vn.hcmute.springboot.repository.RecruiterRepository;
+import vn.hcmute.springboot.model.*;
+import vn.hcmute.springboot.repository.*;
 import vn.hcmute.springboot.request.*;
 import vn.hcmute.springboot.response.ApplicationFormResponse;
+import vn.hcmute.springboot.response.GetJobResponse;
 import vn.hcmute.springboot.response.JwtResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.security.JwtService;
@@ -47,6 +42,7 @@ public class RecruiterController {
   private final JobRepository jobRepository;
   private final ApplicationFormRepository applicationFormRepository;
   private final EmailService emailService;
+  private final SkillRepository skillRepository;
   @PostMapping("/register")
   public ResponseEntity<MessageResponse> register(@RequestBody RecruiterRegisterRequest request) {
     var username = recruiterRepository.existsByUsername(request.getUsername());
@@ -395,7 +391,7 @@ public class RecruiterController {
   }
 
   @GetMapping("/getJob/{jobId}")
-  public ResponseEntity<Job> getJobById(@PathVariable Integer jobId) {
+  public ResponseEntity<GetJobResponse> getJobById(@PathVariable Integer jobId) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication instanceof AnonymousAuthenticationToken) {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -408,9 +404,10 @@ public class RecruiterController {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
     var job = jobRepository.findByIdAndRecruiterId(jobId, recruiter.get().getId());
-    return job.map(value -> ResponseEntity.ok().body(value)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    return ResponseEntity.ok().body(createGetJobResponse(job));
 
   }
+
 
   @GetMapping("getAppliedJob")
   public ResponseEntity<List<ApplicationFormResponse>> getAppliedJob() {
@@ -437,19 +434,9 @@ public class RecruiterController {
     return ResponseEntity.ok().body(applicationFormResponses);
   }
 
-  private ApplicationFormResponse mapToApplicationFormResponse(ApplicationForm applicationForm) {
-    return ApplicationFormResponse.builder()
-            .linkCV(applicationForm.getLinkCV())
-            .jobId(applicationForm.getJob().getId())
-            .jobTitle(applicationForm.getJob().getTitle())
-            .candidateName(applicationForm.getCandidateName())
-            .submittedAt(applicationForm.getSubmittedAt())
-            .coverLetter(applicationForm.getCoverLetter())
-            .status(applicationForm.getStatus())
-            .build();
-  }
+
   @GetMapping("/getApplicationById/{applicationId}")
-  public ResponseEntity<ApplicationForm> getApplicationById(@PathVariable Integer applicationId) {
+  public ResponseEntity<ApplicationFormResponse> getApplicationById(@PathVariable Integer applicationId) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication instanceof AnonymousAuthenticationToken) {
       return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -469,7 +456,7 @@ public class RecruiterController {
     }
     ApplicationForm applicationForm = optionalApplicationForm.get();
 
-    return ResponseEntity.ok().body(applicationForm);
+    return ResponseEntity.ok().body(mapToApplicationFormResponse(applicationForm));
   }
   @PostMapping("/updateApplication/{applicationId}")
   public ResponseEntity<MessageResponse> updateApplication(@PathVariable Integer applicationId, @RequestBody UpdateApplicationRequest updateRequest) throws MessagingException {
@@ -499,5 +486,36 @@ public class RecruiterController {
     emailService.sendApplicationUpdateEmail(applicationForm);
 
     return new ResponseEntity<>(new MessageResponse("Application updated successfully", HttpStatus.OK), HttpStatus.OK);
+  }
+  private GetJobResponse createGetJobResponse(Job job) {
+
+    var skills = skillRepository.findSkillByJob(job);
+    List<String> skillNames = skills.stream()
+            .map(Skill::getTitle) // Assuming 'name' is an attribute in Skill
+            .toList();
+    return GetJobResponse.builder()
+            .jobId(job.getId())
+            .title(job.getTitle())
+            .companyName(job.getCompany().getName())
+            .address(job.getCompany().getAddress())
+            .skills(skillNames)
+            .description(job.getDescription())
+            .createdDate(job.getCreatedAt().toLocalDate())
+            .expiredDate(job.getExpireAt())
+            .requirements(job.getRequirements())
+            .jobType(job.getJobType().getJobType())
+            .location(job.getLocation().getCityName())
+            .build();
+  }
+  private ApplicationFormResponse mapToApplicationFormResponse(ApplicationForm applicationForm) {
+    return ApplicationFormResponse.builder()
+            .linkCV(applicationForm.getLinkCV())
+            .jobId(applicationForm.getJob().getId())
+            .jobTitle(applicationForm.getJob().getTitle())
+            .candidateName(applicationForm.getCandidateName())
+            .submittedAt(applicationForm.getSubmittedAt())
+            .coverLetter(applicationForm.getCoverLetter())
+            .status(applicationForm.getStatus())
+            .build();
   }
 }

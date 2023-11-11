@@ -8,6 +8,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @RequiredArgsConstructor
+// Adjust the package path accordingly
+
 public class SpringbootApplication {
 
 

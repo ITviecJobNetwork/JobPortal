@@ -1,6 +1,5 @@
 package vn.hcmute.springboot.security;
 
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +17,8 @@ import vn.hcmute.springboot.model.Recruiters;
 import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.repository.RecruiterRepository;
 import vn.hcmute.springboot.repository.UserRepository;
+
+import java.util.Optional;
 
 @Configuration
 @RequiredArgsConstructor

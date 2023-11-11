@@ -1,15 +1,9 @@
 package vn.hcmute.springboot.response;
 
-import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.springframework.data.domain.Page;
+import lombok.*;
 import org.springframework.http.HttpStatus;
-import vn.hcmute.springboot.model.Job;
-import vn.hcmute.springboot.model.SaveJobs;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,15 +12,8 @@ import vn.hcmute.springboot.model.SaveJobs;
 @AllArgsConstructor
 public class SaveJobResponse {
 
-  List<Job> jobs;
+  List<GetJobResponse> jobs;
   private String message;
   private HttpStatus status;
 
-  public SaveJobResponse(String message, HttpStatus status) {
-    this.message = message;
-    this.status = status;
-  }
-  public SaveJobResponse(List<Job> jobs) {
-    this.jobs = jobs;
-  }
 }

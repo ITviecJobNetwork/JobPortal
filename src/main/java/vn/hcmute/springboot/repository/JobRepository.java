@@ -1,8 +1,7 @@
 package vn.hcmute.springboot.repository;
 
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -69,17 +68,15 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
 
   List<Job> findJobByCompanyId(Integer id);
 
-  Optional<Job> findJobByCompany(Company company);
 
   @Query("SELECT j FROM Job j WHERE j.id = :jobId AND j.company.recruiter = :recruiter")
   Optional<Job> findByIdAndRecruiter(
           @Param("jobId") Integer jobId,
           @Param("recruiter") Recruiters recruiter
   );
-  @Query("SELECT j FROM Job j WHERE j.id = :id AND j.company = :company")
-  Optional<Job> findJobByIdAndCompany(@Param("id") Integer id, @Param("company") Company company);
+
   @Query("SELECT j FROM Job j WHERE j.id = :jobId AND j.company.recruiter.id = :recruiterId")
-  Optional<Job> findByIdAndRecruiterId(
+  Job findByIdAndRecruiterId(
           @Param("jobId") Integer jobId,
           @Param("recruiterId") Integer recruiterId
   );

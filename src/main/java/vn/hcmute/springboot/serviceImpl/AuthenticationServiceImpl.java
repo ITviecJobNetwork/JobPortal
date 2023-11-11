@@ -4,23 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.time.Duration;
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import vn.hcmute.springboot.exception.NotFoundException;
-import vn.hcmute.springboot.model.Role;
-import vn.hcmute.springboot.model.Token;
-import vn.hcmute.springboot.model.TokenType;
-import vn.hcmute.springboot.model.User;
-import vn.hcmute.springboot.model.UserStatus;
+import vn.hcmute.springboot.model.*;
 import vn.hcmute.springboot.repository.TokenRepository;
 import vn.hcmute.springboot.repository.UserRepository;
 import vn.hcmute.springboot.request.LoginRequest;
@@ -32,6 +22,10 @@ import vn.hcmute.springboot.security.JwtService;
 import vn.hcmute.springboot.service.AuthenticationService;
 import vn.hcmute.springboot.service.EmailService;
 import vn.hcmute.springboot.service.OtpService;
+
+import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 @org.springframework.stereotype.Service
 @RequiredArgsConstructor
@@ -50,7 +44,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     var nickName = repository.existsByNickname(request.getNickname());
     if (nickName) {
       return MessageResponse.builder()
-          .message("Nickname đã có người sử dụng vui lòng chọn nickname khác")
+              .message("Nickname đã có người sử dụng vui lòng chọn nickname khác")
               .status(HttpStatus.BAD_REQUEST)
               .build();
 
@@ -58,34 +52,34 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     var userName = repository.existsByUsername(request.getUsername());
     if (userName) {
       return MessageResponse.builder()
-          .message("Email đã có người sử dụng vui lòng chọn nickname khác")
-          .status(HttpStatus.BAD_REQUEST)
-          .build();
+              .message("Email đã có người sử dụng vui lòng chọn nickname khác")
+              .status(HttpStatus.BAD_REQUEST)
+              .build();
     }
-    String otp = String.valueOf(otpService.generateOtp());
+    var otp = String.valueOf(otpService.generateOtp());
     try {
       emailService.sendOtpToEmail(request.getUsername(), otp);
     } catch (MessagingException e) {
       return MessageResponse.builder()
-          .message("Không thể OTP, vui lòng thử lại")
+              .message("Không thể gửi OTP, vui lòng thử lại")
               .status(HttpStatus.BAD_REQUEST)
               .build();
     }
     var user = User.builder()
-        .nickname(request.getNickname())
-        .password(passwordEncoder.encode(request.getPassword()))
-        .username(request.getUsername())
-        .role(Role.USER)
-        .otp(otp)
-        .otpGeneratedTime(LocalDateTime.now())
-        .build();
-    var savedUser = repository.save(user);
-    savedUser.setStatus(UserStatus.INACTIVE);
-    String message = "Chúc mừng bạn đã đăng ký tài khoản thành công. Vui lòng kiểm tra email để xác thực tài khoản";
+            .nickname(request.getNickname())
+            .password(passwordEncoder.encode(request.getPassword()))
+            .username(request.getUsername())
+            .role(Role.USER)
+            .otp(otp)
+            .otpGeneratedTime(LocalDateTime.now())
+            .status(UserStatus.INACTIVE)
+            .build();
+    repository.save(user);
+    var message = "Chúc mừng bạn đã đăng ký tài khoản thành công. Vui lòng kiểm tra email để xác thực tài khoản";
     return MessageResponse.builder()
-        .message(message)
-        .status(HttpStatus.CREATED)
-        .build();
+            .message(message)
+            .status(HttpStatus.CREATED)
+            .build();
 
   }
 
@@ -94,37 +88,39 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   public JwtResponse authenticate(LoginRequest request) {
 
     var user = repository.findByUsername(request.getUsername())
-        .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
-    user.setLastSignInTime(LocalDateTime.now());
-    repository.save(user);
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+
     var jwtToken = jwtService.generateToken(user);
     var refreshToken = jwtService.generateRefreshToken(user);
     revokeAllUserTokens(user);
     saveUserToken(user, jwtToken);
+    user.setLastSignInTime(LocalDateTime.now());
+    repository.save(user);
     return JwtResponse.builder()
-        .accessToken(jwtToken)
-        .refreshToken(refreshToken)
-        .firstName(user.getFirstname())
-        .lastName(user.getLastname())
-        .id(user.getId())
-        .password(user.getPassword())
-        .role(user.getRole())
-        .username(user.getUsername())
-        .lastSignInTime(LocalDateTime.now())
-        .status(HttpStatus.OK)
-        .authorities(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
-        .build();
+            .accessToken(jwtToken)
+            .refreshToken(refreshToken)
+            .firstName(user.getFirstname())
+            .lastName(user.getLastname())
+            .id(user.getId())
+            .password(user.getPassword())
+            .role(user.getRole())
+            .username(user.getUsername())
+            .lastSignInTime(LocalDateTime.now())
+            .status(HttpStatus.OK)
+            .authorities(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+            .build();
+
   }
 
   @Override
   public void saveUserToken(User user, String token) {
     var jwtToken = Token.builder()
-        .user(user)
-        .token(token)
-        .tokenType(TokenType.BEARER)
-        .expired(false)
-        .revoked(false)
-        .build();
+            .user(user)
+            .token(token)
+            .tokenType(TokenType.BEARER)
+            .expired(false)
+            .revoked(false)
+            .build();
     tokenRepository.save(jwtToken);
   }
 
@@ -144,8 +140,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 
   public void refreshToken(
-      HttpServletRequest request,
-      HttpServletResponse response
+          HttpServletRequest request,
+          HttpServletResponse response
   ) throws IOException {
     final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
     final String refreshToken;
@@ -157,15 +153,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     userEmail = jwtService.extractUsername(refreshToken);
     if (userEmail != null) {
       var user = this.repository.findByUsername(userEmail)
-          .orElseThrow();
+              .orElseThrow();
       if (jwtService.isTokenValid(refreshToken, user)) {
         var accessToken = jwtService.generateToken(user);
         revokeAllUserTokens(user);
         saveUserToken(user, accessToken);
         var authResponse = AuthenticationResponse.builder()
-            .accessToken(accessToken)
-            .refreshToken(refreshToken)
-            .build();
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
         new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
       }
     }
@@ -174,43 +170,43 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Override
   public MessageResponse verifyAccount(String email, String otp) {
     var user = repository.findByUsername(email)
-        .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng với email: " + email));
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng với email: " + email));
     if (user.getOtp().equals(otp) && Duration.between(user.getOtpGeneratedTime(),
-        LocalDateTime.now()).getSeconds() < (120)) {
+            LocalDateTime.now()).getSeconds() < (120)) {
       user.setStatus(UserStatus.ACTIVE);
-      String message = "Xác thực tài khoản thành công";
+      var message = "Xác thực tài khoản thành công";
       repository.save(user);
       return MessageResponse.builder()
-          .message(message)
-          .status(HttpStatus.ACCEPTED)
-          .build();
+              .message(message)
+              .status(HttpStatus.ACCEPTED)
+              .build();
     }
-    String messageError = "Mã OTP đã hết hạn hoặc không chính xác. Vui lòng tạo mã OTP mới và thử lại";
+    var messageError = "Mã OTP đã hết hạn hoặc không chính xác. Vui lòng tạo mã OTP mới và thử lại";
     return MessageResponse.builder()
-        .message(messageError)
-        .status(HttpStatus.BAD_REQUEST)
-        .build();
+            .message(messageError)
+            .status(HttpStatus.BAD_REQUEST)
+            .build();
 
   }
 
   @Override
   public MessageResponse regenerateOtp(String email) {
-    User user = repository.findByUsername(email)
-        .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng với email: " + email));
-    String otp = String.valueOf(otpService.generateOtp());
+    var user = repository.findByUsername(email)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng với email: " + email));
+    var otp = String.valueOf(otpService.generateOtp());
     try {
       emailService.sendOtpToEmail(email, otp);
     } catch (MessagingException e) {
       return MessageResponse.builder()
-          .message("Không thể gửi mã OTP, vui lòng thử lại")
-          .build();
+              .message("Không thể gửi mã OTP, vui lòng thử lại")
+              .build();
     }
     user.setOtp(otp);
     user.setOtpGeneratedTime(LocalDateTime.now());
     repository.save(user);
-    String message = "Mã OTP đã được gửi... vui lòng xác thực tài khoản trong vòng 2 phút";
+    var message = "Mã OTP đã được gửi... vui lòng xác thực tài khoản trong vòng 2 phút";
     return MessageResponse.builder()
-        .message(message)
-        .build();
+            .message(message)
+            .build();
   }
 }
