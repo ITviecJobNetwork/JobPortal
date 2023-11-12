@@ -129,9 +129,9 @@ public class UserController {
             HttpStatus.OK);
   }
 
-  @PostMapping(value = "/applyJob", consumes = {"multipart/form-data"})
+  @PostMapping(value = "/applyJob")
   public ResponseEntity<ApplyJobResponse> applyJob(
-          @Valid @ModelAttribute ApplyJobRequest request) throws IOException {
+          @Valid @RequestBody ApplyJobRequest request) throws IOException {
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
     if (userName == null) {
       return new ResponseEntity<>(
