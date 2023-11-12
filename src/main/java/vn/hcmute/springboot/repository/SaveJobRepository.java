@@ -15,5 +15,7 @@ public interface SaveJobRepository extends JpaRepository<SaveJobs, Integer> {
   Page<SaveJobs> findJobByIsSavedTrue( Pageable pageable);
   boolean existsByCandidateAndJob(User user,Job job);
 
+  Optional<SaveJobs> findByIdAndCandidate(Integer id, User candidate);
+
 
 }

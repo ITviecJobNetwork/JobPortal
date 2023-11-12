@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import vn.hcmute.springboot.model.Token;
+import vn.hcmute.springboot.model.User;
 
 public interface TokenRepository extends JpaRepository<Token, Integer>
 {
@@ -16,5 +17,10 @@ public interface TokenRepository extends JpaRepository<Token, Integer>
       """)
   List<Token> findAllValidTokenByUser(Integer id);
 
+  List<Token> findByUserAndExpiredTrue(User user);
+
+
   Optional<Token> findByToken(String token);
+
+  List<Token> findByUser(User user);
 }

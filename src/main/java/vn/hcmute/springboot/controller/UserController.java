@@ -162,7 +162,7 @@ public class UserController {
               (new ApplyJobResponse("Thư xin việc không được quá 500 ký tự", HttpStatus.BAD_REQUEST)),
               HttpStatus.BAD_REQUEST);
     }
-    if (request.getLinkCv() == null && request.getLinkNewCv() == null) {
+    if (request.getLinkCv() == null) {
       return new ResponseEntity<>(
               (new ApplyJobResponse("Bạn chưa đính kèm CV", HttpStatus.BAD_REQUEST)),
               HttpStatus.BAD_REQUEST);

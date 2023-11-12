@@ -5,11 +5,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import vn.hcmute.springboot.exception.NotFoundException;
+import vn.hcmute.springboot.exception.UnauthorizedException;
 import vn.hcmute.springboot.model.Company;
+import vn.hcmute.springboot.model.Token;
 import vn.hcmute.springboot.repository.CompanyKeySkillRepository;
 import vn.hcmute.springboot.repository.CompanyRepository;
+import vn.hcmute.springboot.repository.TokenRepository;
+import vn.hcmute.springboot.repository.UserRepository;
 import vn.hcmute.springboot.service.CompanyService;
 
 @Service
@@ -17,7 +22,9 @@ import vn.hcmute.springboot.service.CompanyService;
 public class CompanyServiceImpl implements CompanyService {
 
   private final CompanyRepository companyRepository;
+  private final UserRepository userRepository;
   private final CompanyKeySkillRepository companyKeySkillRepository;
+  private final TokenRepository tokenRepository;
   @Override
   public Page<Company> listAllCompany(int page,int size) {
     Pageable pageable = PageRequest.of(page, size);

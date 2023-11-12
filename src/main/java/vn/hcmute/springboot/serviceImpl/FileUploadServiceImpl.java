@@ -1,14 +1,11 @@
 package vn.hcmute.springboot.serviceImpl;
 
 import com.cloudinary.Cloudinary;
-import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import vn.hcmute.springboot.service.FileUploadService;
@@ -45,7 +42,6 @@ public class FileUploadServiceImpl implements FileUploadService {
       throw new IOException("Không thể xóa tệp " + publicId, e);
     }
   }
-
 
 
 

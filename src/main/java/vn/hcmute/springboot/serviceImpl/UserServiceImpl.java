@@ -198,32 +198,9 @@ public class UserServiceImpl implements UserService {
     applicationForm.setCoverLetter(request.getCoverLetter());
     applicationForm.setStatus(ApplicationStatus.SUBMITTED);
     applicationForm.setIsApplied(true);
-
-
-    if (user.getLinkCV() != null) {
-      if (request.getLinkNewCv() != null) {
-        String urlCv = fileService.uploadCv(request.getLinkNewCv());
-        applicationForm.setLinkCV(urlCv);
-        user.setLinkCV(urlCv);
-      } else {
-        String urlCv = fileService.uploadCv(request.getLinkCv());
-        applicationForm.setLinkCV(urlCv);
-      }
-    } else {
-      if (request.getLinkCv() != null) {
-        String urlCv = fileService.uploadCv(request.getLinkCv());
-        applicationForm.setLinkCV(urlCv);
-        user.setLinkCV(urlCv);
-      } else {
-        ApplyJobResponse.builder()
-                .message("Bạn cần tải lên một liên kết CV mới")
-                .status(HttpStatus.BAD_REQUEST)
-                .build();
-        return;
-      }
-    }
-
+    applicationForm.setLinkCV(request.getLinkCv());
     applicationForm.setSubmittedAt(LocalDate.from(LocalDateTime.now()));
+
     List<Job> relatedJobs = jobRepository.findSimilarJobsByTitleAndLocation(request.getJobId(), job.getTitle(), job.getLocation().getCityName());
     applicationFormRepository.save(applicationForm);
 
@@ -365,8 +342,10 @@ public class UserServiceImpl implements UserService {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
         .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+    var job = jobRepository.findById(id).orElse(null);
+    var saveJob = saveJobRepository.findByCandidateAndJob(user, job);
     if (user != null) {
-      saveJobRepository.deleteById(id);
+      saveJobRepository.delete(saveJob);
     }
     return MessageResponse.builder()
         .message("Xóa công việc đã lưu thành công")

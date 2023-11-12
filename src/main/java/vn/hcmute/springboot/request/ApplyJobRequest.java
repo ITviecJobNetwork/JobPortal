@@ -11,8 +11,7 @@ public class ApplyJobRequest {
   private Integer jobId;
   @NotBlank(message = "Please enter your name")
   private String candidateName;
-  private MultipartFile linkCv;
-  private MultipartFile linkNewCv;
+  private String linkCv;
   private String coverLetter;
 
 

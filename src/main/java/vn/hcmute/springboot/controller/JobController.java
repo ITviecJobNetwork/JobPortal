@@ -8,8 +8,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import vn.hcmute.springboot.exception.UnauthorizedException;
 import vn.hcmute.springboot.model.Job;
 import vn.hcmute.springboot.model.Skill;
 import vn.hcmute.springboot.model.ViewJobs;
@@ -17,6 +20,7 @@ import vn.hcmute.springboot.repository.*;
 import vn.hcmute.springboot.response.GetJobResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.response.ViewJobResponse;
+import vn.hcmute.springboot.security.JwtService;
 import vn.hcmute.springboot.serviceImpl.JobServiceImpl;
 
 import java.time.LocalDateTime;
@@ -37,14 +41,15 @@ public class JobController {
   private final SaveJobRepository saveJobsRepository;
   private final ApplyJobRepository applyJobRepository;
   private final SkillRepository skillRepository;
-
+  private final JwtService jwtService;
 
   @GetMapping()
-  public ResponseEntity<Page<GetJobResponse>> getAllJobs(
+  public ResponseEntity<?> getAllJobs(
           @RequestParam(value = "page", defaultValue = "0") int page,
-          @RequestParam(value = "size", defaultValue = "20") int size) {
+          @RequestParam(value = "size", defaultValue = "20") int size)  {
     Page<Job> jobs = jobService.findAllJob(page, size);
-    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    var userName = authentication.getName();
     List<GetJobResponse> getJobResponses = new ArrayList<>();
     for (Job job : jobs) {
       boolean isSaved = false;
@@ -57,15 +62,17 @@ public class JobController {
           var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
           isSaved = savedJob != null && savedJob.getIsSaved();
           isApplied = applyJob != null && applyJob.getIsApplied();
+
         }
       }
       var skills = skillRepository.findSkillByJob(job);
       List<String> skillNames = skills.stream()
-              .map(Skill::getTitle) // Assuming 'name' is an attribute in Skill
+              .map(Skill::getTitle)
               .toList();
       var getJobResponse = GetJobResponse.builder()
               .jobId(job.getId())
               .title(job.getTitle())
+              .companyId(job.getCompany().getId())
               .companyName(job.getCompany().getName())
               .address(job.getCompany().getAddress())
               .skills(skillNames)
@@ -75,14 +82,15 @@ public class JobController {
               .requirements(job.getRequirements())
               .jobType(job.getJobType().getJobType())
               .location(job.getLocation().getCityName())
+              .minSalary(job.getMinSalary())
+              .maxSalary(job.getMaxSalary())
               .isSaved(isSaved)
               .isApplied(isApplied)
               .build();
 
       getJobResponses.add(getJobResponse);
     }
-
-    Page<GetJobResponse> getJobResponsePage = new PageImpl<>(getJobResponses, PageRequest.of(page, size), jobs.getTotalElements());
+    var getJobResponsePage = new PageImpl<>(getJobResponses, PageRequest.of(page, size), jobs.getTotalElements());
 
     if (jobs.isEmpty()) {
       return new ResponseEntity<>(
@@ -122,6 +130,7 @@ public class JobController {
               .jobId(job.getId())
               .title(job.getTitle())
               .companyName(job.getCompany().getName())
+              .companyId(job.getCompany().getId())
               .address(job.getCompany().getAddress())
               .skills(skillNames)
               .description(job.getDescription())
@@ -130,6 +139,8 @@ public class JobController {
               .requirements(job.getRequirements())
               .jobType(job.getJobType().getJobType())
               .location(job.getLocation().getCityName())
+              .minSalary(job.getMinSalary())
+              .maxSalary(job.getMaxSalary())
               .isSaved(isSaved)
               .isApplied(isApplied)
               .build();
@@ -178,6 +189,7 @@ public class JobController {
               .jobId(job.getId())
               .title(job.getTitle())
               .companyName(job.getCompany().getName())
+              .companyId(job.getCompany().getId())
               .address(job.getCompany().getAddress())
               .skills(skillNames)
               .description(job.getDescription())
@@ -186,6 +198,8 @@ public class JobController {
               .requirements(job.getRequirements())
               .jobType(job.getJobType().getJobType())
               .location(job.getLocation().getCityName())
+              .minSalary(job.getMinSalary())
+              .maxSalary(job.getMaxSalary())
               .isSaved(isSaved)
               .isApplied(isApplied)
               .build();
@@ -233,6 +247,7 @@ public class JobController {
               .jobId(job.getId())
               .title(job.getTitle())
               .companyName(job.getCompany().getName())
+              .companyId(job.getCompany().getId())
               .address(job.getCompany().getAddress())
               .skills(skillNames)
               .description(job.getDescription())
@@ -241,6 +256,8 @@ public class JobController {
               .requirements(job.getRequirements())
               .jobType(job.getJobType().getJobType())
               .location(job.getLocation().getCityName())
+              .minSalary(job.getMinSalary())
+              .maxSalary(job.getMaxSalary())
               .isSaved(isSaved)
               .isApplied(isApplied)
               .build();
@@ -289,6 +306,7 @@ public class JobController {
               .jobId(job.getId())
               .title(job.getTitle())
               .companyName(job.getCompany().getName())
+              .companyId(job.getCompany().getId())
               .address(job.getCompany().getAddress())
               .skills(skillNames)
               .description(job.getDescription())
@@ -297,6 +315,8 @@ public class JobController {
               .requirements(job.getRequirements())
               .jobType(job.getJobType().getJobType())
               .location(job.getLocation().getCityName())
+              .minSalary(job.getMinSalary())
+              .maxSalary(job.getMaxSalary())
               .isSaved(isSaved)
               .isApplied(isApplied)
               .build();
@@ -354,6 +374,7 @@ public class JobController {
               .jobId(job.getId())
               .title(job.getTitle())
               .companyName(job.getCompany().getName())
+              .companyId(job.getCompany().getId())
               .address(job.getCompany().getAddress())
               .skills(skillNames)
               .description(job.getDescription())
@@ -362,6 +383,8 @@ public class JobController {
               .requirements(job.getRequirements())
               .jobType(job.getJobType().getJobType())
               .location(job.getLocation().getCityName())
+              .minSalary(job.getMinSalary())
+              .maxSalary(job.getMaxSalary())
               .isSaved(isSaved)
               .isApplied(isApplied)
               .build();
@@ -389,10 +412,6 @@ public class JobController {
     }
     var job = jobOptional.get();
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
-    if (userName == null) {
-      var getJobResponse = createGetJobResponse(job, false, false);
-      return new ResponseEntity<>(getJobResponse, HttpStatus.OK);
-    }
     var user = userRepository.findByUsername(userName);
     if (user.isEmpty()) {
       var getJobResponse = createGetJobResponse(job, false, false);
@@ -402,7 +421,6 @@ public class JobController {
     var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
     boolean isSaved = savedJob != null && savedJob.getIsSaved();
     boolean isApplied = applyJob != null && applyJob.getIsApplied();
-
     var getJobResponse = createGetJobResponse(job, isSaved, isApplied);
     return new ResponseEntity<>(getJobResponse, HttpStatus.OK);
   }
@@ -417,6 +435,7 @@ public class JobController {
             .jobId(job.getId())
             .title(job.getTitle())
             .companyName(job.getCompany().getName())
+            .companyId(job.getCompany().getId())
             .address(job.getCompany().getAddress())
             .skills(skillNames)
             .description(job.getDescription())
@@ -425,6 +444,8 @@ public class JobController {
             .requirements(job.getRequirements())
             .jobType(job.getJobType().getJobType())
             .location(job.getLocation().getCityName())
+            .minSalary(job.getMinSalary())
+            .maxSalary(job.getMaxSalary())
             .isSaved(isSaved)
             .isApplied(isApplied)
             .build();
@@ -497,6 +518,13 @@ public class JobController {
       Page<GetJobResponse> getJobResponsesPage = new PageImpl<>(getJobResponses, viewJob.getPageable(), viewJob.getTotalElements());
       return new ResponseEntity<>(new ViewJobResponse(getJobResponsesPage), HttpStatus.OK);
     }
+  }
+
+  public MessageResponse checkAccessToken(String accessToken) {
+    if (jwtService.isTokenExpired(accessToken)) {
+      return new MessageResponse("Phiên làm việc đã hết hạn, vui lòng đăng nhập lại", HttpStatus.UNAUTHORIZED);
+    }
+    return null;
   }
 
 
