@@ -35,4 +35,5 @@ public class SaveJobs {
   @Column(name="is_saved")
   private Boolean isSaved;
 
+
 }

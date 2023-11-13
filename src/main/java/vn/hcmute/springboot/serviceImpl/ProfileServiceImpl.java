@@ -3,13 +3,18 @@ package vn.hcmute.springboot.serviceImpl;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import vn.hcmute.springboot.exception.BadRequestException;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.model.CandidateEducation;
 import vn.hcmute.springboot.model.CandidateExperience;
@@ -52,14 +57,11 @@ public class ProfileServiceImpl implements ProfileService {
       handleUserStatus();
       var userName = SecurityContextHolder.getContext().getAuthentication().getName();
       var user = userRepository.findByUsernameIgnoreCase(userName)
-          .orElseThrow(() -> new NotFoundException("không-tìm-thấy-user"));
+              .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy User"));
       MultipartFile fileAvatar = request.getAvatar();
-      if(request.getAvatar()!=null) {
+      if (request.getAvatar() != null) {
         if (!isImageFile(fileAvatar.getOriginalFilename())) {
-          return MessageResponse.builder()
-              .message("không-phải-file-ảnh")
-              .status(HttpStatus.BAD_REQUEST)
-              .build();
+          throw new BadRequestException("File không đúng định dạng");
         }
         String profileAvatar = fileStorageService.uploadFile(fileAvatar);
         user.setAvatar(profileAvatar);
@@ -78,16 +80,28 @@ public class ProfileServiceImpl implements ProfileService {
       user.setCity(request.getCity());
       user.setGender(request.getGender());
       if (request.getSkills() != null && !request.getSkills().isEmpty()) {
-        List<Skill> existingSkills = skillRepository.findByTitleIn(request.getSkills());
-        user.setSkills(existingSkills);
-      }
+        List<String> skillNames = request.getSkills();
+        List<Skill> existingSkills = skillRepository.findByTitleIn(skillNames);
 
+        if (existingSkills.size() < skillNames.size()) {
+          List<String> missingSkills = skillNames.stream()
+                  .filter(skillName -> existingSkills.stream()
+                          .noneMatch(skill -> skill.getTitle().equals(skillName)))
+                  .collect(Collectors.toList());
+
+          String errorMessage = "Các kỹ năng sau không tồn tại: " + String.join(", ", missingSkills);
+          throw new BadRequestException(errorMessage);
+
+        }
+        user.setSkills(existingSkills);
+
+
+      }
       userRepository.save(user);
       return MessageResponse.builder()
-          .message("cập-nhật-thông-tin-thành-công")
-          .status(HttpStatus.OK)
-          .build();
-
+              .message("cập-nhật-thông-tin-thành-công")
+              .status(HttpStatus.OK)
+              .build();
     }
 
   @Override
@@ -114,10 +128,7 @@ public class ProfileServiceImpl implements ProfileService {
           .status(HttpStatus.OK)
           .build();
     } else {
-      return UserProfileResponse.builder()
-          .message("không-tìm-thấy-user")
-          .status(HttpStatus.NOT_FOUND)
-          .build();
+      throw new NotFoundException("Không Tìm Thấy Profile của User");
     }
   }
 
@@ -126,17 +137,22 @@ public class ProfileServiceImpl implements ProfileService {
     handleUserStatus();
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
     var user = userRepository.findByUsernameIgnoreCase(userName)
-        .orElseThrow(() -> new NotFoundException("không-tìm-thấy-user"));
+        .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy User"));
     if(request.getId()!=null) {
       var existingEducation = candidateEducationRepository.findById(request.getId())
-          .orElseThrow(() -> new NotFoundException("không-tìm-thấy-education"));
+          .orElseThrow(() -> new NotFoundException("Không tìm thấy Education"));
       existingEducation.setSchool(request.getSchool());
       existingEducation.setMajor(request.getMajor());
       existingEducation.setStartTime(request.getStartDate());
       existingEducation.setEndTime(request.getEndDate());
       candidateEducationRepository.save(existingEducation);
-
+      MessageResponse.builder()
+          .message("Cập nhật thông tin thành công")
+          .status(HttpStatus.OK)
+          .build();
     }
+
+
     else {
       CandidateEducation candidateEducation = new CandidateEducation();
       candidateEducation.setSchool(request.getSchool());
@@ -147,13 +163,15 @@ public class ProfileServiceImpl implements ProfileService {
       educations.add(candidateEducation);
       candidateEducationRepository.save(candidateEducation);
       userRepository.save(user);
+      MessageResponse.builder()
+              .message("Tạo mới thông tin thành công")
+              .status(HttpStatus.OK)
+              .build();
 
     }
 
-    MessageResponse.builder()
-        .message("tạo-mới-thông-tin-thành-công")
-        .status(HttpStatus.OK)
-        .build();
+
+
   }
 
   @Override
@@ -162,15 +180,19 @@ public class ProfileServiceImpl implements ProfileService {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var userName = authentication.getName();
     var user = userRepository.findByUsername(userName)
-        .orElseThrow(() -> new NotFoundException("không-tìm-thấy-user"));
+        .orElseThrow(() -> new NotFoundException("Không tìm thấy User"));
     if(request.getId()!=null){
       var existingExperience = candidateExperienceRepository.findById(request.getId())
-          .orElseThrow(() -> new NotFoundException("không-tìm-thấy-experience"));
+          .orElseThrow(() -> new NotFoundException("Không tìm thấy Experience"));
       existingExperience.setCompanyName(request.getCompanyName());
       existingExperience.setJobTitle(request.getJobTitle());
       existingExperience.setStartTime(request.getStartDate());
       existingExperience.setEndTime(request.getEndDate());
       candidateExperienceRepository.save(existingExperience);
+      MessageResponse.builder()
+              .message("Cập nhật thông tin thành công")
+              .status(HttpStatus.OK)
+              .build();
     }
     else{
       CandidateExperience candidateExperience = new CandidateExperience();
@@ -186,7 +208,7 @@ public class ProfileServiceImpl implements ProfileService {
       userRepository.save(user);
     }
     MessageResponse.builder()
-        .message("tạo-mới-thông-tin-thành-công")
+        .message("Tạo mới thông tin thành công")
         .status(HttpStatus.OK)
         .build();
 

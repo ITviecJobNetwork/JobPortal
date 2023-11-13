@@ -11,10 +11,12 @@ import java.util.Optional;
 
 public interface CompanyRepository extends JpaRepository<Company, Integer> {
 
-  Page<Company> findCompanyByName(String name, Pageable pageable);
 
 
-  Company findByName(String name);
+  Page<Company> findCompanyByName(String name,Pageable pageable);
+
+
+
 
   @Query("SELECT j FROM Company j")
   Page<Company> findAllCompanies(Pageable pageable);

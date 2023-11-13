@@ -92,6 +92,10 @@ public class JwtService {
             .getBody();
   }
 
+  public boolean isValidToken(String token) {
+    return !isTokenExpired(token);
+  }
+
   private Key getSignInKey() {
     byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
     return Keys.hmacShaKeyFor(keyBytes);

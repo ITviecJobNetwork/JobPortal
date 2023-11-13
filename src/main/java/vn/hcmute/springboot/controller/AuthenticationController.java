@@ -72,41 +72,7 @@ public class AuthenticationController {
   public ResponseEntity<JwtResponse> authenticate(
       @RequestBody LoginRequest request
   ) {
-    var user = userRepository.findByUsername(request.getUsername());
-    if (user.isEmpty()) {
-      return new ResponseEntity<>(
-          new JwtResponse("Không tìm thấy người dùng", HttpStatus.BAD_REQUEST),
-          HttpStatus.BAD_REQUEST);
-    } else {
-      var status = user.get().getStatus();
-      if (status.equals(UserStatus.INACTIVE)) {
-        return new ResponseEntity<>(
-            new JwtResponse("Tài khoản chưa được kích hoạt", HttpStatus.BAD_REQUEST),
-            HttpStatus.BAD_REQUEST);
-      } else {
-        try {
-          authenticationManager.authenticate(
-              new UsernamePasswordAuthenticationToken(
-                  request.getUsername(),
-                  request.getPassword()
-              )
-          );
-        } catch (AuthenticationException ex) {
-          return new ResponseEntity<>(
-              new JwtResponse("Username hoặc mật khẩu không đúng", HttpStatus.BAD_REQUEST),
-              HttpStatus.BAD_REQUEST);
-        }
-      }
-
-    }
-
     var userLogin = service.authenticate(request);
-    if (jwtService.isTokenExpired(userLogin.getAccessToken())) {
-      return new ResponseEntity<>(
-          new JwtResponse("Phiên làm việc đã hết hạn, vui lòng đăng nhập lại", HttpStatus.UNAUTHORIZED),
-          HttpStatus.UNAUTHORIZED
-      );
-    }
     return new ResponseEntity<>(userLogin, HttpStatus.OK);
   }
 
@@ -121,39 +87,15 @@ public class AuthenticationController {
   @PutMapping("/verify-account")
   public ResponseEntity<MessageResponse> verifyAccount(@RequestParam String email,
       @RequestParam String otp) {
-    var user = userRepository.findByUsername(email);
-    if (user.isEmpty()) {
-      return new ResponseEntity<>(
-          (new MessageResponse("Email không tồn tại", HttpStatus.BAD_REQUEST)),
-          HttpStatus.BAD_REQUEST);
-
-    }
-    if (user.get().getOtp().equals(otp) && Duration.between(user.get().getOtpGeneratedTime(),
-        LocalDateTime.now()).getSeconds() < (120)) {
-      return new ResponseEntity<>(service.verifyAccount(email, otp), HttpStatus.OK);
-    }
-    return new ResponseEntity<>(
-        (new MessageResponse("Mã OTP không hợp lệ hoặc đã hết hạn", HttpStatus.BAD_REQUEST)),
-        HttpStatus.BAD_REQUEST);
-
+    var verifyAccount = service.verifyAccount(email, otp);
+    return new ResponseEntity<>(verifyAccount, HttpStatus.OK);
 
   }
 
   @PutMapping("/regenerate-otp")
   public ResponseEntity<MessageResponse> regenerateOtp(@RequestParam String email) {
-    var user = userRepository.findByUsername(email);
-    if (user.isEmpty()) {
-      return new ResponseEntity<>(
-          (new MessageResponse("Email không tồn tại", HttpStatus.BAD_REQUEST)),
-          HttpStatus.BAD_REQUEST);
-
-    }
-    if (email.isEmpty()) {
-      return new ResponseEntity<>(
-          new MessageResponse("Không thể gửi mã OTP, vui lòng thử lại", HttpStatus.BAD_REQUEST),
-          HttpStatus.BAD_REQUEST);
-    }
-    return new ResponseEntity<>(service.regenerateOtp(email), HttpStatus.OK);
+    var regenerateOtp = service.regenerateOtp(email);
+    return new ResponseEntity<>(regenerateOtp, HttpStatus.OK);
   }
 
 

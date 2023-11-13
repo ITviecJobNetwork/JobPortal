@@ -1,13 +1,13 @@
 package vn.hcmute.springboot.service;
 
 import org.springframework.data.domain.Page;
-import vn.hcmute.springboot.model.Company;
+import vn.hcmute.springboot.response.CompanyResponse;
+import vn.hcmute.springboot.response.CompanyWithJobsResponse;
 
 public interface CompanyService {
-  Page<Company> listAllCompany(int page, int size);
-  Page<Company> findCompanyByName(String name,int page,int size);
+  Page<CompanyResponse> listAllCompany(int page, int size);
 
-  Company findCompanyById (Integer id);
+  CompanyWithJobsResponse findCompanyById (Integer id);
 
 
 

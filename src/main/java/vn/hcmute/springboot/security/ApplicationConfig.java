@@ -13,8 +13,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import vn.hcmute.springboot.auditing.AuditAware;
+import vn.hcmute.springboot.model.Admin;
 import vn.hcmute.springboot.model.Recruiters;
 import vn.hcmute.springboot.model.User;
+import vn.hcmute.springboot.repository.AdminRepository;
 import vn.hcmute.springboot.repository.RecruiterRepository;
 import vn.hcmute.springboot.repository.UserRepository;
 
@@ -26,6 +28,7 @@ public class ApplicationConfig {
 
   private final UserRepository repository;
   private final RecruiterRepository recruiterRepository;
+  private final AdminRepository adminRepository;
 
 
   @Bean
@@ -39,6 +42,11 @@ public class ApplicationConfig {
       Optional<Recruiters> recruiter = recruiterRepository.findByUsername(email);
       if (recruiter.isPresent()) {
         return recruiter.get();
+      }
+
+      Optional<Admin> admin = adminRepository.findByEmail(email);
+      if (admin.isPresent()) {
+        return admin.get();
       }
 
       throw new UsernameNotFoundException("user-not-found");

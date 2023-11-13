@@ -1,10 +1,8 @@
 package vn.hcmute.springboot.controller;
 
-import com.cloudinary.Cloudinary;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -18,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.hcmute.springboot.model.CandidateEducation;
 import vn.hcmute.springboot.model.CandidateExperience;
-import vn.hcmute.springboot.model.Skill;
 import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.repository.CandidateEducationRepository;
 import vn.hcmute.springboot.repository.CandidateExperienceRepository;
@@ -36,8 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
-import java.util.List;
-import java.util.stream.Collectors;
+
 
 @RestController
 @RequestMapping("/api/profile")
@@ -47,7 +43,6 @@ public class UserProfileController {
   private final ProfileServiceImpl profileService;
   private final UserRepository userRepository;
   private final FileUploadServiceImpl fileUploadService;
-  private final SkillRepository skillRepository;
   private final CandidateEducationRepository candidateEducationRepository;
   private final CandidateExperienceRepository candidateExperienceRepository;
 
@@ -55,24 +50,6 @@ public class UserProfileController {
   public ResponseEntity<MessageResponse> updateProfile(
           @Valid @ModelAttribute ProfileUpdateRequest request)
           throws IOException {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-              .body(new MessageResponse("Người dùng chưa đăng nhập", HttpStatus.UNAUTHORIZED));
-    }
-    List<String> skillNames = request.getSkills();
-    List<Skill> existingSkills = skillRepository.findByTitleIn(skillNames);
-
-    if (existingSkills.size() < skillNames.size()) {
-      List<String> missingSkills = skillNames.stream()
-              .filter(skillName -> existingSkills.stream()
-                      .noneMatch(skill -> skill.getTitle().equals(skillName)))
-              .collect(Collectors.toList());
-
-      String errorMessage = "Các kỹ năng sau không tồn tại: " + String.join(", ", missingSkills);
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-              .body(new MessageResponse(errorMessage, HttpStatus.BAD_REQUEST));
-    }
 
     var profile = profileService.updateUserProfile(request);
     return new ResponseEntity<>(profile, HttpStatus.OK);
@@ -80,18 +57,7 @@ public class UserProfileController {
 
   @GetMapping(value = "/getProfile")
   public ResponseEntity<UserProfileResponse> getUserProfile() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-              .body(new UserProfileResponse("Người dùng chưa đăng nhập", HttpStatus.UNAUTHORIZED));
-    }
-    UserProfileResponse userProfileResponse = profileService.getUserProfile();
-    if (userProfileResponse == null) {
-      return new ResponseEntity<>(
-              new UserProfileResponse("Profile của người dùng không tồn tại", HttpStatus.NOT_FOUND),
-              HttpStatus.NOT_FOUND);
-    }
-
+    var userProfileResponse = profileService.getUserProfile();
     return new ResponseEntity<>(userProfileResponse, HttpStatus.OK);
   }
 
@@ -121,47 +87,16 @@ public class UserProfileController {
   public ResponseEntity<MessageResponse> addEducation(
           @Valid @ModelAttribute AddEducationRequest request) throws IOException {
     profileService.addEducation(request);
-    var authentication = SecurityContextHolder.getContext().getAuthentication();
-    var userName = authentication.getName();
-    if (userName == null) {
-      return new ResponseEntity<>(
-              new MessageResponse("Người dùng không tồn tại", HttpStatus.NOT_FOUND),
-              HttpStatus.NOT_FOUND);
-    }
-    if (request.getId() != null) {
-      return new ResponseEntity<>(
-              new MessageResponse("Cập nhật education thành công", HttpStatus.OK),
-              HttpStatus.OK);
-
-    } else {
-      return new ResponseEntity<>(new MessageResponse("Thêm education thành công", HttpStatus.OK),
-              HttpStatus.OK);
-    }
-
-
+    return new ResponseEntity<>(new MessageResponse("Thêm education thành công", HttpStatus.OK),
+            HttpStatus.OK);
   }
 
   @PostMapping(value = "/addExperience", consumes = {"multipart/form-data"})
   public ResponseEntity<MessageResponse> addExperience(
           @Valid @ModelAttribute AddExperienceRequest request) throws IOException {
     profileService.addExperience(request);
-    var userName = SecurityContextHolder.getContext().getAuthentication().getName();
-    if (userName == null) {
-      return new ResponseEntity<>(
-              new MessageResponse("Người dùng không tồn tại", HttpStatus.NOT_FOUND),
-              HttpStatus.NOT_FOUND);
-    }
-    if (request.getId() != null) {
-      return new ResponseEntity<>(
-              new MessageResponse("Cập nhật experience thành công", HttpStatus.OK),
-              HttpStatus.OK);
-
-    } else {
-      return new ResponseEntity<>(new MessageResponse("Thêm experience thành công", HttpStatus.OK),
-              HttpStatus.OK);
-    }
-
-
+    return new ResponseEntity<>(new MessageResponse("Thêm experience thành công", HttpStatus.OK),
+            HttpStatus.OK);
   }
 
   @DeleteMapping(value = "/deleteAvatar")

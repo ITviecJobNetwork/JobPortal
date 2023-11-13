@@ -12,7 +12,7 @@ import vn.hcmute.springboot.model.Recruiters;
 import vn.hcmute.springboot.model.User;
 
 public interface ApplicationFormRepository extends JpaRepository<ApplicationForm, Integer> {
-  List<ApplicationForm> findByCandidateAndJob(User candidate, Job job);
+  ApplicationForm findByCandidateAndJob(User candidate, Job job);
 
   List<ApplicationForm> findByCandidate(User candidate);
 
@@ -25,6 +25,9 @@ public interface ApplicationFormRepository extends JpaRepository<ApplicationForm
           @Param("id") Integer id,
           @Param("recruiter") Recruiters recruiter
   );
+
+  @Query("SELECT CASE WHEN COUNT(af) > 0 THEN TRUE ELSE FALSE END FROM ApplicationForm af WHERE af.candidate = :user AND af.job = :job")
+  boolean existsByCandidateAndJob(@Param("user") User user, @Param("job") Job job);
 
 
 

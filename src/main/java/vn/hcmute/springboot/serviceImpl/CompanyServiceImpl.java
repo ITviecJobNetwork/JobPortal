@@ -5,50 +5,115 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.exception.UnauthorizedException;
 import vn.hcmute.springboot.model.Company;
+import vn.hcmute.springboot.model.Job;
 import vn.hcmute.springboot.model.Token;
-import vn.hcmute.springboot.repository.CompanyKeySkillRepository;
-import vn.hcmute.springboot.repository.CompanyRepository;
-import vn.hcmute.springboot.repository.TokenRepository;
-import vn.hcmute.springboot.repository.UserRepository;
+import vn.hcmute.springboot.repository.*;
+import vn.hcmute.springboot.response.CompanyResponse;
+import vn.hcmute.springboot.response.CompanyWithJobsResponse;
+import vn.hcmute.springboot.response.JobOpeningResponse;
 import vn.hcmute.springboot.service.CompanyService;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class CompanyServiceImpl implements CompanyService {
 
   private final CompanyRepository companyRepository;
-  private final UserRepository userRepository;
-  private final CompanyKeySkillRepository companyKeySkillRepository;
-  private final TokenRepository tokenRepository;
+  private final JobRepository jobRepository;
   @Override
-  public Page<Company> listAllCompany(int page,int size) {
+  public Page<CompanyResponse> listAllCompany(int page,int size) {
     Pageable pageable = PageRequest.of(page, size);
     var company = companyRepository.findAllCompanies(pageable);
     if (company.isEmpty()) {
-      throw new NotFoundException("không-tìm-thấy-công-ty");
+      throw new NotFoundException("Không tìm thấy công ty");
     }
-    return company;
+    return company.map(this::mapToCompanyResponse);
   }
 
+
+
   @Override
-  public Page<Company> findCompanyByName(String name,int page,int size) {
-    Pageable pageable = PageRequest.of(page, size);
-    var company = companyRepository.findCompanyByName(name,pageable);
+  public CompanyWithJobsResponse findCompanyById(Integer id) {
+    var company = companyRepository.findById(id);
     if (company.isEmpty()) {
-      throw new NotFoundException("không-tìm-thấy-công-ty " + name);
+      throw new NotFoundException("Không tìm thấy công ty");
     }
-    return company;
+    List<Job> jobOpenings = jobRepository.findJobByCompanyId(company.get().getId());
+    List<JobOpeningResponse> jobOpeningResponses = new ArrayList<>();
+    if (jobOpenings.isEmpty()) {
+      company.get().setCountJobOpening(0);
+      throw new NotFoundException("Không tìm thấy công việc");
+    } else {
+      company.get().setCountJobOpening(jobOpenings.size());
+    }
+    for (Job job : jobOpenings) {
+      var jobResponse = mapToCreateJobOpening(job, company.get());
+      jobOpeningResponses.add(jobResponse);
+    }
+    CompanyWithJobsResponse response = mapToCompanyWithJobsResponse(company.get(), jobOpeningResponses);
+    companyRepository.save(company.get());
+    return response;
+  }
+  public JobOpeningResponse mapToCreateJobOpening(Job job, Company company) {
+    return JobOpeningResponse.builder()
+            .jobId(job.getId())
+            .title(job.getTitle())
+            .companyName(company.getName())
+            .address(company.getAddress())
+            .companyType(company.getCompanyType().getType())
+            .skills(job.getSkills())
+            .description(job.getDescription())
+            .companyLogo(company.getLogo())
+            .createdDate(job.getCreatedAt().toLocalDate())
+            .build();
+  }
+  public CompanyWithJobsResponse mapToCompanyWithJobsResponse(Company company, List<JobOpeningResponse> jobOpeningResponses) {
+    return CompanyWithJobsResponse.builder()
+            .companyId(company.getId())
+            .companyName(company.getName())
+            .companyLogo(company.getLogo())
+            .companyType(company.getCompanyType().getType())
+            .address(company.getAddress())
+            .description(company.getDescription())
+            .website(company.getWebsite())
+            .phoneNumber(company.getPhoneNumber())
+            .industry(company.getIndustry())
+            .createdDate(company.getCreatedDate())
+            .countJobOpenings(company.getCountJobOpening())
+            .companySize(company.getCompanySize())
+            .country(company.getCountry())
+            .foundedDate(company.getFoundedDate())
+            .jobOpenings(jobOpeningResponses)
+            .build();
+  }
+  public CompanyResponse mapToCompanyResponse(Company company) {
+    return CompanyResponse.builder()
+            .companyId(company.getId())
+            .companyName(company.getName())
+            .companyLogo(company.getLogo())
+            .companyType(company.getCompanyType().getType())
+            .address(company.getAddress())
+            .description(company.getDescription())
+            .website(company.getWebsite())
+            .phoneNumber(company.getPhoneNumber())
+            .industry(company.getIndustry())
+            .createdDate(company.getCreatedDate())
+            .countJobOpenings(company.getCountJobOpening())
+            .companySize(company.getCompanySize())
+            .country(company.getCountry())
+            .foundedDate(company.getFoundedDate())
+            .build();
   }
 
-  @Override
-  public Company findCompanyById(Integer id) {
-    return companyRepository.findById(id)
-        .orElseThrow(() -> new NotFoundException("không-tìm-thấy-công-ty " + id));
-  }
 
 }

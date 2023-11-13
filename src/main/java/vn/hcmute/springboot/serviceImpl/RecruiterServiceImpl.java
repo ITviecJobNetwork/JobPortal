@@ -7,12 +7,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import vn.hcmute.springboot.exception.BadRequestException;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.exception.UnauthorizedException;
 import vn.hcmute.springboot.model.*;
@@ -48,16 +51,12 @@ public class RecruiterServiceImpl implements RecruiterService {
   private final JobTypeRepository jobTypeRepository;
   private final LocationRepository locationRepository;
   private final JobRepository jobRepository;
-  private final ApplicationFormRepository applicationFormRepository;
 
   @Override
   public MessageResponse registerRecruiter(RecruiterRegisterRequest recruiterRegisterRequest) {
     var userName = recruiterRepository.existsByUsername(recruiterRegisterRequest.getUsername());
     if (userName) {
-      return MessageResponse.builder()
-              .message("Email đã có người sử dụng vui lòng chọn nickname khác")
-              .status(HttpStatus.BAD_REQUEST)
-              .build();
+      throw new BadRequestException("Tài khoản đã tồn tại");
     }
 
     String password = String.valueOf(otpService.generateNewPassword());
@@ -65,10 +64,7 @@ public class RecruiterServiceImpl implements RecruiterService {
       emailService.sendConfirmRegistrationToRecruiter(recruiterRegisterRequest.getUsername(),
               password);
     } catch (Exception e) {
-      return MessageResponse.builder()
-              .message("Email không tồn tại")
-              .status(HttpStatus.BAD_REQUEST)
-              .build();
+      throw new BadRequestException("Không thể gửi email xác thực, vui lòng thử lại");
     }
     var recruiter = Recruiters.builder()
             .username(recruiterRegisterRequest.getUsername())
@@ -90,7 +86,14 @@ public class RecruiterServiceImpl implements RecruiterService {
   @Override
   public JwtResponse loginRecruiter(LoginRequest request) {
     var recruiter = recruiterRepository.findByUsername(request.getUsername())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy tài khoản"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy tài khoản"));
+    var userStatus = recruiter.getStatus();
+    if (userStatus.equals(RecruiterStatus.INACTIVE)) {
+      throw new UnauthorizedException("Tài khoản chưa được xác thực");
+    }
+    if(!passwordEncoder.matches(request.getPassword(),recruiter.getPassword())){
+      throw new UnauthorizedException("Mật khẩu không đúng");
+    }
     recruiter.setLastSignInTime(LocalDateTime.now());
     recruiterRepository.save(recruiter);
     var jwtToken = jwtService.generateToken(recruiter);
@@ -179,25 +182,16 @@ public class RecruiterServiceImpl implements RecruiterService {
     var initialPassword = recruiter.getPassword();
     if (!passwordEncoder.matches(currentPassword, initialPassword)) {
       var message = "Mật khẩu hiện tại không đúng";
-      MessageResponse.builder()
-              .message(message)
-              .status(HttpStatus.BAD_REQUEST)
-              .build();
+      throw new BadRequestException(message);
     }
     if (Objects.equals(currentPassword, newPassword)) {
       String message = "Mật khẩu mới và mật khẩu hiện tại không được giống nhau";
-      MessageResponse.builder()
-              .message(message)
-              .status(HttpStatus.BAD_REQUEST)
-              .build();
+      throw new BadRequestException(message);
     }
 
     if (!newPassword.equals(confirmPassword)) {
       var message = "Mật khẩu mới và xác nhận mật khẩu không khớp";
-      MessageResponse.builder()
-              .message(message)
-              .status(HttpStatus.BAD_REQUEST)
-              .build();
+      throw new BadRequestException(message);
     }
     recruiter.setPassword(encoder.encode(newPassword));
     recruiterRepository.save(recruiter);
@@ -214,10 +208,7 @@ public class RecruiterServiceImpl implements RecruiterService {
             .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
     boolean existRecruiter = recruiterRepository.existsByNickname(newNickName);
     if (existRecruiter) {
-      MessageResponse.builder()
-              .message("Biệt danh đã tồn tại")
-              .status(HttpStatus.BAD_REQUEST)
-              .build();
+      throw new BadRequestException("Biệt danh đã tồn tại");
     }
     recruiter.setNickname(newNickName);
     recruiterRepository.save(recruiter);
@@ -231,28 +222,19 @@ public class RecruiterServiceImpl implements RecruiterService {
   public void resetPassword(String email, String currentPassword, String newPassword,
                             String confirmPassword) {
     var recruiter = recruiterRepository.findByUsername(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
     var initialPassword = recruiter.getPassword();
     if (!passwordEncoder.matches(currentPassword, initialPassword)) {
       var message = "Mật khẩu được cấp bạn nhập không đúng";
-      MessageResponse.builder()
-              .message(message)
-              .status(HttpStatus.BAD_REQUEST)
-              .build();
+      throw new BadRequestException(message);
     }
     if (Objects.equals(currentPassword, newPassword)) {
       String message = "Mật khẩu mới và mật khẩu hiện tại không được trùng nhau";
-      MessageResponse.builder()
-              .message(message)
-              .status(HttpStatus.BAD_REQUEST)
-              .build();
+      throw new BadRequestException(message);
     }
     if (!newPassword.equals(confirmPassword)) {
       var message = "Mật khẩu mới và mật khẩu xác nhận không khớp";
-      MessageResponse.builder()
-              .message(message)
-              .status(HttpStatus.BAD_REQUEST)
-              .build();
+      throw new BadRequestException(message);
     }
     recruiter.setPassword(encoder.encode(newPassword));
     recruiterRepository.save(recruiter);
@@ -266,13 +248,10 @@ public class RecruiterServiceImpl implements RecruiterService {
   @Override
   public MessageResponse sendNewPasswordToEmail(String email) {
     var recruiter = recruiterRepository.findByUsername(email)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
     if (recruiter.getStatus().equals(RecruiterStatus.INACTIVE)) {
       var messageError = "Nhà tuyển dụng chưa xác thực tài khoản";
-      return MessageResponse.builder()
-              .status(HttpStatus.UNAUTHORIZED)
-              .message(messageError)
-              .build();
+      throw new BadRequestException(messageError);
     }
     try {
       var newPassword = String.valueOf(otpService.generateNewPassword());
@@ -280,10 +259,7 @@ public class RecruiterServiceImpl implements RecruiterService {
       emailService.sendNewPasswordToEmail(email, newPassword);
     } catch (MessagingException e) {
       var messageError = "Không thể gửi mật khẩu mới, vui lòng thử lại";
-      return MessageResponse.builder()
-              .status(HttpStatus.BAD_REQUEST)
-              .message(messageError)
-              .build();
+      throw new BadRequestException(messageError);
     }
     recruiterRepository.save(recruiter);
     return MessageResponse.builder()
@@ -296,7 +272,7 @@ public class RecruiterServiceImpl implements RecruiterService {
   public void updateProfile(UpdateProfileRecruiterRequest request) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
     recruiter.setUsername(request.getUsername());
     recruiter.setNickname(request.getNickname());
     recruiter.setFbUrl(request.getFbUrl());
@@ -313,16 +289,13 @@ public class RecruiterServiceImpl implements RecruiterService {
   public void createCompany(PostInfoCompanyRequest request) throws IOException {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
 
     MultipartFile companyLogo = request.getCompanyLogo();
 
     if(request.getCompanyLogo()!=null) {
       if (!isImageFile(companyLogo.getOriginalFilename())) {
-       MessageResponse.builder()
-                .message("không-phải-file-ảnh")
-                .status(HttpStatus.BAD_REQUEST)
-                .build();
+       throw new BadRequestException("Không phải file ảnh");
       }
 
     }
@@ -358,19 +331,21 @@ public class RecruiterServiceImpl implements RecruiterService {
   public void updateCompany(UpdateInfoCompanyRequest request) throws IOException {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
     var company = companyRepository.findById(recruiter.getCompany().getId())
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
+    if(!company.getRecruiter().getId().equals(recruiter.getId())){
+      throw new UnauthorizedException("Bạn không có quyền cập nhật thông tin công ty này");
+    }
     var findCompany = companyRepository.finCompanyByRecruiter(recruiter)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty của nhà tuyển dụng"));
+    if(findCompany==null){
+      throw new NotFoundException("Bạn chưa có thông tin công ty");
+    }
     MultipartFile companyLogo = request.getCompanyLogo();
-
     if(request.getCompanyLogo()!=null) {
       if (!isImageFile(companyLogo.getOriginalFilename())) {
-        MessageResponse.builder()
-                .message("không-phải-file-ảnh")
-                .status(HttpStatus.BAD_REQUEST)
-                .build();
+        throw new BadRequestException("Không phải file ảnh");
         }
       String logo = fileUploadService.uploadFile(companyLogo);
       findCompany.setLogo(logo);
@@ -404,10 +379,16 @@ public class RecruiterServiceImpl implements RecruiterService {
   public void deleteCompany() {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
 
     var company = companyRepository.finCompanyByRecruiter(recruiter)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
+    if(company==null){
+      throw new NotFoundException("Bạn chưa có thông tin công ty");
+    }
+    if(!company.getRecruiter().getId().equals(recruiter.getId())){
+      throw new UnauthorizedException("Bạn không có quyền xóa công ty này");
+    }
 
     companyRepository.delete(company);
   }
@@ -416,12 +397,11 @@ public class RecruiterServiceImpl implements RecruiterService {
   public void postJob(PostJobRequest request) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
 
     var company = companyRepository.finCompanyByRecruiter(recruiter)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
 
-    // Check if the JobType already exists, and if not, create and save a new one
     JobType jobType = jobTypeRepository.findByJobType(request.getJobType());
     if (jobType == null) {
       jobType = JobType.builder()
@@ -467,14 +447,14 @@ public class RecruiterServiceImpl implements RecruiterService {
   public void updateJob(Integer jobId,UpdateJobRequest request) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
 
     var company = companyRepository.finCompanyByRecruiter(recruiter)
             .orElseThrow(() -> new NotFoundException("Bạn chưa có thông tin công ty"));
 
-    // Query the job based on the job ID or some other unique identifier
     var findJob = jobRepository.findByIdAndRecruiter(jobId, recruiter)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công việc"));
+
 
     var jobType = jobTypeRepository.findByJobType(findJob.getJobType().getJobType());
     if (jobType != null) {
@@ -506,7 +486,7 @@ public class RecruiterServiceImpl implements RecruiterService {
   public void deleteJob(Integer jobId) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
 
     var existingJob = jobRepository.findByIdAndRecruiter(jobId, recruiter)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công việc "));

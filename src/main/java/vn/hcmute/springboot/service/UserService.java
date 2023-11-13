@@ -10,7 +10,7 @@ import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.request.ApplyJobRequest;
 import vn.hcmute.springboot.request.FavouriteJobRequest;
 import vn.hcmute.springboot.request.WriteReviewRequest;
-import vn.hcmute.springboot.response.MessageResponse;
+import vn.hcmute.springboot.response.*;
 
 public interface UserService {
   MessageResponse sendNewPasswordToEmail(String email);
@@ -18,7 +18,7 @@ public interface UserService {
 
   MessageResponse changeNickName (String newNickName);
 
-  void applyJob(ApplyJobRequest request) throws IOException;
+  ApplyJobResponse applyJob(ApplyJobRequest request) throws IOException;
 
   MessageResponse uploadUserCv(MultipartFile fileCv) throws IOException;
 
@@ -29,9 +29,9 @@ public interface UserService {
 
   void saveJob(Integer jobId) throws IOException;
 
-  List<Job> getSavedJobs(User user);
+  List<SaveJobResponse> getSavedJobs(User user);
 
-  Page<Job> getAppliedJobs(User user,Pageable pageRequest);
+  Page<JobApplyResponse>  getAppliedJobs(User user,Pageable pageRequest);
 
 
   MessageResponse deleteSaveJobs(Integer id);
