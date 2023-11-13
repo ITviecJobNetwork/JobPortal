@@ -1,5 +1,5 @@
 # JobPortal
-# springboot-sample-app
+# springboot-job-network
 
 
 
