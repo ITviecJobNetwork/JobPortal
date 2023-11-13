@@ -29,3 +29,7 @@ mvn spring-boot:run
 `Spring boot`
 `Spring Data JPA`
 `Cloudinary`
+
+## Default account
+username: namvo.010202@gmail.com
+password: admin@gmail.com
