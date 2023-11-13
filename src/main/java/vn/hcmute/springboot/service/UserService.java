@@ -20,7 +20,7 @@ public interface UserService {
 
   ApplyJobResponse applyJob(ApplyJobRequest request) throws IOException;
 
-  MessageResponse uploadUserCv(MultipartFile fileCv) throws IOException;
+  MessageResponse uploadUserCv(String fileCv) throws IOException;
 
   MessageResponse writeCoverLetter (String coverLetter);
 

@@ -187,10 +187,11 @@ public class UserController {
     return new ResponseEntity<>(userService.writeCoverLetter(coverLetter), HttpStatus.OK);
   }
 
-  @PostMapping(value = "/uploadUserCv", consumes = {"multipart/form-data"})
+  @PostMapping(value = "/uploadUserCv")
   public ResponseEntity<MessageResponse> uploadUserCv(
-          @Valid @RequestParam("fileCv") MultipartFile fileCv) throws IOException {
-    return new ResponseEntity<>(userService.uploadUserCv(fileCv), HttpStatus.OK);
+          @Valid @RequestBody String fileCv) throws IOException {
+    var uploadCv = userService.uploadUserCv(fileCv);
+    return new ResponseEntity<>(uploadCv, HttpStatus.OK);
   }
 
   @PostMapping("/reset-password")

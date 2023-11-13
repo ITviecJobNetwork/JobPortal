@@ -61,22 +61,16 @@ public class UserProfileController {
     return new ResponseEntity<>(userProfileResponse, HttpStatus.OK);
   }
 
-  @PostMapping(value = "/uploadAvatar", consumes = {"multipart/form-data"})
+  @PostMapping(value = "/uploadAvatar")
   public ResponseEntity<MessageResponse> uploadImage(
-          @RequestPart(value = "avatar", required = false) MultipartFile file) throws IOException {
+          @RequestBody String avatar) throws IOException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
               .body(new MessageResponse("Người dùng chưa đăng nhập", HttpStatus.UNAUTHORIZED));
     }
     var user = userRepository.findByUsername(authentication.getName()).orElseThrow();
-    if (!isImageFile(file.getOriginalFilename())) {
-      return new ResponseEntity<>(
-              new MessageResponse("File không phải là ảnh", HttpStatus.BAD_REQUEST),
-              HttpStatus.BAD_REQUEST);
-    }
-    String profileAvatar = fileUploadService.uploadFile(file);
-    user.setAvatar(profileAvatar);
+    user.setAvatar(avatar);
     userRepository.save(user);
 
     return new ResponseEntity<>(new MessageResponse("Upload thành công", HttpStatus.OK),
