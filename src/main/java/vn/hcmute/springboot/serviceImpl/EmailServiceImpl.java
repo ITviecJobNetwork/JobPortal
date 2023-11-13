@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import vn.hcmute.springboot.model.ApplicationForm;
 import vn.hcmute.springboot.model.ApplicationStatus;
+import vn.hcmute.springboot.model.UserStatus;
 import vn.hcmute.springboot.service.EmailService;
 
 
@@ -199,6 +200,21 @@ public class EmailServiceImpl implements EmailService {
       mimeMessageHelper.setText("Đơn ứng tuyển của bạn đang chờ duyệt. Trạng thái mới: " + applicationForm.getStatus());
     }
 
+    javaMailSender.send(mimeMessage);
+  }
+
+  @Override
+  public void sendReasonDeActiveUser(String email, String reason, UserStatus status) throws MessagingException {
+    MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+    MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
+    mimeMessageHelper.setTo(email);
+    mimeMessageHelper.setSubject("Reason for deActive account");
+    if(status.equals(UserStatus.INACTIVE)){
+      mimeMessageHelper.setText("Tài khoản của bạn đã bị vô hiệu hóa trong vòng 3 ngày. Lý do: " + reason);
+    }
+    if(status.equals(UserStatus.ACTIVE)){
+      mimeMessageHelper.setText("Tài khoản của bạn đã được kích hoạt chúc mừng bạn: " + reason);
+    }
     javaMailSender.send(mimeMessage);
   }
 }

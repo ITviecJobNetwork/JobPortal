@@ -2,6 +2,8 @@ package vn.hcmute.springboot.response;
 
 import java.time.LocalDate;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,12 +12,14 @@ import org.springframework.http.HttpStatus;
 import vn.hcmute.springboot.model.CandidateEducation;
 import vn.hcmute.springboot.model.CandidateExperience;
 import vn.hcmute.springboot.model.Gender;
+import vn.hcmute.springboot.model.UserStatus;
 
 @Getter
 @AllArgsConstructor
 @Setter
 @Builder
 public class UserProfileResponse {
+  private Integer id;
   private String aboutMe;
   private String fullName;
   private String email;
@@ -28,15 +32,11 @@ public class UserProfileResponse {
   private List<String> skills;
   private String city;
   private Gender gender;
-  private List<CandidateEducation> education;
-  private List<CandidateExperience> experience;
+  private List<String> education;
+  private List<String> experience;
   private String coverLetter;
   private String avatar;
-  private String message;
-  private HttpStatus status;
+  private UserStatus userStatus;
 
-    public UserProfileResponse(String message, HttpStatus httpStatus) {
-      this.message = message;
-      this.status = httpStatus;
-    }
+
 }

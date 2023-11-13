@@ -121,11 +121,10 @@ public class ProfileServiceImpl implements ProfileService {
           .linkWebsiteProfile(user.getLinkWebsiteProfile())
           .coverLetter(user.getCoverLetter())
           .city(user.getCity())
-          .education(user.getEducations())
-          .experience(user.getExperiences())
+          .education(user.getEducations().stream().map(CandidateEducation::getSchool).toList())
+          .experience(user.getExperiences().stream().map(CandidateExperience::getCompanyName).toList())
           .gender(user.getGender())
           .skills(user.getSkills().stream().map(Skill::getTitle).toList())
-          .status(HttpStatus.OK)
           .build();
     } else {
       throw new NotFoundException("Không Tìm Thấy Profile của User");

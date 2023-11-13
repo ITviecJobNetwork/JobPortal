@@ -14,6 +14,7 @@ import static vn.hcmute.springboot.model.Permission.RECRUITER_DELETE;
 import static vn.hcmute.springboot.model.Permission.RECRUITER_READ;
 import static vn.hcmute.springboot.model.Permission.RECRUITER_UPDATE;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -102,8 +103,6 @@ public class  User implements UserDetails {
   @Column(name = "link_website_profile")
   private String linkWebsiteProfile;
 
-
-
   @Column(name = "city")
   private String city;
 
@@ -157,8 +156,7 @@ public class  User implements UserDetails {
   @OneToMany(mappedBy = "user",fetch = FetchType.EAGER)
   private List<Token> tokens;
 
-  @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE,
-      CascadeType.PERSIST, CascadeType.REFRESH})
+  @ManyToMany(fetch = FetchType.EAGER)
 
   @JoinTable(
       name = "candidate_skill",
@@ -167,7 +165,7 @@ public class  User implements UserDetails {
   )
   private List<Skill> skills;
 
-  @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+  @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
       name = "user_education",
       joinColumns = @JoinColumn(name = "user_id"),
@@ -175,23 +173,13 @@ public class  User implements UserDetails {
   )
   private List<CandidateEducation> educations;
 
-  @ManyToMany (fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE,
-      CascadeType.PERSIST, CascadeType.REFRESH})
+  @ManyToMany (fetch = FetchType.EAGER)
   @JoinTable(
       name = "user_experience",
       joinColumns = @JoinColumn(name = "user_id"),
       inverseJoinColumns = @JoinColumn(name = "experience_id")
   )
   private List<CandidateExperience> experiences;
-
-
-
-
-
-
-
-
-
 
   @Override
   public final boolean equals(Object o) {

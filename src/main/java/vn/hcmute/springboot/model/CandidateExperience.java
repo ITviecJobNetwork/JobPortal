@@ -48,6 +48,4 @@ public class CandidateExperience {
   @Column(name = "description")
   private String description;
 
-;
-
 }

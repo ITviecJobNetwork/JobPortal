@@ -1,5 +1,6 @@
 package vn.hcmute.springboot.request;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import lombok.Data;
@@ -11,13 +12,13 @@ import lombok.Setter;
 @Data
 public class AddExperienceRequest {
   private Integer id;
-  @NotNull
+  @NotBlank(message = "Company name is mandatory")
   private String companyName;
-  @NotNull
+  @NotBlank(message = "Job title is mandatory")
   private String jobTitle;
-  @NotNull
+  @NotBlank(message = "Description is mandatory")
   private LocalDate startDate;
-  @NotNull
+  @NotBlank(message = "Description is mandatory")
   private LocalDate endDate;
 
 }
