@@ -4,10 +4,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 
 public class ConnectMySQL {
-  private static final String URL ="";
+  private static final String URL ="jdbc:mysql://localhost:3306/fashion-shop?createDatabaseIfNotExist=true&useSSL=false";
   private static Connection conn;
-  private static final String USER = "";
-  private static final String PASSWORD = "";
+  private static final String USER = "root";
+  private static final String PASSWORD = "123456789";
   public static Connection getConnection() {
 
 
