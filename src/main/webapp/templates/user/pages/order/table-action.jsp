@@ -15,7 +15,7 @@
         <li class="border-bottom">
             <div class="p-2 flex align-items-center">
                 <i class="fa fa-times mr-2" aria-hidden="true"></i>
-                <a href="javascript:void(0)" data-toggle="collapse" data-target="#order-${ _item.code }">Hủy bỏ</a>
+                <a href="javascript:void(0)" data-target="#order-${ _item.code }">Hủy bỏ</a>
             </div>
         </li>
     </c:if>

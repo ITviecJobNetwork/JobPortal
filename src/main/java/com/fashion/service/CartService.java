@@ -74,7 +74,7 @@ public class CartService extends BaseService {
                     .orElseGet(() -> {
                         Cart c = new Cart();
                         c.setQuantity(request.getQuantity());
-                        c.setProductDetailId(productDetail.getId());
+                        c.setProductDetailId((int) productDetail.getId());
                         c.setEmail(userResponse.getEmail());
                         return c;
                     });

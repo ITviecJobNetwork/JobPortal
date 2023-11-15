@@ -91,7 +91,7 @@ public class CategoryService extends BaseService {
            Category byCode = this.findByCode(code, session);
            byCode.setActive(!byCode.isActive());
            this.categoryDao.save(byCode, session);
-           this.productDao.updateStatusProductByCategoryId(byCode.isActive(), byCode.getId(), session);
+           this.productDao.updateStatusProductByCategoryId(byCode.isActive(), Long.valueOf(byCode.getId()), session);
            return Result.<String>builder()
                    .isSuccess(true)
                    .message((byCode.isActive() ? "Mở khóa" : "Khóa") + " danh mục thành công")

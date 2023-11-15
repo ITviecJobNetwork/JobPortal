@@ -37,7 +37,7 @@
                         <th>Ngày mua</th>
                         <th>Tổng tiền</th>
                         <th>Thông tin</th>
-                        <th></th>
+                        <th>Thao tác</th>
                     </tr>
                     </thead>
                     <tbody>

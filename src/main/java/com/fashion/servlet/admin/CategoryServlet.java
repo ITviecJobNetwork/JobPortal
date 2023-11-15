@@ -11,6 +11,7 @@ import com.fashion.dto.page.PageRequest;
 import com.fashion.dto.page.PageResponse;
 import com.fashion.service.CategoryService;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -18,6 +19,7 @@ import javax.validation.Valid;
 import java.util.Map;
 import java.util.Objects;
 
+@EqualsAndHashCode(callSuper = true)
 @WebServlet(name = "adminCategoryServlet", urlPatterns = "/admin/category/*")
 @Data
 public class CategoryServlet extends AdminLayoutServlet {
