@@ -80,6 +80,7 @@ public class ProfileServiceImpl implements ProfileService {
         user.setBirthDate(null);
       }
       return UserProfileResponse.builder()
+              .id(user.getId())
               .fullName(user.getFullName())
               .aboutMe(user.getAboutMe())
               .avatar(user.getAvatar())
