@@ -45,7 +45,6 @@ public class ProfileServiceImpl implements ProfileService {
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
     var user = userRepository.findByUsernameIgnoreCase(userName)
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy User"));
-
     user.setFullName(request.getFullName());
     user.setAboutMe(request.getAboutMe());
     user.setUsername(request.getEmail());
@@ -73,6 +72,13 @@ public class ProfileServiceImpl implements ProfileService {
       if (user.getEducation() != null) {
         educationResponse = convertToCandidateEducationResponse(user.getEducation());
       }
+      if(user.getBirthDate() != null){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        String birthDate = user.getBirthDate().format(formatter);
+      }
+      else{
+        user.setBirthDate(null);
+      }
       return UserProfileResponse.builder()
               .fullName(user.getFullName())
               .aboutMe(user.getAboutMe())
@@ -82,7 +88,6 @@ public class ProfileServiceImpl implements ProfileService {
               .address(user.getAddress())
               .position(user.getPosition())
               .phoneNumber(user.getPhoneNumber())
-              .birthdate(user.getBirthDate().toString())
               .linkWebsiteProfile(user.getLinkWebsiteProfile())
               .city(user.getCity())
               .education(educationResponse)
@@ -107,7 +112,6 @@ public class ProfileServiceImpl implements ProfileService {
               .orElseThrow(() -> new NotFoundException("Không tìm thấy Education"));
       existingEducation.setSchool(request.getSchool());
       existingEducation.setMajor(request.getMajor());
-
       existingEducation.setStartTime(request.getStartDate());
       existingEducation.setEndTime(request.getEndDate());
       candidateEducationRepository.save(existingEducation);

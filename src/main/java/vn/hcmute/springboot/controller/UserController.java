@@ -11,9 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.exception.UnauthorizedException;
 import vn.hcmute.springboot.model.*;
@@ -22,12 +20,11 @@ import vn.hcmute.springboot.request.*;
 import vn.hcmute.springboot.response.*;
 import vn.hcmute.springboot.service.UserService;
 
-import java.util.Optional;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequestMapping("/api/users")
@@ -42,6 +39,7 @@ public class UserController {
   private final CompanyFollowRepository companyFollowRepository;
   private final SkillRepository skillRepository;
   private final JobRepository jobRepository;
+
   @PostMapping("/forgot-password")
   public ResponseEntity<MessageResponse> forgotPassword(
           @Valid @RequestBody ForgotPasswordRequest request) {
@@ -127,7 +125,8 @@ public class UserController {
             appliedJob.getTotalElements());
     return new ResponseEntity<>(jobApplyResponsePage, HttpStatus.OK);
   }
-  private JobApplyResponse mapToApplyJobResponse(Job job){
+
+  private JobApplyResponse mapToApplyJobResponse(Job job) {
     var user = userRepository.findByUsername(
             SecurityContextHolder.getContext().getAuthentication().getName());
     var skills = skillRepository.findSkillByJob(job);
@@ -161,6 +160,7 @@ public class UserController {
             .build();
 
   }
+
   private LocalDate getOldestSubmittedAt(User user, Job job) {
     return job.getApplicationForms()
             .stream()
@@ -178,9 +178,6 @@ public class UserController {
             .max(LocalDate::compareTo)
             .orElse(null);
   }
-
-
-
 
 
   @PostMapping("/writeCoverLetter")
@@ -225,7 +222,7 @@ public class UserController {
               HttpStatus.NOT_FOUND);
     }
 
-    return new ResponseEntity<>((new UserCvResponse(linkCv,coverLetter)), HttpStatus.OK);
+    return new ResponseEntity<>((new UserCvResponse(linkCv, coverLetter)), HttpStatus.OK);
   }
 
   @PostMapping("/saveJob/{jobId}")
@@ -281,7 +278,7 @@ public class UserController {
     return new ResponseEntity<>(saveJobResponse, HttpStatus.OK);
   }
 
-  private SaveJobResponse mapToSaveJobResponse(Job job){
+  private SaveJobResponse mapToSaveJobResponse(Job job) {
     var skills = skillRepository.findSkillByJob(job);
     List<String> skillNames = skills.stream()
             .map(Skill::getTitle) // Assuming 'name' is an attribute in Skill
