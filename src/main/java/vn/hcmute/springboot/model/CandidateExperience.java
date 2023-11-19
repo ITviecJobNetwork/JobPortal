@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

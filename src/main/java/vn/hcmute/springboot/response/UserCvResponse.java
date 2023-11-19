@@ -16,6 +16,7 @@ public class UserCvResponse {
   private String message;
   private HttpStatus status;
   private String linkCv;
+  private String coverLetter;
 
   public UserCvResponse(String message, HttpStatus status) {
     this.message = message;
@@ -25,4 +26,8 @@ public class UserCvResponse {
     this.linkCv = linkCv;
   }
 
+  public UserCvResponse(String linkCv, String coverLetter) {
+    this.linkCv = linkCv;
+    this.coverLetter = coverLetter;
+  }
 }

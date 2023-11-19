@@ -217,17 +217,16 @@ public class AdminServiceImpl implements AdminService {
             .address(user.getAddress())
             .position(user.getPosition())
             .phoneNumber(user.getPhoneNumber())
-            .birthdate(user.getBirthDate())
+            .birthdate(user.getBirthDate().toString())
             .linkWebsiteProfile(user.getLinkWebsiteProfile())
             .skills(skills.stream().map(Skill::getTitle).toList())
             .education(educationResponse)
             .experience(user.getExperiences() != null ?
                     user.getExperiences().stream().map(this::convertToCandidateExperienceResponse).toList() :
                     Collections.emptyList())
-            .birthdate(user.getBirthDate())
+            .birthdate(user.getBirthDate().toString())
             .city(user.getCity())
             .gender(user.getGender())
-            .coverLetter(user.getCoverLetter())
             .avatar(user.getAvatar())
             .userStatus(user.getStatus())
             .build();

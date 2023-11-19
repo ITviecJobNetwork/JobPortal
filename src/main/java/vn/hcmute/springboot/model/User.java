@@ -14,6 +14,7 @@ import static vn.hcmute.springboot.model.Permission.RECRUITER_DELETE;
 import static vn.hcmute.springboot.model.Permission.RECRUITER_READ;
 import static vn.hcmute.springboot.model.Permission.RECRUITER_UPDATE;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

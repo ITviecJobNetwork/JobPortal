@@ -3,7 +3,6 @@ package vn.hcmute.springboot.serviceImpl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -27,6 +26,9 @@ import vn.hcmute.springboot.response.UserProfileResponse;
 import vn.hcmute.springboot.service.ProfileService;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,8 +41,6 @@ public class ProfileServiceImpl implements ProfileService {
   private final SkillRepository skillRepository;
   private final CandidateEducationRepository candidateEducationRepository;
   private final CandidateExperienceRepository candidateExperienceRepository;
-
-
   @Override
   public MessageResponse updateUserProfile(ProfileUpdateRequest request) throws IOException {
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -63,6 +63,10 @@ public class ProfileServiceImpl implements ProfileService {
     } else {
       throw new BadRequestException("Kỹ năng không được để trống");
     }
+
+
+
+
     user.setFullName(request.getFullName());
     user.setAboutMe(request.getAboutMe());
     user.setUsername(request.getEmail());
@@ -101,9 +105,8 @@ public class ProfileServiceImpl implements ProfileService {
               .address(user.getAddress())
               .position(user.getPosition())
               .phoneNumber(user.getPhoneNumber())
-              .birthdate(user.getBirthDate())
+              .birthdate(user.getBirthDate().toString())
               .linkWebsiteProfile(user.getLinkWebsiteProfile())
-              .coverLetter(user.getCoverLetter())
               .city(user.getCity())
               .education(educationResponse)
               .experience(user.getExperiences() != null ?
@@ -127,6 +130,7 @@ public class ProfileServiceImpl implements ProfileService {
               .orElseThrow(() -> new NotFoundException("Không tìm thấy Education"));
       existingEducation.setSchool(request.getSchool());
       existingEducation.setMajor(request.getMajor());
+
       existingEducation.setStartTime(request.getStartDate());
       existingEducation.setEndTime(request.getEndDate());
       candidateEducationRepository.save(existingEducation);
@@ -189,6 +193,7 @@ public class ProfileServiceImpl implements ProfileService {
             .build();
 
   }
+
 
   @Override
   public MessageResponse deleteEducation(Integer id) {

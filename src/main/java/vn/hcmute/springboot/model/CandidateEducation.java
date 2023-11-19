@@ -3,6 +3,7 @@ package vn.hcmute.springboot.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

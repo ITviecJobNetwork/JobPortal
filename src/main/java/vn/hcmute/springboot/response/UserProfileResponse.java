@@ -27,14 +27,13 @@ public class UserProfileResponse {
   private String address;
   private String position;
   private String phoneNumber;
-  private LocalDate birthdate;
+  private String birthdate;
   private String linkWebsiteProfile;
   private List<String> skills;
   private String city;
   private Gender gender;
   private CandidateEducationResponse education;
   private List<CandidateExperienceResponse> experience;
-  private String coverLetter;
   private String avatar;
   private UserStatus userStatus;
 
