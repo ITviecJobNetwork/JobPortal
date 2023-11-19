@@ -39,4 +39,7 @@ public class CandidateEducation {
   @Column(name = "end_time")
   private LocalDate endTime;
 
+  @OneToMany(mappedBy = "education", cascade = CascadeType.ALL)
+  @Column(name="user_id")
+  private Set<User> users;
 }

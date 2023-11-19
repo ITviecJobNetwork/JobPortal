@@ -108,8 +108,8 @@ public class ProfileServiceImpl implements ProfileService {
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
     var user = userRepository.findByUsernameIgnoreCase(userName)
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy User"));
-    if (request.getId() != 0) {
-      var existingEducation = candidateEducationRepository.findById(request.getId())
+    if (user.getEducation() != null) {
+      var existingEducation = candidateEducationRepository.findById(user.getEducation().getId())
               .orElseThrow(() -> new NotFoundException("Không tìm thấy Education"));
       existingEducation.setSchool(request.getSchool());
       existingEducation.setMajor(request.getMajor());
@@ -127,6 +127,7 @@ public class ProfileServiceImpl implements ProfileService {
       candidateEducation.setStartTime(request.getStartDate());
       candidateEducation.setEndTime(request.getEndDate());
       candidateEducationRepository.save(candidateEducation);
+      user.setEducation(candidateEducation);
       userRepository.save(user);
       MessageResponse.builder()
               .message("Tạo mới thông tin thành công")

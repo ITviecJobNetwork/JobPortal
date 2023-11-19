@@ -14,7 +14,6 @@ import lombok.Setter;
 @Setter
 @Data
 public class AddEducationRequest {
-  private Integer id;
   @NotBlank(message = "School is mandatory")
   private String school;
   @NotBlank(message = "Major is mandatory")

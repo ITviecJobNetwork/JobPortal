@@ -81,8 +81,7 @@ public class UserProfileController {
   public ResponseEntity<MessageResponse> addEducation(
           @Valid @RequestBody AddEducationRequest request) throws IOException {
     profileService.addEducation(request);
-    return new ResponseEntity<>(new MessageResponse("Thêm education thành công", HttpStatus.OK),
-            HttpStatus.OK);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
   @PostMapping(value = "/addExperience")
