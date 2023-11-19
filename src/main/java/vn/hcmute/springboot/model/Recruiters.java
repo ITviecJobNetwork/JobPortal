@@ -72,9 +72,9 @@ public class Recruiters implements UserDetails {
   @Column(name = "company_size")
   private Integer companySize;
 
-  @Temporal(TemporalType.TIMESTAMP)
+
   @Column(name = "working_days")
-  private Date workingDays;
+  private LocalDate workingDays;
 
   @Column(name = "overtime_policy", length = 255)
   private String overtimePolicy;
@@ -158,4 +158,6 @@ public class Recruiters implements UserDetails {
   public boolean isEnabled() {
     return true;
   }
+
+
 }

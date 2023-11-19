@@ -1,13 +1,7 @@
 package vn.hcmute.springboot.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -32,8 +26,6 @@ public class CandidateEducation {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
-  @ManyToMany(mappedBy = "educations",fetch = FetchType.EAGER)
-  private Set<User> users;
   @Column(name = "major")
   private String major;
 
@@ -45,8 +37,5 @@ public class CandidateEducation {
 
   @Column(name = "end_time")
   private LocalDate endTime;
-
-  @Column(name = "description")
-  private String description;
 
 }

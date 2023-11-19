@@ -19,8 +19,6 @@ public interface CandidateEducationRepository extends JpaRepository<CandidateEdu
   @Query("DELETE FROM CandidateEducation ce WHERE ce.id = :educationId")
   void deleteByEducationId(@Param("educationId") Integer educationId);
 
-  @Query("SELECT s FROM CandidateEducation s JOIN s.users u WHERE u.id = :userId")
-  List<CandidateEducation> findByUserId(@Param("userId") Integer userId);
 
 
 }

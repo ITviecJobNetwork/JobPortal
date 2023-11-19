@@ -4,26 +4,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import vn.hcmute.springboot.exception.BadRequestException;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.exception.UnauthorizedException;
 import vn.hcmute.springboot.model.*;
 import vn.hcmute.springboot.repository.*;
 import vn.hcmute.springboot.request.*;
-import vn.hcmute.springboot.response.AuthenticationResponse;
-import vn.hcmute.springboot.response.JwtResponse;
-import vn.hcmute.springboot.response.MessageResponse;
+import vn.hcmute.springboot.response.*;
 import vn.hcmute.springboot.security.JwtService;
 import vn.hcmute.springboot.service.EmailService;
 import vn.hcmute.springboot.service.FileUploadService;
@@ -32,6 +29,7 @@ import vn.hcmute.springboot.service.RecruiterService;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Objects;
 
 @Service
@@ -91,7 +89,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     if (userStatus.equals(RecruiterStatus.INACTIVE)) {
       throw new UnauthorizedException("Tài khoản chưa được xác thực");
     }
-    if(!passwordEncoder.matches(request.getPassword(),recruiter.getPassword())){
+    if (!passwordEncoder.matches(request.getPassword(), recruiter.getPassword())) {
       throw new UnauthorizedException("Mật khẩu không đúng");
     }
     recruiter.setLastSignInTime(LocalDateTime.now());
@@ -278,6 +276,12 @@ public class RecruiterServiceImpl implements RecruiterService {
     recruiter.setFbUrl(request.getFbUrl());
     recruiter.setPhoneNumber(request.getPhoneNumber());
     recruiter.setBirthDate(request.getBirthDate());
+    recruiter.setWebsiteUrl(request.getWebsiteUrl());
+    recruiter.setBenefit(request.getBenefit());
+    recruiter.setOvertimePolicy(request.getOverTimePolicy());
+    recruiter.setRecruitmentProcedure(request.getRecruitmentProcedure());
+    recruiter.setIntroduction(request.getIntroduction());
+    recruiter.setWorkingDays(request.getWorkingDay());
     recruiterRepository.save(recruiter);
     MessageResponse.builder()
             .status(HttpStatus.OK)
@@ -286,24 +290,49 @@ public class RecruiterServiceImpl implements RecruiterService {
   }
 
   @Override
+  @Transactional
+  public RecruiterProfileResponse getProfile() {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    var recruiter = recruiterRepository.findByUsername(authentication.getName())
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
+    if (recruiter!=null) {
+      return RecruiterProfileResponse.builder()
+              .recruiterId(recruiter.getId())
+              .fbUrl(recruiter.getFbUrl())
+              .websiteUrl(recruiter.getWebsiteUrl())
+              .linkedInUrl(recruiter.getLinkedInUrl())
+              .username(recruiter.getUsername())
+              .birthDate(recruiter.getBirthDate())
+              .nickname(recruiter.getNickname())
+              .phoneNumber(recruiter.getPhoneNumber())
+              .build();
+    }
+    else{
+      throw new NotFoundException("Không tìm thấy nhà tuyển dụng");
+    }
+
+  }
+
+  @Override
   public void createCompany(PostInfoCompanyRequest request) throws IOException {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
 
-    MultipartFile companyLogo = request.getCompanyLogo();
-
-    if(request.getCompanyLogo()!=null) {
-      if (!isImageFile(companyLogo.getOriginalFilename())) {
-       throw new BadRequestException("Không phải file ảnh");
-      }
-
-    }
-    String logo = fileUploadService.uploadFile(companyLogo);
+    String logo = request.getCompanyLogo();
     String companyTypeName = request.getCompanyType();
     CompanyType companyType = companyTypeRepository.findByType(companyTypeName);
+    String locationName = request.getLocation();
+    Location location = locationRepository.findByCityName(locationName);
+    if (location == null) {
+      Location newLocation = Location.builder()
+              .cityName(locationName)
+              .build();
+      locationRepository.save(newLocation);
+    }
 
-    if(companyType==null){
+
+    if (companyType == null) {
       CompanyType newCompanyType = CompanyType.builder()
               .type(companyTypeName)
               .build();
@@ -321,6 +350,7 @@ public class RecruiterServiceImpl implements RecruiterService {
             .recruiter(recruiter)
             .logo(logo)
             .companyType(companyType)
+            .address(String.valueOf(location))
             .companySize(request.getCompanySize())
             .country(request.getCountry())
             .build();
@@ -334,43 +364,39 @@ public class RecruiterServiceImpl implements RecruiterService {
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
     var company = companyRepository.findById(recruiter.getCompany().getId())
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
-    if(!company.getRecruiter().getId().equals(recruiter.getId())){
+    if (!company.getRecruiter().getId().equals(recruiter.getId())) {
       throw new UnauthorizedException("Bạn không có quyền cập nhật thông tin công ty này");
     }
     var findCompany = companyRepository.finCompanyByRecruiter(recruiter)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty của nhà tuyển dụng"));
-    if(findCompany==null){
+    if (findCompany == null) {
       throw new NotFoundException("Bạn chưa có thông tin công ty");
     }
-    MultipartFile companyLogo = request.getCompanyLogo();
-    if(request.getCompanyLogo()!=null) {
-      if (!isImageFile(companyLogo.getOriginalFilename())) {
-        throw new BadRequestException("Không phải file ảnh");
-        }
-      String logo = fileUploadService.uploadFile(companyLogo);
-      findCompany.setLogo(logo);
+    var companyLogo = request.getCompanyLogo();
+
+    var companyType = companyTypeRepository.findByType(company.getCompanyType().getType());
+    var location =request.getLocations();
+    var locationName = locationRepository.findByCityName(location);
+    if (locationName != null) {
+      locationName.setCityName(request.getLocations());
+      locationRepository.save(locationName);
     }
+    if (companyType != null) {
+      companyType.setType(request.getCompanyType());
+      companyTypeRepository.save(companyType);
 
-
-      var companyType = companyTypeRepository.findByType(company.getCompanyType().getType());
-
-      if(companyType!=null){
-        companyType.setType(request.getCompanyType());
-        companyTypeRepository.save(companyType);
-
-      }
-      findCompany.setAddress(request.getAddress());
-      findCompany.setDescription(request.getDescription());
-      findCompany.setFoundedDate(request.getFoundedDate());
-      findCompany.setIndustry(request.getIndustry());
-      findCompany.setName(request.getCompanyName());
-      findCompany.setPhoneNumber(request.getPhoneNumber());
-      findCompany.setWebsite(request.getWebsite());
-      findCompany.setCompanySize(request.getCompanySize());
-      findCompany.setCountry(request.getCountry());
-      companyRepository.save(findCompany);
-
-
+    }
+    findCompany.setAddress(request.getAddress());
+    findCompany.setDescription(request.getDescription());
+    findCompany.setFoundedDate(request.getFoundedDate());
+    findCompany.setIndustry(request.getIndustry());
+    findCompany.setName(request.getCompanyName());
+    findCompany.setPhoneNumber(request.getPhoneNumber());
+    findCompany.setWebsite(request.getWebsite());
+    findCompany.setCompanySize(request.getCompanySize());
+    findCompany.setCountry(request.getCountry());
+    findCompany.setLogo(companyLogo);
+    companyRepository.save(findCompany);
 
 
   }
@@ -383,10 +409,10 @@ public class RecruiterServiceImpl implements RecruiterService {
 
     var company = companyRepository.finCompanyByRecruiter(recruiter)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
-    if(company==null){
+    if (company == null) {
       throw new NotFoundException("Bạn chưa có thông tin công ty");
     }
-    if(!company.getRecruiter().getId().equals(recruiter.getId())){
+    if (!company.getRecruiter().getId().equals(recruiter.getId())) {
       throw new UnauthorizedException("Bạn không có quyền xóa công ty này");
     }
 
@@ -432,10 +458,9 @@ public class RecruiterServiceImpl implements RecruiterService {
             .company(company)
             .build();
     var jobOpening = company.getCountJobOpening();
-    if(jobOpening==null){
+    if (jobOpening == null) {
       company.setCountJobOpening(1);
-    }
-    else{
+    } else {
       company.setCountJobOpening(company.getCountJobOpening() + 1);
     }
     companyRepository.save(company);
@@ -444,7 +469,7 @@ public class RecruiterServiceImpl implements RecruiterService {
 
 
   @Override
-  public void updateJob(Integer jobId,UpdateJobRequest request) {
+  public void updateJob(Integer jobId, UpdateJobRequest request) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
@@ -481,7 +506,6 @@ public class RecruiterServiceImpl implements RecruiterService {
   }
 
 
-
   @Override
   public void deleteJob(Integer jobId) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -496,8 +520,6 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
     jobRepository.delete(existingJob);
   }
-
-
 
 
   private boolean isImageFile(String fileName) {

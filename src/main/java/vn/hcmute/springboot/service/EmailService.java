@@ -15,5 +15,11 @@ public interface EmailService {
 
   void sendReasonDeActiveUser(String email, String reason, UserStatus status) throws MessagingException;
 
+  void sendReasonToActiveFromUser(String userName,String adminEmail) throws MessagingException;
+
+
+  void sendEmailActiveFromAdmin(String email) throws MessagingException;
+
+
 
 }

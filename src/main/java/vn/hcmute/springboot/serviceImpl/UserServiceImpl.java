@@ -57,6 +57,7 @@ public class UserServiceImpl implements UserService {
   private final CompanyReviewRepository companyReviewRepository;
   private final CompanyFollowRepository companyFollowRepository;
   private final ApplyJobRepository applyJobRepository;
+  private final AdminRepository adminRepository;
 
 
   public void handleUserStatus() {
@@ -434,6 +435,7 @@ public class UserServiceImpl implements UserService {
       companyReview.setTitle(request.getTitle());
       companyReview.setContent(request.getContent());
       companyReview.setCreatedDate(LocalDate.now());
+      companyReview.setStatus(CompanyReviewStatus.PENDING);
       companyReviewRepository.save(companyReview);
       if (request.getRating() < 1 || request.getRating() > 5) {
         throw new BadRequestException("Đánh giá phải từ 1 đến 5 sao");
@@ -476,6 +478,21 @@ public class UserServiceImpl implements UserService {
             .message("Theo dõi công ty thành công")
             .status(HttpStatus.OK)
             .build();
+  }
+
+  @Override
+  public MessageResponse activeAccount(String userName,String adminEmail) throws MessagingException {
+      try{
+        emailService.sendReasonToActiveFromUser(userName,adminEmail) ;
+          return MessageResponse.builder()
+                  .message("Gửi yêu cầu kích hoạt tài khoản thành công")
+                  .status(HttpStatus.OK)
+                  .build();
+        }
+      catch (MessagingException e){
+        throw new BadRequestException("Không thể gửi yêu cầu kích hoạt tài khoản");
+      }
+
   }
 
   private List<Skill> updateSkills(List<String> skillNames) {

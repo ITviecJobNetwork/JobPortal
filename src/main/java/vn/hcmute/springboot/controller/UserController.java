@@ -1,5 +1,6 @@
 package vn.hcmute.springboot.controller;
 
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -356,6 +357,7 @@ public class UserController {
                     .title(companyReview.getTitle())
                     .localDate(companyReview.getCreatedDate())
                     .username(companyReview.getCandidate().getUsername())
+                    .status(companyReview.getStatus())
                     .build())
             .toList();
     Page<CompanyReviewResponse> companyReviewResponsePage = new PageImpl<>(
@@ -396,6 +398,12 @@ public class UserController {
     return ResponseEntity.ok(new MessageResponse("Bỏ theo dõi thành công", HttpStatus.OK));
 
 
+  }
+
+  @PostMapping("/activeAccount")
+  public ResponseEntity<MessageResponse> activeAccount(@RequestBody ActiveAccountRequest request) throws MessagingException {
+    var activeAccount = userService.activeAccount(request.getUserName(), request.getAdminEmail());
+    return new ResponseEntity<>(activeAccount, HttpStatus.OK);
   }
 
 

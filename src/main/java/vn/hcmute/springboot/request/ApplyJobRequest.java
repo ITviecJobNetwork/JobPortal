@@ -14,6 +14,4 @@ public class ApplyJobRequest {
   @NotBlank(message = "Please upload your CV")
   private String linkCv;
   private String coverLetter;
-
-
 }

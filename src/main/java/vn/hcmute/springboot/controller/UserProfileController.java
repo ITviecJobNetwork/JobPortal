@@ -48,7 +48,7 @@ public class UserProfileController {
 
   @PutMapping(value = "/updateProfile", consumes = {"multipart/form-data"})
   public ResponseEntity<MessageResponse> updateProfile(
-          @Valid @ModelAttribute ProfileUpdateRequest request)
+          @Valid @RequestBody ProfileUpdateRequest request)
           throws IOException {
 
     var profile = profileService.updateUserProfile(request);
@@ -77,17 +77,17 @@ public class UserProfileController {
             HttpStatus.OK);
   }
 
-  @PostMapping(value = "/addEducation", consumes = {"multipart/form-data"})
+  @PostMapping(value = "/addEducation")
   public ResponseEntity<MessageResponse> addEducation(
-          @Valid @ModelAttribute AddEducationRequest request) throws IOException {
+          @Valid @RequestBody AddEducationRequest request) throws IOException {
     profileService.addEducation(request);
     return new ResponseEntity<>(new MessageResponse("Thêm education thành công", HttpStatus.OK),
             HttpStatus.OK);
   }
 
-  @PostMapping(value = "/addExperience", consumes = {"multipart/form-data"})
+  @PostMapping(value = "/addExperience")
   public ResponseEntity<MessageResponse> addExperience(
-          @Valid @ModelAttribute AddExperienceRequest request) throws IOException {
+          @Valid @RequestBody AddExperienceRequest request) throws IOException {
     profileService.addExperience(request);
     return new ResponseEntity<>(new MessageResponse("Thêm experience thành công", HttpStatus.OK),
             HttpStatus.OK);
@@ -115,45 +115,17 @@ public class UserProfileController {
   }
 
   @DeleteMapping("/educations/{id}")
-  public ResponseEntity<?> deleteEducation(@PathVariable Integer id) {
-    CandidateEducation education = candidateEducationRepository.findById(id).orElseThrow();
-
-    if (education.getId() != null) {
-      for (User user : education.getUsers()) {
-        user.getEducations().remove(education);
-        userRepository.save(user);
-      }
-
-      education.getUsers().clear();
-      candidateEducationRepository.delete(education);
-      return new ResponseEntity<>(new MessageResponse("Xóa education thành công", HttpStatus.OK),
-              HttpStatus.OK);
-    }
-    return new ResponseEntity<>(
-            new MessageResponse("Không có education để xóa", HttpStatus.BAD_REQUEST),
-            HttpStatus.BAD_REQUEST);
-
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<MessageResponse> deleteEducation(@PathVariable Integer id) {
+      var education = profileService.deleteEducation(id);
+      return new ResponseEntity<>(education, HttpStatus.OK);
   }
 
   @DeleteMapping(value = "/experience/{id}")
   public ResponseEntity<MessageResponse> deleteExperience(@PathVariable Integer id)
           throws IOException {
-    CandidateExperience experience = candidateExperienceRepository.findById(id).orElseThrow();
-    if (experience.getId() != null) {
-      for (User user : experience.getUsers()) {
-        user.getExperiences().remove(experience);
-        userRepository.save(user);
-      }
-      experience.getUsers().clear();
-      candidateExperienceRepository.delete(experience);
-      candidateExperienceRepository.delete(experience);
-      return new ResponseEntity<>(
-              new MessageResponse("Xóa thông tin kinh nghiêm thành công", HttpStatus.OK),
-              HttpStatus.OK);
-    }
-    return new ResponseEntity<>(
-            new MessageResponse("Không có thông tin kinh nghiêm để xóa", HttpStatus.BAD_REQUEST),
-            HttpStatus.BAD_REQUEST);
+    var experience = profileService.deleteExperience(id);
+    return new ResponseEntity<>(experience, HttpStatus.OK);
 
   }
 

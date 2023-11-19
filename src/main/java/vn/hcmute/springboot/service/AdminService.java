@@ -5,13 +5,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
 import vn.hcmute.springboot.model.Admin;
+import vn.hcmute.springboot.model.CompanyReviewStatus;
 import vn.hcmute.springboot.model.UserStatus;
 import vn.hcmute.springboot.request.LoginRequest;
-import vn.hcmute.springboot.response.JwtResponse;
-import vn.hcmute.springboot.response.UserProfileResponse;
-import vn.hcmute.springboot.response.UserResponse;
+import vn.hcmute.springboot.response.*;
 
 import java.io.IOException;
+import java.sql.Date;
 
 public interface AdminService {
   JwtResponse loginAdmin(LoginRequest request);
@@ -29,5 +29,15 @@ public interface AdminService {
   UserProfileResponse getUserById(Integer id);
 
   void deActiveUser(Integer id,String reason, UserStatus status) throws MessagingException;
+
+  Page<RecruiterResponse> getAllRecruiter (int page, int size);
+
+  RecruiterProfileResponse getRecruiterById(Integer id);
+
+  MessageResponse activeUser(String email) throws MessagingException;
+
+  CountResponse countUserByDate(Date startDate, Date endDate);
+
+  void updateStatusCompanyReview (Integer id, CompanyReviewStatus status);
 
 }

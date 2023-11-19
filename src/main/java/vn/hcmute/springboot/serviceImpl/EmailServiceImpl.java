@@ -217,4 +217,24 @@ public class EmailServiceImpl implements EmailService {
     }
     javaMailSender.send(mimeMessage);
   }
+
+  @Override
+  public void sendReasonToActiveFromUser(String userName,String adminEmail) throws MessagingException {
+    MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+    MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
+    mimeMessageHelper.setTo(adminEmail);
+    mimeMessageHelper.setSubject("Reason for active account");
+    mimeMessageHelper.setText("Tôi muốn khôi phục lại tài khoản của mình mong được chấp nhận from "+ userName);
+    javaMailSender.send(mimeMessage);
+  }
+
+  @Override
+  public void sendEmailActiveFromAdmin(String email) throws MessagingException {
+    MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+    MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
+    mimeMessageHelper.setTo(email);
+    mimeMessageHelper.setSubject("Reason for active account");
+    mimeMessageHelper.setText("Tài khoản của bạn đã được kích hoạt chúc mừng bạn: ");
+    javaMailSender.send(mimeMessage);
+  }
 }

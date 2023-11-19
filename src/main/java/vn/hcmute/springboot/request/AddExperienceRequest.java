@@ -17,6 +17,8 @@ public class AddExperienceRequest {
   @NotBlank(message = "Job title is mandatory")
   private String jobTitle;
   @NotBlank(message = "Description is mandatory")
+  private String description;
+  @NotBlank(message = "Description is mandatory")
   private LocalDate startDate;
   @NotBlank(message = "Description is mandatory")
   private LocalDate endDate;

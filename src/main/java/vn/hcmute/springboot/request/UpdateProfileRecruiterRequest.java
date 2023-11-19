@@ -23,4 +23,11 @@ public class UpdateProfileRecruiterRequest {
   private String username;
   private String fbUrl;
 
+  private String websiteUrl;
+  private String benefit;
+  private String overTimePolicy;
+  private LocalDate workingDay;
+  private String recruitmentProcedure;
+  private String introduction;
+
 }

@@ -21,10 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.hcmute.springboot.model.*;
 import vn.hcmute.springboot.repository.*;
 import vn.hcmute.springboot.request.*;
-import vn.hcmute.springboot.response.ApplicationFormResponse;
-import vn.hcmute.springboot.response.GetJobResponse;
-import vn.hcmute.springboot.response.JwtResponse;
-import vn.hcmute.springboot.response.MessageResponse;
+import vn.hcmute.springboot.response.*;
 import vn.hcmute.springboot.security.JwtService;
 import vn.hcmute.springboot.service.EmailService;
 import vn.hcmute.springboot.service.RecruiterService;
@@ -103,24 +100,29 @@ public class RecruiterController {
         HttpStatus.OK);
 
   }
+  @GetMapping("/get-profile")
+  public ResponseEntity<RecruiterProfileResponse> getProfile(){
+    var recruiter= recruiterService.getProfile();
+    return new ResponseEntity<>(recruiter,HttpStatus.OK);
+  }
 
 
-  @PostMapping(value="/create-company", consumes = {"multipart/form-data"})
-  public ResponseEntity<MessageResponse> createCompany(@Valid @ModelAttribute PostInfoCompanyRequest request) throws IOException {
+  @PostMapping(value="/create-company")
+  public ResponseEntity<MessageResponse> createCompany(@Valid @RequestBody PostInfoCompanyRequest request) throws IOException {
     recruiterService.createCompany(request);
     return new ResponseEntity<>(new MessageResponse("Tạo thông tin công ty thành công", HttpStatus.OK),
             HttpStatus.OK);
   }
 
-  @PostMapping(value="/update-company",consumes = {"multipart/form-data"})
-  public ResponseEntity<MessageResponse> updateCompany(@Valid @ModelAttribute UpdateInfoCompanyRequest request) throws IOException {
+  @PostMapping(value="/update-company")
+  public ResponseEntity<MessageResponse> updateCompany(@Valid @RequestBody UpdateInfoCompanyRequest request) throws IOException {
 
     recruiterService.updateCompany(request);
     return new ResponseEntity<>(new MessageResponse("Cập nhât thông tin công ty thành công", HttpStatus.OK),
             HttpStatus.OK);
   }
   @DeleteMapping("/delete-company")
-  public ResponseEntity<MessageResponse> deleteCompany() throws IOException {
+  public ResponseEntity<MessageResponse> deleteCompany(){
     recruiterService.deleteCompany();
     return new ResponseEntity<>(new MessageResponse("Xóa thông tin công ty thành công", HttpStatus.OK),
             HttpStatus.OK);
@@ -132,7 +134,7 @@ public class RecruiterController {
             HttpStatus.OK);
   }
   @PostMapping(value="/update-job")
-  public ResponseEntity<MessageResponse> updateJob(@RequestParam("id")Integer jobId,@Valid @RequestBody UpdateJobRequest request) throws IOException {
+  public ResponseEntity<MessageResponse> updateJob(@RequestParam("id")Integer jobId, @Valid @RequestBody UpdateJobRequest request) throws IOException {
 
 
     recruiterService.updateJob(jobId,request);

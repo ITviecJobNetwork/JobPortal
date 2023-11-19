@@ -20,8 +20,7 @@ import vn.hcmute.springboot.model.Skill;
 @Setter
 @Data
 public class ProfileUpdateRequest {
-  @Nullable
-  private MultipartFile avatar;
+  private String avatar;
   private String aboutMe;
   private String fullName;
   @NotBlank

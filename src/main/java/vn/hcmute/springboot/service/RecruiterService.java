@@ -7,6 +7,7 @@ import vn.hcmute.springboot.model.Recruiters;
 import vn.hcmute.springboot.request.*;
 import vn.hcmute.springboot.response.JwtResponse;
 import vn.hcmute.springboot.response.MessageResponse;
+import vn.hcmute.springboot.response.RecruiterProfileResponse;
 
 public interface RecruiterService {
   MessageResponse registerRecruiter(RecruiterRegisterRequest recruiterRegisterRequest);
@@ -27,6 +28,8 @@ public interface RecruiterService {
   MessageResponse sendNewPasswordToEmail(String email);
 
   void updateProfile(UpdateProfileRecruiterRequest request);
+
+  RecruiterProfileResponse getProfile();
 
   void createCompany(PostInfoCompanyRequest request) throws IOException;
   void updateCompany(UpdateInfoCompanyRequest request) throws IOException;

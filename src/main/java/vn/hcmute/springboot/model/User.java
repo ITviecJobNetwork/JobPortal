@@ -165,13 +165,8 @@ public class  User implements UserDetails {
   )
   private List<Skill> skills;
 
-  @ManyToMany(fetch = FetchType.EAGER)
-  @JoinTable(
-      name = "user_education",
-      joinColumns = @JoinColumn(name = "user_id"),
-      inverseJoinColumns = @JoinColumn(name = "education_id")
-  )
-  private List<CandidateEducation> educations;
+  @ManyToOne(fetch = FetchType.EAGER)
+  private CandidateEducation education;
 
   @ManyToMany (fetch = FetchType.EAGER)
   @JoinTable(

@@ -2,6 +2,7 @@ package vn.hcmute.springboot.repository;
 
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import vn.hcmute.springboot.model.Recruiters;
 import vn.hcmute.springboot.model.User;
 
@@ -11,4 +12,8 @@ public interface RecruiterRepository extends JpaRepository<Recruiters,Integer> {
 
   boolean existsByNickname(String nickname);
   Optional<Recruiters> findByUsernameIgnoreCase(String username);
+
+
+
+
 }

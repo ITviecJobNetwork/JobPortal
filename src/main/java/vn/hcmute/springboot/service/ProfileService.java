@@ -16,4 +16,7 @@ public interface ProfileService {
 
   void addExperience (AddExperienceRequest request);
 
+  MessageResponse deleteEducation (Integer id);
+  MessageResponse deleteExperience (Integer id);
+
 }

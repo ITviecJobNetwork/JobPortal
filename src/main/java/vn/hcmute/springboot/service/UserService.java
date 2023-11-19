@@ -2,6 +2,8 @@ package vn.hcmute.springboot.service;
 
 import java.io.IOException;
 import java.util.List;
+
+import jakarta.mail.MessagingException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,4 +43,6 @@ public interface UserService {
   MessageResponse writeCompanyReview(Integer companyId,WriteReviewRequest request);
 
   void followCompany(Integer companyId);
+
+  MessageResponse activeAccount(String userName, String adminEmail) throws MessagingException;
 }

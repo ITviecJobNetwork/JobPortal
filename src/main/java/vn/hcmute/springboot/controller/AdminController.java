@@ -11,14 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import vn.hcmute.springboot.model.CompanyReviewStatus;
 import vn.hcmute.springboot.repository.AdminRepository;
 import vn.hcmute.springboot.request.ChangePasswordRequest;
 import vn.hcmute.springboot.request.DeActiveRequest;
 import vn.hcmute.springboot.request.LoginRequest;
-import vn.hcmute.springboot.response.JwtResponse;
-import vn.hcmute.springboot.response.MessageResponse;
-import vn.hcmute.springboot.response.UserProfileResponse;
-import vn.hcmute.springboot.response.UserResponse;
+import vn.hcmute.springboot.response.*;
 import vn.hcmute.springboot.security.JwtService;
 import vn.hcmute.springboot.service.AdminService;
 
@@ -31,8 +29,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminController {
 
-  private final PasswordEncoder passwordEncoder;
-  private final AdminRepository adminRepository;
   private final AdminService adminService;
   @PostMapping("/login")
   public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest request) {
@@ -79,6 +75,33 @@ public class AdminController {
   public ResponseEntity<MessageResponse> deActiveUser(@PathVariable Integer id, @RequestBody DeActiveRequest request) throws MessagingException {
     adminService.deActiveUser(id,request.getReason(), request.getStatus());
     return ResponseEntity.ok(new MessageResponse("Deactive user thành công", HttpStatus.OK));
+  }
+
+  @GetMapping("/get-all-recruiter")
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<Page<RecruiterResponse>> getAllRecruiter(@RequestParam(defaultValue = "0") Integer page,
+                                                                 @RequestParam(defaultValue = "20") Integer size){
+    return ResponseEntity.ok(adminService.getAllRecruiter(page, size));
+
+  }
+
+  @GetMapping("/get-recruiter-by-id/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<RecruiterProfileResponse> getRecruiterById(@PathVariable Integer id){
+    return ResponseEntity.ok(adminService.getRecruiterById(id));
+  }
+
+  @PostMapping("/active-user")
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<MessageResponse> activeUser(@RequestBody String email) throws MessagingException {
+    return ResponseEntity.ok(adminService.activeUser(email));
+  }
+
+  @PostMapping("/update-status-company-review/{companyReviewId}")
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<MessageResponse> updateStatusCompanyReview(@PathVariable Integer companyReviewId, @RequestBody CompanyReviewStatus status){
+    adminService.updateStatusCompanyReview(companyReviewId, status);
+    return ResponseEntity.ok(new MessageResponse("Cập nhật thành công", HttpStatus.OK));
   }
 
 }

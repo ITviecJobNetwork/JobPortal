@@ -28,6 +28,7 @@ import vn.hcmute.springboot.service.AdminService;
 import vn.hcmute.springboot.service.EmailService;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -45,9 +46,9 @@ public class AdminServiceImpl implements AdminService {
   private final PasswordEncoder encoder;
   private final UserRepository userRepository;
   private final SkillRepository skillRepository;
-  private final CandidateEducationRepository candidateEducationRepository;
-  private final CandidateExperienceRepository candidateExperienceRepository;
+  private final CompanyReviewRepository companyReviewRepository;
   private final EmailService emailService;
+  private final RecruiterRepository recruiterRepository;
   @Override
   public JwtResponse loginAdmin(LoginRequest request) {
     var admin = adminRepository.findByEmail(request.getUsername())
@@ -200,9 +201,12 @@ public class AdminServiceImpl implements AdminService {
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy admin hoặc admin chưa đăng nhập"));
     var user = userRepository.findById(id)
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
+
+    CandidateEducationResponse educationResponse = null;
+    if (user.getEducation() != null) {
+      educationResponse = convertToCandidateEducationResponse(user.getEducation());
+    }
     var skills = skillRepository.findByUserId(id);
-    var education = candidateEducationRepository.findByUserId(id);
-    var experience = candidateExperienceRepository.findByUserId(id);
     return UserProfileResponse
             .builder()
             .id(user.getId())
@@ -216,8 +220,10 @@ public class AdminServiceImpl implements AdminService {
             .birthdate(user.getBirthDate())
             .linkWebsiteProfile(user.getLinkWebsiteProfile())
             .skills(skills.stream().map(Skill::getTitle).toList())
-            .education(education.stream().map(CandidateEducation::getSchool).toList())
-            .experience(experience.stream().map(CandidateExperience::getCompanyName).toList())
+            .education(educationResponse)
+            .experience(user.getExperiences() != null ?
+                    user.getExperiences().stream().map(this::convertToCandidateExperienceResponse).toList() :
+                    Collections.emptyList())
             .birthdate(user.getBirthDate())
             .city(user.getCity())
             .gender(user.getGender())
@@ -245,4 +251,130 @@ public class AdminServiceImpl implements AdminService {
     user.get().setStatus(status);
     userRepository.save(user.get());
   }
+
+  @Override
+  public Page<RecruiterResponse> getAllRecruiter(int page, int size) {
+    var adminName = SecurityContextHolder.getContext().getAuthentication().getName();
+    var admin = adminRepository.findByEmail(adminName)
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy admin hoặc admin chưa đăng nhập"));
+    var recruiter = recruiterRepository.findAll();
+    if(recruiter.isEmpty()){
+      throw new NotFoundException("Không tìm thấy recruiter");
+    }
+    Page<Recruiters> response = recruiterRepository.findAll(PageRequest.of(page, size));
+    List<RecruiterResponse> recruiterResponses = response.getContent().stream()
+            .map(recruiters -> RecruiterResponse.builder()
+                    .recruiterId(recruiters.getId())
+                    .companyName(recruiters.getCompanyName())
+                    .companySize(recruiters.getCompanySize())
+                    .phoneNumber(recruiters.getPhoneNumber())
+                    .overTimePolicy(recruiters.getOvertimePolicy())
+                    .recruitmentProcedure(recruiters.getRecruitmentProcedure())
+                    .benefit(recruiters.getBenefit())
+                    .introduction(recruiters.getIntroduction())
+                    .fbUrl(recruiters.getFbUrl())
+                    .websiteUrl(recruiters.getWebsiteUrl())
+                    .linkedInUrl(recruiters.getLinkedInUrl())
+                    .status(recruiters.getStatus())
+                    .username(recruiters.getUsername())
+                    .birthDate(recruiters.getBirthDate())
+                    .nickname(recruiters.getNickname())
+                    .build())
+            .toList();
+
+    return recruiterResponses.isEmpty() ? Page.empty() : new PageImpl<>(recruiterResponses, response.getPageable(), response.getTotalElements());
+  }
+
+  @Override
+  public RecruiterProfileResponse getRecruiterById(Integer id) {
+    var adminName = SecurityContextHolder.getContext().getAuthentication().getName();
+    var admin = adminRepository.findByEmail(adminName)
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy admin hoặc admin chưa đăng nhập"));
+    var recruiter = recruiterRepository.findById(id)
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy recruiter"));
+    return RecruiterProfileResponse.builder()
+            .recruiterId(recruiter.getId())
+            .phoneNumber(recruiter.getPhoneNumber())
+            .birthDate(recruiter.getBirthDate())
+            .nickname(recruiter.getNickname())
+            .username(recruiter.getUsername())
+            .fbUrl(recruiter.getFbUrl())
+            .websiteUrl(recruiter.getWebsiteUrl())
+            .linkedInUrl(recruiter.getLinkedInUrl())
+            .build();
+  }
+
+  @Override
+  public MessageResponse activeUser(String email) throws MessagingException {
+    var adminName = SecurityContextHolder.getContext().getAuthentication().getName();
+    adminRepository.findByEmail(adminName)
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy admin hoặc admin chưa đăng nhập"));
+    var user = userRepository.findByUsername(email);
+    if(user.isEmpty()){
+      throw new NotFoundException("Không tìm thấy user");
+    }
+    if(user.get().getStatus().equals(UserStatus.ACTIVE)){
+      throw new BadRequestException("User đã được kích hoạt trước đó");
+    }
+    user.get().setStatus(UserStatus.ACTIVE);
+    userRepository.save(user.get());
+    try{
+      emailService.sendEmailActiveFromAdmin(email);
+    }
+    catch (Exception e){
+      throw new BadRequestException("Không thể gửi email");
+    }
+    return MessageResponse.builder()
+            .message("Kích hoạt user thành công")
+            .status(HttpStatus.OK)
+            .build();
+  }
+
+  @Override
+  public CountResponse countUserByDate(Date startDate, Date endDate) {
+    var authentication = SecurityContextHolder.getContext().getAuthentication().getName();
+    var admin = adminRepository.findByEmail(authentication)
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy admin hoặc admin chưa đăng nhập"));
+    var user = userRepository.findAll();
+    int count=0;
+    var date = endDate.toLocalDate().minusDays(startDate.toLocalDate().getDayOfMonth());
+    for (var users : user ){
+      if(users.getLastSignInTime() != null){
+        count ++;
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public void updateStatusCompanyReview(Integer id, CompanyReviewStatus status) {
+    var adminName = SecurityContextHolder.getContext().getAuthentication().getName();
+    adminRepository.findByEmail(adminName)
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy admin hoặc admin chưa đăng nhập"));
+    var companyReview = companyReviewRepository.findById(id)
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy review"));
+    companyReview.setStatus(status);
+    companyReviewRepository.save(companyReview);
+  }
+
+  public CandidateExperienceResponse convertToCandidateExperienceResponse(CandidateExperience experience){
+    return CandidateExperienceResponse.builder()
+            .id(experience.getId())
+            .companyName(experience.getCompanyName())
+            .jobTitle(experience.getJobTitle())
+            .startTime(experience.getStartTime())
+            .endTime(experience.getEndTime())
+            .build();
+  }
+
+  public CandidateEducationResponse convertToCandidateEducationResponse(CandidateEducation education){
+    return CandidateEducationResponse.builder()
+            .id(education.getId())
+            .school(education.getSchool())
+            .major(education.getMajor())
+            .startTime(education.getStartTime())
+            .endTime(education.getEndTime())
+            .build();
+  }
+
 }

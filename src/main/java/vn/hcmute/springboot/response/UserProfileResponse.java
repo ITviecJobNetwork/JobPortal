@@ -32,8 +32,8 @@ public class UserProfileResponse {
   private List<String> skills;
   private String city;
   private Gender gender;
-  private List<String> education;
-  private List<String> experience;
+  private CandidateEducationResponse education;
+  private List<CandidateExperienceResponse> experience;
   private String coverLetter;
   private String avatar;
   private UserStatus userStatus;
