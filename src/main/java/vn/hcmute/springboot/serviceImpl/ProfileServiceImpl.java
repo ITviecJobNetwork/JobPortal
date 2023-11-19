@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 public class ProfileServiceImpl implements ProfileService {
 
   private final UserRepository userRepository;
-  private final SkillRepository skillRepository;
   private final CandidateEducationRepository candidateEducationRepository;
   private final CandidateExperienceRepository candidateExperienceRepository;
   @Override
@@ -50,16 +49,14 @@ public class ProfileServiceImpl implements ProfileService {
     user.setFullName(request.getFullName());
     user.setAboutMe(request.getAboutMe());
     user.setUsername(request.getEmail());
-    user.setLocation(request.getLocation());
     user.setAvatar(request.getAvatar());
     user.setAddress(request.getAddress());
     user.setPosition(request.getPosition());
     user.setPhoneNumber(request.getPhoneNumber());
     user.setBirthDate(request.getBirthdate());
     user.setLinkWebsiteProfile(request.getLinkWebsiteProfile());
-    user.setCoverLetter(request.getCoverLetter());
-    user.setCity(request.getCity());
     user.setGender(request.getGender());
+    user.setCity(request.getCity());
     userRepository.save(user);
     return MessageResponse.builder()
             .message("cập-nhật-thông-tin-thành-công")

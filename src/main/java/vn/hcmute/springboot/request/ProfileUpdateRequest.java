@@ -28,7 +28,6 @@ public class ProfileUpdateRequest {
   @NotBlank
   @Email
   private String email;
-  private String location;
   private String address;
   private String position;
   @NotNull
