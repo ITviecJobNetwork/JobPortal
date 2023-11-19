@@ -38,6 +38,5 @@ public class ProfileUpdateRequest {
   private String linkWebsiteProfile;
   private String city;
   private Gender gender;
-  private String coverLetter;
 
 }
