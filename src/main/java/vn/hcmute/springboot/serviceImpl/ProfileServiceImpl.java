@@ -47,26 +47,6 @@ public class ProfileServiceImpl implements ProfileService {
     var user = userRepository.findByUsernameIgnoreCase(userName)
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy User"));
 
-    if (request.getSkills() != null) {
-      List<String> skillNames = request.getSkills();
-      List<Skill> existingSkills = skillRepository.findByTitleIn(skillNames);
-      if (existingSkills.size() < skillNames.size()) {
-        List<String> missingSkills = skillNames.stream()
-                .filter(skillName -> existingSkills.stream()
-                        .noneMatch(skill -> skill.getTitle().equals(skillName)))
-                .collect(Collectors.toList());
-
-        String errorMessage = "Các kỹ năng sau không tồn tại: " + String.join(", ", missingSkills);
-        throw new BadRequestException(errorMessage);
-      }
-      user.setSkills(existingSkills);
-    } else {
-      throw new BadRequestException("Kỹ năng không được để trống");
-    }
-
-
-
-
     user.setFullName(request.getFullName());
     user.setAboutMe(request.getAboutMe());
     user.setUsername(request.getEmail());

@@ -36,7 +36,6 @@ public class ProfileUpdateRequest {
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
   private LocalDate birthdate;
   private String linkWebsiteProfile;
-  private List<String> skills;
   private String city;
   private Gender gender;
   private String coverLetter;
