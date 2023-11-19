@@ -528,7 +528,6 @@ public class UserServiceImpl implements UserService {
     return jobTypes;
   }
   private boolean isExactFile(String fileName) {
-    // Determine if the file has an image extension or content type
     String[] fileExtensions = {".word", ".pdf", ".docx"};
 
     for (String extension : fileExtensions) {

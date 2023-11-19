@@ -1,6 +1,7 @@
 package vn.hcmute.springboot.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -9,6 +10,7 @@ import java.time.YearMonth;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import vn.hcmute.springboot.config.CustomYearMonthDeserializer;
 
 @Getter
 @Setter
@@ -22,8 +24,10 @@ public class AddExperienceRequest {
   @NotBlank(message = "Description is mandatory")
   private String description;
   @NotBlank(message = "Description is mandatory")
-  private LocalDate startDate;
+  @JsonDeserialize(using = CustomYearMonthDeserializer.class)
+  private String startDate;
   @NotBlank(message = "Description is mandatory")
-  private LocalDate endDate;
+  @JsonDeserialize(using = CustomYearMonthDeserializer.class)
+  private String endDate;
 
 }

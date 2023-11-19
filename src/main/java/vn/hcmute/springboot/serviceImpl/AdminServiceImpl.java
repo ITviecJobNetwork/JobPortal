@@ -30,6 +30,7 @@ import vn.hcmute.springboot.service.EmailService;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -207,6 +208,9 @@ public class AdminServiceImpl implements AdminService {
       educationResponse = convertToCandidateEducationResponse(user.getEducation());
     }
     var skills = skillRepository.findByUserId(id);
+    if(user.getBirthDate()==null){
+      user.setBirthDate(null);
+    }
     return UserProfileResponse
             .builder()
             .id(user.getId())
@@ -217,14 +221,14 @@ public class AdminServiceImpl implements AdminService {
             .address(user.getAddress())
             .position(user.getPosition())
             .phoneNumber(user.getPhoneNumber())
-            .birthdate(user.getBirthDate().toString())
+            .birthdate(user.getBirthDate())
             .linkWebsiteProfile(user.getLinkWebsiteProfile())
             .skills(skills.stream().map(Skill::getTitle).toList())
             .education(educationResponse)
             .experience(user.getExperiences() != null ?
                     user.getExperiences().stream().map(this::convertToCandidateExperienceResponse).toList() :
                     Collections.emptyList())
-            .birthdate(user.getBirthDate().toString())
+            .birthdate(user.getBirthDate())
             .city(user.getCity())
             .gender(user.getGender())
             .avatar(user.getAvatar())

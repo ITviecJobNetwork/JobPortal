@@ -27,7 +27,7 @@ public class UserProfileResponse {
   private String address;
   private String position;
   private String phoneNumber;
-  private String birthdate;
+  private LocalDate birthdate;
   private String linkWebsiteProfile;
   private List<String> skills;
   private String city;

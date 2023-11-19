@@ -33,8 +33,6 @@ public class Skill {
   @ManyToMany(mappedBy = "skills", fetch = FetchType.EAGER)
   @JsonIgnore
   private Set<Job> jobs = new HashSet<>();
-
   @ManyToMany(mappedBy = "skills", fetch = FetchType.EAGER)
   private Set<User> users = new HashSet<>();
-
 }

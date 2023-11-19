@@ -23,6 +23,7 @@ import vn.hcmute.springboot.repository.SkillRepository;
 import vn.hcmute.springboot.repository.UserRepository;
 import vn.hcmute.springboot.request.AddEducationRequest;
 import vn.hcmute.springboot.request.AddExperienceRequest;
+import vn.hcmute.springboot.request.AddSkillRequest;
 import vn.hcmute.springboot.request.ProfileUpdateRequest;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.response.UserProfileResponse;
@@ -77,19 +78,18 @@ public class UserProfileController {
             HttpStatus.OK);
   }
 
-  @PostMapping(value = "/addEducation")
+  @PostMapping(value = "/addEducation/")
   public ResponseEntity<MessageResponse> addEducation(
-          @Valid @RequestBody AddEducationRequest request) throws IOException {
-    profileService.addEducation(request);
-    return new ResponseEntity<>(HttpStatus.OK);
+                                                       @Valid @RequestBody AddEducationRequest request) throws IOException {
+    var education = profileService.addEducation(request);
+    return new ResponseEntity<>(education, HttpStatus.OK);
   }
 
   @PostMapping(value = "/addExperience")
   public ResponseEntity<MessageResponse> addExperience(
           @Valid @RequestBody AddExperienceRequest request) throws IOException {
-    profileService.addExperience(request);
-    return new ResponseEntity<>(new MessageResponse("Thêm experience thành công", HttpStatus.OK),
-            HttpStatus.OK);
+    var experience = profileService.addExperience(request);
+    return new ResponseEntity<>(experience, HttpStatus.OK);
   }
 
   @DeleteMapping(value = "/deleteAvatar")
@@ -128,15 +128,11 @@ public class UserProfileController {
 
   }
 
-  private boolean isImageFile(String fileName) {
-    String[] imageExtensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp"};
-
-    for (String extension : imageExtensions) {
-      if (fileName.toLowerCase().endsWith(extension)) {
-        return true;
-      }
-    }
-    return false;
+  @PostMapping("write-about-me")
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<MessageResponse> writeAboutMe(@RequestBody String aboutMe) {
+    profileService.writeAboutMe(aboutMe);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 
 
@@ -170,7 +166,12 @@ public class UserProfileController {
       return ResponseEntity.notFound().build();
     }
   }
-
+  @PostMapping("/add-skill")
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<MessageResponse> addSkill(@RequestBody AddSkillRequest request) {
+    profileService.addSkill(request);
+    return new ResponseEntity<>(HttpStatus.OK);
+  }
 }
 
 
