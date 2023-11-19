@@ -46,7 +46,7 @@ public class UserProfileController {
   private final CandidateEducationRepository candidateEducationRepository;
   private final CandidateExperienceRepository candidateExperienceRepository;
 
-  @PutMapping(value = "/updateProfile", consumes = {"multipart/form-data"})
+  @PutMapping(value = "/updateProfile")
   public ResponseEntity<MessageResponse> updateProfile(
           @Valid @RequestBody ProfileUpdateRequest request)
           throws IOException {

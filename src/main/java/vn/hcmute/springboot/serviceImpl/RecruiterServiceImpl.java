@@ -43,7 +43,6 @@ public class RecruiterServiceImpl implements RecruiterService {
   private final OtpService otpService;
   private final TokenRepository tokenRepository;
   private final PasswordEncoder encoder;
-  private final FileUploadService fileUploadService;
   private final CompanyRepository companyRepository;
   private final CompanyTypeRepository companyTypeRepository;
   private final JobTypeRepository jobTypeRepository;
@@ -452,8 +451,8 @@ public class RecruiterServiceImpl implements RecruiterService {
             .title(request.getJobTitle())
             .createdBy(recruiter.getUsername())
             .createdAt(LocalDateTime.now())
-            .jobType(jobType) // Set the JobType
-            .location(location) // Set the Location
+            .jobType(jobType)
+            .location(location)
             .requirements(request.getRequirements())
             .company(company)
             .build();
@@ -522,16 +521,7 @@ public class RecruiterServiceImpl implements RecruiterService {
   }
 
 
-  private boolean isImageFile(String fileName) {
-    String[] imageExtensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp"};
 
-    for (String extension : imageExtensions) {
-      if (fileName.toLowerCase().endsWith(extension)) {
-        return true;
-      }
-    }
-    return false;
-  }
 
 
 }

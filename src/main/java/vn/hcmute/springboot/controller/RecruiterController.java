@@ -270,6 +270,7 @@ public class RecruiterController {
             .submittedAt(applicationForm.getSubmittedAt())
             .coverLetter(applicationForm.getCoverLetter())
             .status(applicationForm.getStatus())
+            .candidateId(applicationForm.getCandidate().getId())
             .build();
   }
 }

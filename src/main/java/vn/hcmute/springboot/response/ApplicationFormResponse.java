@@ -18,4 +18,5 @@ public class ApplicationFormResponse {
   private LocalDate submittedAt;
   private String coverLetter;
   private ApplicationStatus status;
+  private Integer candidateId;
 }
