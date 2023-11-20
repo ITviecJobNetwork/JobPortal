@@ -23,7 +23,6 @@ import vn.hcmute.springboot.model.Skill;
 @Data
 public class ProfileUpdateRequest {
   private String avatar;
-  private String aboutMe;
   private String fullName;
   @NotBlank
   @Email
@@ -32,7 +31,7 @@ public class ProfileUpdateRequest {
   private String position;
   @NotNull
   private String phoneNumber;
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
   private LocalDate birthdate;
   private String linkWebsiteProfile;
   private String city;

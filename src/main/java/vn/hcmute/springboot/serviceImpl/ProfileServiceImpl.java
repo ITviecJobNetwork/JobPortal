@@ -36,7 +36,6 @@ public class ProfileServiceImpl implements ProfileService {
     var user = userRepository.findByUsernameIgnoreCase(userName)
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy User"));
     user.setFullName(request.getFullName());
-    user.setAboutMe(request.getAboutMe());
     user.setUsername(request.getEmail());
     user.setAvatar(request.getAvatar());
     user.setAddress(request.getAddress());
