@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import vn.hcmute.springboot.model.Admin;
 import vn.hcmute.springboot.model.CompanyReviewStatus;
 import vn.hcmute.springboot.model.UserStatus;
+import vn.hcmute.springboot.request.ChangeFullNameRequest;
 import vn.hcmute.springboot.request.LoginRequest;
 import vn.hcmute.springboot.response.*;
 
@@ -23,7 +24,7 @@ public interface AdminService {
 
   void changePassword(String currentPassword, String newPassword, String confirmPassword);
 
-  void changeFullName(String fullName);
+  void changeFullName(ChangeFullNameRequest fullName);
   Page<UserResponse> getAllUser(int page, int size);
 
   UserProfileResponse getUserById(Integer id);

@@ -36,10 +36,7 @@ import vn.hcmute.springboot.serviceImpl.OtpServiceImpl;
 public class AuthenticationController {
 
   private final UserRepository userRepository;
-
   private final AuthenticationServiceImpl service;
-  private final AuthenticationManager authenticationManager;
-  private final JwtService jwtService;
 
   @PostMapping("/register")
   public ResponseEntity<MessageResponse> register(

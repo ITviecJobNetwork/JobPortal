@@ -32,7 +32,7 @@ public class ProfileUpdateRequest {
   private String position;
   @NotNull
   private String phoneNumber;
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
   private LocalDate birthdate;
   private String linkWebsiteProfile;
   private String city;

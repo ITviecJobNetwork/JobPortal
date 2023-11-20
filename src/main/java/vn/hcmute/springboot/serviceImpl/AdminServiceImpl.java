@@ -21,6 +21,7 @@ import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.exception.UnauthorizedException;
 import vn.hcmute.springboot.model.*;
 import vn.hcmute.springboot.repository.*;
+import vn.hcmute.springboot.request.ChangeFullNameRequest;
 import vn.hcmute.springboot.request.LoginRequest;
 import vn.hcmute.springboot.response.*;
 import vn.hcmute.springboot.security.JwtService;
@@ -160,11 +161,11 @@ public class AdminServiceImpl implements AdminService {
   }
 
   @Override
-  public void changeFullName(String fullName) {
+  public void changeFullName(ChangeFullNameRequest fullName) {
     var authentication = SecurityContextHolder.getContext().getAuthentication().getName();
     var admin = adminRepository.findByEmail(authentication)
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
-    admin.setFullName(fullName);
+    admin.setFullName(fullName.getFullName());
     adminRepository.save(admin);
     MessageResponse.builder()
             .message("Thay đổi tên thành công")
