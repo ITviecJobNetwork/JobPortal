@@ -157,14 +157,15 @@ public class  User implements UserDetails {
   @OneToMany(mappedBy = "user",fetch = FetchType.EAGER)
   private List<Token> tokens;
 
-  @ManyToMany(fetch = FetchType.EAGER)
 
+
+  @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
-      name = "candidate_skill",
-      joinColumns = @JoinColumn(name = "candidate_id"),
-      inverseJoinColumns = @JoinColumn(name = "skill_id")
+          name = "user_skill",
+          joinColumns = @JoinColumn(name = "user_id"),
+          inverseJoinColumns = @JoinColumn(name = "skill_id")
   )
-  private List<Skill> skills;
+  private List<CandidateSkill> skills;
 
   @ManyToOne(fetch = FetchType.EAGER)
   private CandidateEducation education;

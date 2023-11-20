@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.Date;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,11 +36,11 @@ public class CandidateExperience {
 
 
   @Column(name = "start_time")
-  private LocalDate startTime;
+  private String startTime;
 
 
   @Column(name = "end_time")
-  private LocalDate endTime;
+  private String endTime;
 
   @Column(name = "description")
   private String description;

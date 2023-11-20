@@ -6,16 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import vn.hcmute.springboot.exception.BadRequestException;
 import vn.hcmute.springboot.exception.NotFoundException;
-import vn.hcmute.springboot.model.CandidateEducation;
-import vn.hcmute.springboot.model.CandidateExperience;
-import vn.hcmute.springboot.model.Skill;
-import vn.hcmute.springboot.model.User;
-import vn.hcmute.springboot.repository.CandidateEducationRepository;
-import vn.hcmute.springboot.repository.CandidateExperienceRepository;
-import vn.hcmute.springboot.repository.SkillRepository;
-import vn.hcmute.springboot.repository.UserRepository;
+import vn.hcmute.springboot.model.*;
+import vn.hcmute.springboot.repository.*;
 import vn.hcmute.springboot.request.*;
 import vn.hcmute.springboot.response.CandidateEducationResponse;
 import vn.hcmute.springboot.response.CandidateExperienceResponse;
@@ -24,12 +17,8 @@ import vn.hcmute.springboot.response.UserProfileResponse;
 import vn.hcmute.springboot.service.ProfileService;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +27,9 @@ public class ProfileServiceImpl implements ProfileService {
   private final UserRepository userRepository;
   private final CandidateEducationRepository candidateEducationRepository;
   private final CandidateExperienceRepository candidateExperienceRepository;
+  private final SkillRepository skillRepository;
+  private final CandidateSkillRepository candidateSkillRepository;
+
   @Override
   public MessageResponse updateUserProfile(ProfileUpdateRequest request) throws IOException {
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -71,8 +63,7 @@ public class ProfileServiceImpl implements ProfileService {
         educationResponse = convertToCandidateEducationResponse(user.getEducation());
       }
       if(user.getBirthDate() != null){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        String birthDate = user.getBirthDate().format(formatter);
+        user.setBirthDate(user.getBirthDate());
       }
       else{
         user.setBirthDate(null);
@@ -88,13 +79,15 @@ public class ProfileServiceImpl implements ProfileService {
               .position(user.getPosition())
               .phoneNumber(user.getPhoneNumber())
               .linkWebsiteProfile(user.getLinkWebsiteProfile())
+              .birthdate(user.getBirthDate())
               .city(user.getCity())
               .education(educationResponse)
               .experience(user.getExperiences() != null ?
                       user.getExperiences().stream().map(this::convertToCandidateExperienceResponse).toList() :
                       Collections.emptyList())
               .gender(user.getGender())
-              .skills(user.getSkills().stream().map(Skill::getTitle).toList())
+              .userStatus(user.getStatus())
+              .skills(user.getSkills().stream().map(CandidateSkill::getTitle).toList())
               .build();
     } else {
       throw new NotFoundException("Không Tìm Thấy Profile của User");
@@ -111,8 +104,8 @@ public class ProfileServiceImpl implements ProfileService {
               .orElseThrow(() -> new NotFoundException("Không tìm thấy Education"));
       existingEducation.setSchool(request.getSchool());
       existingEducation.setMajor(request.getMajor());
-      existingEducation.setStartTime(LocalDate.parse(request.getStartDate()));
-      existingEducation.setEndTime(LocalDate.parse(request.getEndDate()));
+      existingEducation.setStartTime(request.getStartDate());
+      existingEducation.setEndTime(request.getEndDate());
       candidateEducationRepository.save(existingEducation);
       return MessageResponse.builder()
               .message("Cập nhật thông tin thành công")
@@ -122,8 +115,8 @@ public class ProfileServiceImpl implements ProfileService {
       CandidateEducation candidateEducation = new CandidateEducation();
       candidateEducation.setSchool(request.getSchool());
       candidateEducation.setMajor(request.getMajor());
-      candidateEducation.setStartTime(LocalDate.parse(request.getStartDate()));
-      candidateEducation.setEndTime(LocalDate.parse(request.getEndDate()));
+      candidateEducation.setStartTime(request.getStartDate());
+      candidateEducation.setEndTime(request.getEndDate());
       candidateEducationRepository.save(candidateEducation);
       user.setEducation(candidateEducation);
       userRepository.save(user);
@@ -138,18 +131,18 @@ public class ProfileServiceImpl implements ProfileService {
   }
 
   @Override
-  public MessageResponse addExperience(AddExperienceRequest request) {
+  public MessageResponse addExperience(Integer id, AddExperienceRequest request) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var userName = authentication.getName();
     var user = userRepository.findByUsername(userName)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy User"));
-    if (request.getId() != 0) {
-      var existingExperience = candidateExperienceRepository.findById(request.getId())
+    if (id!=null) {
+      var existingExperience = candidateExperienceRepository.findById(id)
               .orElseThrow(() -> new NotFoundException("Không tìm thấy Experience"));
       existingExperience.setCompanyName(request.getCompanyName());
       existingExperience.setJobTitle(request.getJobTitle());
-      existingExperience.setStartTime(LocalDate.parse(request.getStartDate()));
-      existingExperience.setEndTime(LocalDate.parse(request.getEndDate()));
+      existingExperience.setStartTime(request.getStartDate());
+      existingExperience.setEndTime(request.getEndDate());
       candidateExperienceRepository.save(existingExperience);
       return MessageResponse.builder()
               .message("Cập nhật thông tin thành công")
@@ -160,8 +153,8 @@ public class ProfileServiceImpl implements ProfileService {
       if (request.getCompanyName() != null) {
         candidateExperience.setCompanyName(request.getCompanyName());
         candidateExperience.setJobTitle(request.getJobTitle());
-        candidateExperience.setStartTime(LocalDate.parse(request.getStartDate()));
-        candidateExperience.setEndTime(LocalDate.parse(request.getEndDate()));
+        candidateExperience.setStartTime(request.getStartDate());
+        candidateExperience.setEndTime(request.getEndDate());
       }
       List<CandidateExperience> experience = user.getExperiences();
       experience.add(candidateExperience);
@@ -183,7 +176,7 @@ public class ProfileServiceImpl implements ProfileService {
     var user = userRepository.findByUsername(userName)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy User"));
     var education = candidateEducationRepository.findById(id);
-    if (education.isPresent()) {
+    if (education.isPresent() && user.getEducation().getId().equals(id)) {
       user.setEducation(null);
       userRepository.save(user);
       candidateEducationRepository.deleteById(id);
@@ -203,13 +196,15 @@ public class ProfileServiceImpl implements ProfileService {
     var user = userRepository.findByUsername(userName)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy User"));
     var experience = candidateExperienceRepository.findById(id).orElseThrow();
-    if (experience.getId() != null) {
-      for (var users : experience.getUsers()) {
-        user.getExperiences().remove(experience);
+    if (experience.getId().equals(id)) {
+        for(var experiences:user.getExperiences()){
+          if(experiences.getId().equals(id)){
+            user.getExperiences().remove(experiences);
+            break;
+          }
+        }
         userRepository.save(user);
-      }
-      experience.getUsers().clear();
-      candidateExperienceRepository.delete(experience);
+        candidateExperienceRepository.deleteById(id);
       return new MessageResponse("Xóa thông tin kinh nghiêm thành công", HttpStatus.OK);
 
     }
@@ -232,8 +227,34 @@ public class ProfileServiceImpl implements ProfileService {
   }
 
   @Override
-  public void addSkill(AddSkillRequest request) {
+  public MessageResponse addSkill(AddSkillRequest request) {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    var userName = authentication.getName();
+    var user = userRepository.findByUsername(userName)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy User"));
+    var skill = skillRepository.findByTitleIn(request.getSkillName());
+    if(skill.isEmpty()){
+      throw new NotFoundException("Không tìm thấy Skill");
+    }
 
+    boolean skillExist = user.getSkills().stream().anyMatch(candidateSkill -> candidateSkill.getTitle().equals(request.getSkillName().toString()));
+    if (skillExist) {
+      throw new NotFoundException("Kỹ năng đã tồn tại");
+    }
+    else {
+      CandidateSkill candidateSkill = new CandidateSkill();
+      candidateSkill.setTitle(request.getSkillName().toString());
+      candidateSkill.setUsers(Collections.singletonList(user));
+      candidateSkill.setLevel(request.getLevel().toString());
+      candidateSkillRepository.save(candidateSkill);
+      user.getSkills().add(candidateSkill);
+      userRepository.save(user);
+    }
+
+    return MessageResponse.builder()
+            .message("Thêm kỹ năng thành công")
+            .status(HttpStatus.OK)
+            .build();
   }
 
   public CandidateExperienceResponse convertToCandidateExperienceResponse(CandidateExperience experience) {

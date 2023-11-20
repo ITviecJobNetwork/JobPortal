@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-
+import java.time.YearMonth;
 
 
 @Getter
@@ -18,6 +18,6 @@ public class CandidateEducationResponse {
   private Integer id;
   private String major;
   private String school;
-  private LocalDate startTime;
-  private LocalDate endTime;
+  private String startTime;
+  private String endTime;
 }

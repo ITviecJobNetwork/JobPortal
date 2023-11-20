@@ -1,6 +1,8 @@
 package vn.hcmute.springboot.repository;
 
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,8 +17,9 @@ public interface SkillRepository extends JpaRepository<Skill, Integer> {
   @Query("SELECT s FROM Skill s JOIN s.jobs j WHERE j = :job")
   List<Skill> findSkillByJob(@Param("job") Job job);
 
-  @Query("SELECT s FROM Skill s JOIN s.users u WHERE u.id = :userId")
-  List<Skill> findByUserId(@Param("userId") Integer userId);
+
+  Optional<Skill> findByTitle(String title);
+
 
 
 

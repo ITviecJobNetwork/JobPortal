@@ -75,17 +75,17 @@ public class UserProfileController {
             HttpStatus.OK);
   }
 
-  @PostMapping(value = "/addEducation/")
+  @PostMapping(value = "/add-education")
   public ResponseEntity<MessageResponse> addEducation(
                                                        @Valid @RequestBody AddEducationRequest request) throws IOException {
     var education = profileService.addEducation(request);
     return new ResponseEntity<>(education, HttpStatus.OK);
   }
 
-  @PostMapping(value = "/addExperience")
-  public ResponseEntity<MessageResponse> addExperience(
+  @PostMapping(value = "/add-experience")
+  public ResponseEntity<MessageResponse> addExperience(@RequestParam(required=false) Integer id ,
           @Valid @RequestBody AddExperienceRequest request) throws IOException {
-    var experience = profileService.addExperience(request);
+    var experience = profileService.addExperience(id,request);
     return new ResponseEntity<>(experience, HttpStatus.OK);
   }
 
@@ -166,8 +166,8 @@ public class UserProfileController {
   @PostMapping("/add-skill")
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<MessageResponse> addSkill(@RequestBody AddSkillRequest request) {
-    profileService.addSkill(request);
-    return new ResponseEntity<>(HttpStatus.OK);
+    var skill=profileService.addSkill(request);
+    return new ResponseEntity<>(skill,HttpStatus.OK);
   }
 }
 

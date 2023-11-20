@@ -13,12 +13,12 @@ public interface ProfileService {
   UserProfileResponse getUserProfile();
   MessageResponse addEducation (AddEducationRequest request);
 
-  MessageResponse addExperience (AddExperienceRequest request);
+  MessageResponse addExperience (Integer id,AddExperienceRequest request);
 
   MessageResponse deleteEducation (Integer id);
   MessageResponse deleteExperience (Integer id);
 
   MessageResponse writeAboutMe (AboutMeRequest request);
 
-  void addSkill (AddSkillRequest request);
+  MessageResponse addSkill (AddSkillRequest request);
 }

@@ -35,10 +35,10 @@ public class CandidateEducation {
   private String school;
 
   @Column(name = "start_time")
-  private LocalDate startTime;
+  private String startTime;
 
   @Column(name = "end_time")
-  private LocalDate endTime;
+  private String endTime;
 
   @OneToMany(mappedBy = "education", cascade = CascadeType.ALL)
   @Column(name="user_id")

@@ -16,6 +16,6 @@ public class CandidateExperienceResponse {
   private Integer id;
   private String companyName;
   private String jobTitle;
-  private LocalDate startTime;
-  private LocalDate endTime;
+  private String startTime;
+  private String endTime;
 }
