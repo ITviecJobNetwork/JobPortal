@@ -16,10 +16,7 @@ import vn.hcmute.springboot.repository.CandidateEducationRepository;
 import vn.hcmute.springboot.repository.CandidateExperienceRepository;
 import vn.hcmute.springboot.repository.SkillRepository;
 import vn.hcmute.springboot.repository.UserRepository;
-import vn.hcmute.springboot.request.AddEducationRequest;
-import vn.hcmute.springboot.request.AddExperienceRequest;
-import vn.hcmute.springboot.request.AddSkillRequest;
-import vn.hcmute.springboot.request.ProfileUpdateRequest;
+import vn.hcmute.springboot.request.*;
 import vn.hcmute.springboot.response.CandidateEducationResponse;
 import vn.hcmute.springboot.response.CandidateExperienceResponse;
 import vn.hcmute.springboot.response.MessageResponse;
@@ -221,12 +218,12 @@ public class ProfileServiceImpl implements ProfileService {
   }
 
   @Override
-  public MessageResponse writeAboutMe(String aboutMe) {
+  public MessageResponse writeAboutMe(AboutMeRequest request) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var userName = authentication.getName();
     var user = userRepository.findByUsername(userName)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy User"));
-    user.setAboutMe(aboutMe);
+    user.setAboutMe(request.getAboutMe());
     userRepository.save(user);
     return MessageResponse.builder()
             .message("Cập nhật thông tin thành công")

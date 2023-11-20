@@ -21,10 +21,7 @@ import vn.hcmute.springboot.repository.CandidateEducationRepository;
 import vn.hcmute.springboot.repository.CandidateExperienceRepository;
 import vn.hcmute.springboot.repository.SkillRepository;
 import vn.hcmute.springboot.repository.UserRepository;
-import vn.hcmute.springboot.request.AddEducationRequest;
-import vn.hcmute.springboot.request.AddExperienceRequest;
-import vn.hcmute.springboot.request.AddSkillRequest;
-import vn.hcmute.springboot.request.ProfileUpdateRequest;
+import vn.hcmute.springboot.request.*;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.response.UserProfileResponse;
 import vn.hcmute.springboot.serviceImpl.FileUploadServiceImpl;
@@ -130,8 +127,8 @@ public class UserProfileController {
 
   @PostMapping("write-about-me")
   @ResponseStatus(HttpStatus.OK)
-  public ResponseEntity<MessageResponse> writeAboutMe(@RequestBody String aboutMe) {
-    profileService.writeAboutMe(aboutMe);
+  public ResponseEntity<MessageResponse> writeAboutMe(@RequestBody AboutMeRequest request) {
+    var aboutMe=profileService.writeAboutMe(request);
     return new ResponseEntity<>(HttpStatus.OK);
   }
 
