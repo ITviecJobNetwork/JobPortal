@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import vn.hcmute.springboot.exception.UnauthorizedException;
 import vn.hcmute.springboot.repository.TokenRepository;
 
 @Component
@@ -48,8 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
       UserDetails userDetails = this.userDetailsService.loadUserByUsername(userName);
       var isTokenValid = tokenRepository.findByToken(jwt)
-          .map(t -> !t.isExpired() && !t.isRevoked())
-          .orElse(false);
+          .map(t -> !t.isExpired() && !t.isRevoked()).orElseThrow(() -> new UnauthorizedException("Phiên đăng nhập đã hết hạn vui lòng đăng nhập lại"));
       if (jwtService.isTokenValid(jwt, userDetails) && isTokenValid) {
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
             userDetails,

@@ -281,7 +281,7 @@ public class UserController {
   private SaveJobResponse mapToSaveJobResponse(Job job) {
     var skills = skillRepository.findSkillByJob(job);
     List<String> skillNames = skills.stream()
-            .map(Skill::getTitle) // Assuming 'name' is an attribute in Skill
+            .map(Skill::getTitle)
             .toList();
     return SaveJobResponse.builder()
             .jobId(job.getId())
@@ -402,32 +402,8 @@ public class UserController {
   public ResponseEntity<MessageResponse> activeAccount(@RequestBody ActiveAccountRequest request) throws MessagingException {
     var activeAccount = userService.activeAccount(request.getUserName(), request.getAdminEmail());
     return new ResponseEntity<>(activeAccount, HttpStatus.OK);
+
   }
-
-
-  private GetJobResponse mapToGetJobResponse(Job job) {
-
-    var skills = skillRepository.findSkillByJob(job);
-    List<String> skillNames = skills.stream()
-            .map(Skill::getTitle)
-            .toList();
-    return GetJobResponse.builder()
-            .jobId(job.getId())
-            .title(job.getTitle())
-            .companyName(job.getCompany().getName())
-            .companyId(job.getCompany().getId())
-            .address(job.getCompany().getAddress())
-            .skills(skillNames)
-            .description(job.getDescription())
-            .createdDate(job.getCreatedAt().toLocalDate())
-            .expiredDate(job.getExpireAt())
-            .requirements(job.getRequirements())
-            .jobType(job.getJobType().getJobType())
-            .location(job.getLocation().getCityName())
-            .build();
-  }
-
-
 }
 
 

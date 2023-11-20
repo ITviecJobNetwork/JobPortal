@@ -19,6 +19,8 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 
 @Configuration
 @EnableWebSecurity
@@ -65,6 +67,7 @@ public class WebSecurityConfig {
                     .requestMatchers(
                             new AntPathRequestMatcher("/api/admin/**")
                     ).permitAll()
+
                     .anyRequest().authenticated()
             );
     httpSecurity.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
@@ -73,7 +76,6 @@ public class WebSecurityConfig {
                             .addLogoutHandler(logoutHandler)
                             .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
             );
-    httpSecurity.cors(Customizer.withDefaults());
 
     return httpSecurity.build();
   }

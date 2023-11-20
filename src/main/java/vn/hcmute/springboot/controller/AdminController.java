@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import vn.hcmute.springboot.model.CompanyReviewStatus;
 import vn.hcmute.springboot.repository.AdminRepository;
+import vn.hcmute.springboot.request.ChangeFullNameRequest;
 import vn.hcmute.springboot.request.ChangePasswordRequest;
 import vn.hcmute.springboot.request.DeActiveRequest;
 import vn.hcmute.springboot.request.LoginRequest;
@@ -54,7 +55,7 @@ public class AdminController {
   }
 
   @PostMapping("/change-fullname")
-  public ResponseEntity<MessageResponse> changeFullName (@RequestBody String fullName){
+  public ResponseEntity<MessageResponse> changeFullName(@RequestBody ChangeFullNameRequest fullName){
     adminService.changeFullName(fullName);
     return ResponseEntity.ok(new MessageResponse("Đổi tên thành công", HttpStatus.OK));
   }

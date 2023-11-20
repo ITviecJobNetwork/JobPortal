@@ -32,9 +32,6 @@ import vn.hcmute.springboot.service.RecruiterService;
 public class RecruiterController {
   private final RecruiterRepository recruiterRepository;
   private final RecruiterService recruiterService;
-  private final PasswordEncoder passwordEncoder;
-  private final JwtService jwtService;
-  private final CompanyRepository companyRepository;
   private final JobRepository jobRepository;
   private final ApplicationFormRepository applicationFormRepository;
   private final EmailService emailService;
