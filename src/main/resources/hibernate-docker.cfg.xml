@@ -5,10 +5,10 @@
     <session-factory>
         <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
         <property name="hibernate.connection.url">
-            jdbc:mysql://t07cxyau6qg7o5nz.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/ymd0a6c74c4ibjgz?createDatabaseIfNotExist=true
+            jdbc:mysql://localhost:3306/fashion-shop?createDatabaseIfNotExist=true
         </property>
-        <property name="hibernate.connection.username">js5k40gmjandhlz8</property>
-        <property name="hibernate.connection.password">ygeegli8v5jmt1eh</property>
+        <property name="hibernate.connection.username">root</property>
+        <property name="hibernate.connection.password">123456789</property>
         <property name="hibernate.hbm2ddl.auto">update</property>
         <property name="show_sql">false</property>
         <property name="format_sql">false</property>

@@ -177,6 +177,21 @@
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
           <version>3.1.0</version>
+          <executions>
+            <execution>
+              <phase>package</phase>
+              <configuration>
+                <artifactItems>
+                  <artifactItem>
+                    <groupId>com.heroku</groupId>
+                    <artifactId>webapp-runner</artifactId>
+                    <version>9.0.80.0</version>
+                    <destFileName>webapp-runner.jar</destFileName>
+                  </artifactItem>
+                </artifactItems>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
         <!-- see http://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_war_packaging -->
         <plugin>
