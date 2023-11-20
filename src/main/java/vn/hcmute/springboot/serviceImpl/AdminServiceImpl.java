@@ -378,8 +378,8 @@ public class AdminServiceImpl implements AdminService {
             .id(education.getId())
             .school(education.getSchool())
             .major(education.getMajor())
-            .startTime(education.getStartTime())
-            .endTime(education.getEndTime())
+            .startDate(education.getStartDate())
+            .endDate(education.getEndDate())
             .build();
   }
 

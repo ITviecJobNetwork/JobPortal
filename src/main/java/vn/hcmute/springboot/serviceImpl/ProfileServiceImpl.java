@@ -103,8 +103,8 @@ public class ProfileServiceImpl implements ProfileService {
               .orElseThrow(() -> new NotFoundException("Không tìm thấy Education"));
       existingEducation.setSchool(request.getSchool());
       existingEducation.setMajor(request.getMajor());
-      existingEducation.setStartTime(request.getStartDate());
-      existingEducation.setEndTime(request.getEndDate());
+      existingEducation.setStartDate(request.getStartDate());
+      existingEducation.setEndDate(request.getEndDate());
       candidateEducationRepository.save(existingEducation);
       return MessageResponse.builder()
               .message("Cập nhật thông tin thành công")
@@ -114,8 +114,8 @@ public class ProfileServiceImpl implements ProfileService {
       CandidateEducation candidateEducation = new CandidateEducation();
       candidateEducation.setSchool(request.getSchool());
       candidateEducation.setMajor(request.getMajor());
-      candidateEducation.setStartTime(request.getStartDate());
-      candidateEducation.setEndTime(request.getEndDate());
+      candidateEducation.setStartDate(request.getStartDate());
+      candidateEducation.setEndDate(request.getEndDate());
       candidateEducationRepository.save(candidateEducation);
       user.setEducation(candidateEducation);
       userRepository.save(user);
@@ -271,8 +271,8 @@ public class ProfileServiceImpl implements ProfileService {
             .id(education.getId())
             .school(education.getSchool())
             .major(education.getMajor())
-            .startTime(education.getStartTime())
-            .endTime(education.getEndTime())
+            .startDate(education.getStartDate())
+            .endDate(education.getEndDate())
             .build();
   }
 

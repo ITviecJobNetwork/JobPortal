@@ -18,6 +18,6 @@ public class CandidateEducationResponse {
   private Integer id;
   private String major;
   private String school;
-  private String startTime;
-  private String endTime;
+  private String startDate;
+  private String endDate;
 }

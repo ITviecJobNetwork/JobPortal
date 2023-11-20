@@ -34,11 +34,11 @@ public class CandidateEducation {
   @Column(name = "school")
   private String school;
 
-  @Column(name = "start_time")
-  private String startTime;
+  @Column(name = "start_date")
+  private String startDate;
 
-  @Column(name = "end_time")
-  private String endTime;
+  @Column(name = "end_date")
+  private String endDate;
 
   @OneToMany(mappedBy = "education", cascade = CascadeType.ALL)
   @Column(name="user_id")
