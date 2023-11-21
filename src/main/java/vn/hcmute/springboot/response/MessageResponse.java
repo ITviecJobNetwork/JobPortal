@@ -18,11 +18,7 @@ import java.time.LocalDate;
 public class MessageResponse {
   private String message;
   private HttpStatus status;
-  private LocalDate updatedAt;
 
-  public MessageResponse(String message, HttpStatus status) {
-    this.message = message;
-    this.status = status;
-  }
+
 
 }

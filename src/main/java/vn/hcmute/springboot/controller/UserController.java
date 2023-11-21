@@ -216,13 +216,14 @@ public class UserController {
     }
     var linkCv = user.get().getLinkCV();
     var coverLetter = user.get().getCoverLetter();
+    var updatedAt = user.get().getUpdatedCvAt();
     if (linkCv == null) {
       return new ResponseEntity<>(
               (new UserCvResponse("Bạn chưa tải CV lên hệ thống", HttpStatus.NOT_FOUND)),
               HttpStatus.NOT_FOUND);
     }
 
-    return new ResponseEntity<>((new UserCvResponse(linkCv, coverLetter)), HttpStatus.OK);
+    return new ResponseEntity<>((new UserCvResponse(linkCv, coverLetter, updatedAt)), HttpStatus.OK);
   }
 
   @PostMapping("/saveJob/{jobId}")

@@ -178,6 +178,9 @@ public class  User implements UserDetails {
   )
   private List<CandidateExperience> experiences;
 
+  @Column(name="updatedCv_at")
+  private LocalDateTime updatedCvAt;
+
   @Override
   public final boolean equals(Object o) {
     if (this == o) {

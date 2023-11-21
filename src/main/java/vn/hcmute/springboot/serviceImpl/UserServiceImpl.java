@@ -207,9 +207,18 @@ public class UserServiceImpl implements UserService {
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
     user.setLinkCV(fileCv);
     userRepository.save(user);
+    if(user.getLinkCV()!=null && fileCv!=null){
+      user.setLinkCV(fileCv);
+      user.setUpdatedCvAt(LocalDateTime.now());
+      userRepository.save(user);
+    }
+    if(fileCv!=null && user.getLinkCV()==null){
+      user.setLinkCV(fileCv);
+      user.setUpdatedCvAt(null);
+      userRepository.save(user);
+    }
     return MessageResponse.builder()
             .message("Đăng tải CV thành công")
-            .updatedAt(LocalDate.now())
             .status(HttpStatus.OK)
             .build();
   }
@@ -521,16 +530,7 @@ public class UserServiceImpl implements UserService {
     return jobTypes;
   }
 
-  private boolean isExactFile(String fileName) {
-    String[] fileExtensions = {".word", ".pdf", ".docx"};
 
-    for (String extension : fileExtensions) {
-      if (fileName.toLowerCase().endsWith(extension)) {
-        return true;
-      }
-    }
-    return false;
-  }
 
   private boolean hasAlreadyApplied(User candidate, Job job) {
 
