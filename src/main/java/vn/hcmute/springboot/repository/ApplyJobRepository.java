@@ -7,4 +7,6 @@ import vn.hcmute.springboot.model.User;
 
 public interface ApplyJobRepository extends JpaRepository<ApplicationForm, Integer> {
   ApplicationForm findByCandidateAndJob(User user, Job job);
+
+
 }

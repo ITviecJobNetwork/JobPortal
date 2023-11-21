@@ -155,7 +155,7 @@ public class UserController {
             .location(job.getLocation().getCityName())
             .minSalary(job.getMinSalary())
             .maxSalary(job.getMaxSalary())
-            .appliedDate(submittedAt)
+            .appliedAt(submittedAt)
             .isApplied(true)
             .build();
 

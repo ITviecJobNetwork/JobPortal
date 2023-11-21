@@ -1,5 +1,6 @@
 package vn.hcmute.springboot.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,7 @@ public class JobApplyResponse {
   private Boolean isApplied;
   private String message;
   private HttpStatus status;
-  private LocalDate appliedDate;
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  private LocalDate appliedAt;
 
 }
