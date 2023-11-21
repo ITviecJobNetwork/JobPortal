@@ -34,7 +34,7 @@ public class ProfileServiceImpl implements ProfileService {
   public MessageResponse updateUserProfile(ProfileUpdateRequest request) throws IOException {
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
     var user = userRepository.findByUsernameIgnoreCase(userName)
-            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy User"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
     user.setFullName(request.getFullName());
     user.setUsername(request.getEmail());
     user.setAvatar(request.getAvatar());
@@ -47,7 +47,7 @@ public class ProfileServiceImpl implements ProfileService {
     user.setCity(request.getCity());
     userRepository.save(user);
     return MessageResponse.builder()
-            .message("cập-nhật-thông-tin-thành-công")
+            .message("Cập nhật thông tin thành công")
             .status(HttpStatus.OK)
             .build();
   }
@@ -89,7 +89,7 @@ public class ProfileServiceImpl implements ProfileService {
               .skills(user.getSkills().stream().map(CandidateSkill::getTitle).toList())
               .build();
     } else {
-      throw new NotFoundException("Không Tìm Thấy Profile của User");
+      throw new NotFoundException("Không tìm thấy hồ sơ");
     }
   }
 
@@ -97,17 +97,17 @@ public class ProfileServiceImpl implements ProfileService {
   public MessageResponse addEducation(AddEducationRequest request) {
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
     var user = userRepository.findByUsernameIgnoreCase(userName)
-            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy User"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
     if (user.getEducation() != null) {
       var existingEducation = candidateEducationRepository.findById(user.getEducation().getId())
-              .orElseThrow(() -> new NotFoundException("Không tìm thấy Education"));
+              .orElseThrow(() -> new NotFoundException("Chưa có thông tin học vấn"));
       existingEducation.setSchool(request.getSchool());
       existingEducation.setMajor(request.getMajor());
       existingEducation.setStartDate(request.getStartDate());
       existingEducation.setEndDate(request.getEndDate());
       candidateEducationRepository.save(existingEducation);
       return MessageResponse.builder()
-              .message("Cập nhật thông tin thành công")
+              .message("Cập nhật thông tin học vấn thành công")
               .status(HttpStatus.OK)
               .build();
     } else {
@@ -120,7 +120,7 @@ public class ProfileServiceImpl implements ProfileService {
       user.setEducation(candidateEducation);
       userRepository.save(user);
       return MessageResponse.builder()
-              .message("Tạo mới thông tin thành công")
+              .message("Thêm thông tin học vấn thành công")
               .status(HttpStatus.OK)
               .build();
 
@@ -134,10 +134,10 @@ public class ProfileServiceImpl implements ProfileService {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var userName = authentication.getName();
     var user = userRepository.findByUsername(userName)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy User"));
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
     if (id!=null) {
       var existingExperience = candidateExperienceRepository.findById(id)
-              .orElseThrow(() -> new NotFoundException("Không tìm thấy Experience"));
+              .orElseThrow(() -> new NotFoundException("Không tìm thấy kinh nghiệm"));
       existingExperience.setCompanyName(request.getCompanyName());
       existingExperience.setJobTitle(request.getJobTitle());
       existingExperience.setStartTime(request.getStartDate());
@@ -173,14 +173,14 @@ public class ProfileServiceImpl implements ProfileService {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var userName = authentication.getName();
     var user = userRepository.findByUsername(userName)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy User"));
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
     var education = candidateEducationRepository.findById(id);
     if (education.isPresent() && user.getEducation().getId().equals(id)) {
       user.setEducation(null);
       userRepository.save(user);
       candidateEducationRepository.deleteById(id);
     } else {
-      throw new NotFoundException("Không tìm thấy Education");
+      throw new NotFoundException("Chưa có học vấn");
     }
     return MessageResponse.builder()
             .message("Xóa thông tin học vấn thành công")
@@ -193,7 +193,7 @@ public class ProfileServiceImpl implements ProfileService {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var userName = authentication.getName();
     var user = userRepository.findByUsername(userName)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy User"));
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
     var experience = candidateExperienceRepository.findById(id).orElseThrow();
     if (experience.getId().equals(id)) {
         for(var experiences:user.getExperiences()){
@@ -204,10 +204,10 @@ public class ProfileServiceImpl implements ProfileService {
         }
         userRepository.save(user);
         candidateExperienceRepository.deleteById(id);
-      return new MessageResponse("Xóa thông tin kinh nghiêm thành công", HttpStatus.OK);
+      return new MessageResponse("Xóa kinh nghiêm thành công", HttpStatus.OK);
 
     }
-    return new MessageResponse("Không có thông tin kinh nghiêm để xóa", HttpStatus.BAD_REQUEST);
+    return new MessageResponse("Chưa có thông tin kinh nghiêm", HttpStatus.BAD_REQUEST);
 
   }
 
@@ -216,11 +216,11 @@ public class ProfileServiceImpl implements ProfileService {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var userName = authentication.getName();
     var user = userRepository.findByUsername(userName)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy User"));
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
     user.setAboutMe(request.getAboutMe());
     userRepository.save(user);
     return MessageResponse.builder()
-            .message("Cập nhật thông tin thành công")
+            .message("Cập nhật giới thiệu bản thân thành công")
             .status(HttpStatus.OK)
             .build();
   }
@@ -230,10 +230,10 @@ public class ProfileServiceImpl implements ProfileService {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var userName = authentication.getName();
     var user = userRepository.findByUsername(userName)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy User"));
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
     var skill = skillRepository.findByTitleIn(request.getSkillName());
     if(skill.isEmpty()){
-      throw new NotFoundException("Không tìm thấy Skill");
+      throw new NotFoundException("Không tìm thấy kỹ năng");
     }
 
     boolean skillExist = user.getSkills().stream().anyMatch(candidateSkill -> candidateSkill.getTitle().equals(request.getSkillName().toString()));

@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import vn.hcmute.springboot.model.CandidateEducation;
 import vn.hcmute.springboot.model.CandidateExperience;
@@ -27,6 +28,7 @@ public class UserProfileResponse {
   private String address;
   private String position;
   private String phoneNumber;
+  @DateTimeFormat(pattern = "dd/MM/yyyy")
   private LocalDate birthdate;
   private String linkWebsiteProfile;
   private List<String> skills;

@@ -50,6 +50,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -87,7 +88,7 @@ public class  User implements UserDetails {
   @Column(name = "phone_number", unique = true)
   private String phoneNumber;
 
-
+  @DateTimeFormat(pattern = "dd/MM/yyyy")
   @Column(name = "birth_date")
   private LocalDate birthDate;
 
