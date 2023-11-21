@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.exception.UnauthorizedException;
+import vn.hcmute.springboot.model.ApplicationForm;
 import vn.hcmute.springboot.model.Job;
 import vn.hcmute.springboot.model.Skill;
 import vn.hcmute.springboot.model.ViewJobs;
@@ -59,7 +60,32 @@ public class JobServiceImpl implements JobService {
           var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
           isSaved = savedJob != null && savedJob.getIsSaved();
           isApplied = applyJob != null && applyJob.getIsApplied();
-
+          var applicationForm = job.getApplicationForms();
+          var submittedAt = applicationForm.stream()
+                  .filter(applicationForm1 -> applicationForm1.getCandidate().equals(user.get()))
+                  .map(ApplicationForm::getSubmittedAt)
+                  .findFirst()
+                  .orElse(null);
+          var response = GetJobResponse.builder()
+                  .jobId(job.getId())
+                  .title(job.getTitle())
+                  .companyId(job.getCompany().getId())
+                  .companyName(job.getCompany().getName())
+                  .address(job.getCompany().getAddress())
+                  .skills(job.getSkills().stream().map(Skill::getTitle).toList())
+                  .description(job.getDescription())
+                  .createdDate(job.getCreatedAt().toLocalDate())
+                  .expiredDate(job.getExpireAt())
+                  .requirements(job.getRequirements())
+                  .jobType(job.getJobType().getJobType())
+                  .location(job.getLocation().getCityName())
+                  .minSalary(job.getMinSalary())
+                  .maxSalary(job.getMaxSalary())
+                  .isSaved(isSaved)
+                  .isApplied(isApplied)
+                  .appliedAt(submittedAt)
+                  .build();
+          getJobResponses.add(response);
         }
       }
       var skills = skillRepository.findSkillByJob(job);
@@ -110,7 +136,32 @@ public class JobServiceImpl implements JobService {
             var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
             isSaved = savedJob != null && savedJob.getIsSaved();
             isApplied = applyJob != null && applyJob.getIsApplied();
-
+            var applicationForm = job.getApplicationForms();
+            var submittedAt = applicationForm.stream()
+                    .filter(applicationForm1 -> applicationForm1.getCandidate().equals(user.get()))
+                    .map(ApplicationForm::getSubmittedAt)
+                    .findFirst()
+                    .orElse(null);
+            var response = GetJobResponse.builder()
+                    .jobId(job.getId())
+                    .title(job.getTitle())
+                    .companyId(job.getCompany().getId())
+                    .companyName(job.getCompany().getName())
+                    .address(job.getCompany().getAddress())
+                    .skills(job.getSkills().stream().map(Skill::getTitle).toList())
+                    .description(job.getDescription())
+                    .createdDate(job.getCreatedAt().toLocalDate())
+                    .expiredDate(job.getExpireAt())
+                    .requirements(job.getRequirements())
+                    .jobType(job.getJobType().getJobType())
+                    .location(job.getLocation().getCityName())
+                    .minSalary(job.getMinSalary())
+                    .maxSalary(job.getMaxSalary())
+                    .isSaved(isSaved)
+                    .isApplied(isApplied)
+                    .appliedAt(submittedAt)
+                    .build();
+            getJobResponses.add(response);
           }
         }
         var skills = skillRepository.findSkillByJob(job);
@@ -164,7 +215,32 @@ public class JobServiceImpl implements JobService {
             var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
             isSaved = savedJob != null && savedJob.getIsSaved();
             isApplied = applyJob != null && applyJob.getIsApplied();
-
+            var applicationForm = job.getApplicationForms();
+            var submittedAt = applicationForm.stream()
+                    .filter(applicationForm1 -> applicationForm1.getCandidate().equals(user.get()))
+                    .map(ApplicationForm::getSubmittedAt)
+                    .findFirst()
+                    .orElse(null);
+            var response = GetJobResponse.builder()
+                    .jobId(job.getId())
+                    .title(job.getTitle())
+                    .companyId(job.getCompany().getId())
+                    .companyName(job.getCompany().getName())
+                    .address(job.getCompany().getAddress())
+                    .skills(job.getSkills().stream().map(Skill::getTitle).toList())
+                    .description(job.getDescription())
+                    .createdDate(job.getCreatedAt().toLocalDate())
+                    .expiredDate(job.getExpireAt())
+                    .requirements(job.getRequirements())
+                    .jobType(job.getJobType().getJobType())
+                    .location(job.getLocation().getCityName())
+                    .minSalary(job.getMinSalary())
+                    .maxSalary(job.getMaxSalary())
+                    .isSaved(isSaved)
+                    .isApplied(isApplied)
+                    .appliedAt(submittedAt)
+                    .build();
+            getJobResponses.add(response);
           }
         }
         var skills = skillRepository.findSkillByJob(job);
@@ -216,7 +292,32 @@ public class JobServiceImpl implements JobService {
             var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
             isSaved = savedJob != null && savedJob.getIsSaved();
             isApplied = applyJob != null && applyJob.getIsApplied();
-
+            var applicationForm = job.getApplicationForms();
+            var submittedAt = applicationForm.stream()
+                    .filter(applicationForm1 -> applicationForm1.getCandidate().equals(user.get()))
+                    .map(ApplicationForm::getSubmittedAt)
+                    .findFirst()
+                    .orElse(null);
+            var response = GetJobResponse.builder()
+                    .jobId(job.getId())
+                    .title(job.getTitle())
+                    .companyId(job.getCompany().getId())
+                    .companyName(job.getCompany().getName())
+                    .address(job.getCompany().getAddress())
+                    .skills(job.getSkills().stream().map(Skill::getTitle).toList())
+                    .description(job.getDescription())
+                    .createdDate(job.getCreatedAt().toLocalDate())
+                    .expiredDate(job.getExpireAt())
+                    .requirements(job.getRequirements())
+                    .jobType(job.getJobType().getJobType())
+                    .location(job.getLocation().getCityName())
+                    .minSalary(job.getMinSalary())
+                    .maxSalary(job.getMaxSalary())
+                    .isSaved(isSaved)
+                    .isApplied(isApplied)
+                    .appliedAt(submittedAt)
+                    .build();
+            getJobResponses.add(response);
           }
         }
         var skills = skillRepository.findSkillByJob(job);
@@ -268,7 +369,32 @@ public class JobServiceImpl implements JobService {
             var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
             isSaved = savedJob != null && savedJob.getIsSaved();
             isApplied = applyJob != null && applyJob.getIsApplied();
-
+            var applicationForm = job.getApplicationForms();
+            var submittedAt = applicationForm.stream()
+                    .filter(applicationForm1 -> applicationForm1.getCandidate().equals(user.get()))
+                    .map(ApplicationForm::getSubmittedAt)
+                    .findFirst()
+                    .orElse(null);
+            var response = GetJobResponse.builder()
+                    .jobId(job.getId())
+                    .title(job.getTitle())
+                    .companyId(job.getCompany().getId())
+                    .companyName(job.getCompany().getName())
+                    .address(job.getCompany().getAddress())
+                    .skills(job.getSkills().stream().map(Skill::getTitle).toList())
+                    .description(job.getDescription())
+                    .createdDate(job.getCreatedAt().toLocalDate())
+                    .expiredDate(job.getExpireAt())
+                    .requirements(job.getRequirements())
+                    .jobType(job.getJobType().getJobType())
+                    .location(job.getLocation().getCityName())
+                    .minSalary(job.getMinSalary())
+                    .maxSalary(job.getMaxSalary())
+                    .isSaved(isSaved)
+                    .isApplied(isApplied)
+                    .appliedAt(submittedAt)
+                    .build();
+            getJobResponses.add(response);
           }
         }
         var skills = skillRepository.findSkillByJob(job);
@@ -298,7 +424,7 @@ public class JobServiceImpl implements JobService {
       }
       return new PageImpl<>(getJobResponses, PageRequest.of(page, size), result.getTotalElements());
     }
-    throw new NotFoundException("Không có công việc với địa điểm  " + location);
+    throw new NotFoundException("Không có công việc với tên địa điểm là " +location);
   }
 
   @Override
@@ -335,13 +461,40 @@ public class JobServiceImpl implements JobService {
           var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
           isSaved = savedJob != null && savedJob.getIsSaved();
           isApplied = applyJob != null && applyJob.getIsApplied();
-
+          var applicationForm = job.getApplicationForms();
+          var submittedAt = applicationForm.stream()
+                  .filter(applicationForm1 -> applicationForm1.getCandidate().equals(user.get()))
+                  .map(ApplicationForm::getSubmittedAt)
+                  .findFirst()
+                  .orElse(null);
+          var response = GetJobResponse.builder()
+                  .jobId(job.getId())
+                  .title(job.getTitle())
+                  .companyId(job.getCompany().getId())
+                  .companyName(job.getCompany().getName())
+                  .address(job.getCompany().getAddress())
+                  .skills(job.getSkills().stream().map(Skill::getTitle).toList())
+                  .description(job.getDescription())
+                  .createdDate(job.getCreatedAt().toLocalDate())
+                  .expiredDate(job.getExpireAt())
+                  .requirements(job.getRequirements())
+                  .jobType(job.getJobType().getJobType())
+                  .location(job.getLocation().getCityName())
+                  .minSalary(job.getMinSalary())
+                  .maxSalary(job.getMaxSalary())
+                  .isSaved(isSaved)
+                  .isApplied(isApplied)
+                  .appliedAt(submittedAt)
+                  .build();
+          getJobResponses.add(response);
         }
       }
       var skills = skillRepository.findSkillByJob(job);
       List<String> skillNames = skills.stream()
               .map(Skill::getTitle)
               .toList();
+
+
       var getJobResponse = GetJobResponse.builder()
               .jobId(job.getId())
               .title(job.getTitle())
@@ -359,6 +512,7 @@ public class JobServiceImpl implements JobService {
               .maxSalary(job.getMaxSalary())
               .isSaved(isSaved)
               .isApplied(isApplied)
+              .appliedAt(null)
               .build();
 
       getJobResponses.add(getJobResponse);
@@ -375,14 +529,40 @@ public class JobServiceImpl implements JobService {
     var job = jobOptional.get();
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
     var user = userRepository.findByUsername(userName);
-    if (user.isEmpty()) {
-      return createGetJobResponse(job, false, false);
+    if (user.isPresent()) {
+      var savedJob = saveJobsRepository.findByCandidateAndJob(user.get(), job);
+      var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
+      boolean isSaved = savedJob != null && savedJob.getIsSaved();
+      boolean isApplied = applyJob != null && applyJob.getIsApplied();
+      var applicationForm = job.getApplicationForms();
+      var submittedAt = applicationForm.stream()
+              .filter(applicationForm1 -> applicationForm1.getCandidate().equals(user.get()))
+              .map(ApplicationForm::getSubmittedAt)
+              .findFirst()
+              .orElse(null);
+      var response = GetJobResponse.builder()
+              .jobId(job.getId())
+              .title(job.getTitle())
+              .companyId(job.getCompany().getId())
+              .companyName(job.getCompany().getName())
+              .address(job.getCompany().getAddress())
+              .skills(job.getSkills().stream().map(Skill::getTitle).toList())
+              .description(job.getDescription())
+              .createdDate(job.getCreatedAt().toLocalDate())
+              .expiredDate(job.getExpireAt())
+              .requirements(job.getRequirements())
+              .jobType(job.getJobType().getJobType())
+              .location(job.getLocation().getCityName())
+              .minSalary(job.getMinSalary())
+              .maxSalary(job.getMaxSalary())
+              .isSaved(isSaved)
+              .isApplied(isApplied)
+              .appliedAt(submittedAt)
+              .build();
+      return response;
     }
-    var savedJob = saveJobsRepository.findByCandidateAndJob(user.get(), job);
-    var applyJob = applyJobRepository.findByCandidateAndJob(user.get(), job);
-    boolean isSaved = savedJob != null && savedJob.getIsSaved();
-    boolean isApplied = applyJob != null && applyJob.getIsApplied();
-    return createGetJobResponse(job, isSaved, isApplied);
+    return createGetJobResponse(job, false, false);
+
   }
 
   @Override
@@ -467,6 +647,7 @@ public class JobServiceImpl implements JobService {
             .maxSalary(job.getMaxSalary())
             .isSaved(isSaved)
             .isApplied(isApplied)
+            .appliedAt(null)
             .build();
   }
 

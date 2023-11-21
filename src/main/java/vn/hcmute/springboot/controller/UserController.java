@@ -181,14 +181,14 @@ public class UserController {
 
 
   @PostMapping("/writeCoverLetter")
-  public ResponseEntity<MessageResponse> writeCoverLetter(@RequestBody String coverLetter) {
-    return new ResponseEntity<>(userService.writeCoverLetter(coverLetter), HttpStatus.OK);
+  public ResponseEntity<MessageResponse> writeCoverLetter(@RequestBody WriteCoverLetterRequest coverLetter) {
+    return new ResponseEntity<>(userService.writeCoverLetter(coverLetter.getCoverLetter()), HttpStatus.OK);
   }
 
   @PostMapping(value = "/uploadUserCv")
   public ResponseEntity<MessageResponse> uploadUserCv(
-          @Valid @RequestBody String fileCv) throws IOException {
-    var uploadCv = userService.uploadUserCv(fileCv);
+          @Valid @RequestBody UploadFileRequest fileCv) throws IOException {
+    var uploadCv = userService.uploadUserCv(fileCv.getFile());
     return new ResponseEntity<>(uploadCv, HttpStatus.OK);
   }
 

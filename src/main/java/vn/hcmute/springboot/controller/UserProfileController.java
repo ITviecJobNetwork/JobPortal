@@ -61,14 +61,14 @@ public class UserProfileController {
 
   @PostMapping(value = "/uploadAvatar")
   public ResponseEntity<MessageResponse> uploadImage(
-          @RequestBody String avatar) throws IOException {
+          @RequestBody UploadFileRequest avatar) throws IOException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
               .body(new MessageResponse("Người dùng chưa đăng nhập", HttpStatus.UNAUTHORIZED));
     }
     var user = userRepository.findByUsername(authentication.getName()).orElseThrow();
-    user.setAvatar(avatar);
+    user.setAvatar(avatar.getFile());
     userRepository.save(user);
 
     return new ResponseEntity<>(new MessageResponse("Upload thành công", HttpStatus.OK),

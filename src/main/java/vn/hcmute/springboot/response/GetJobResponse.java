@@ -1,5 +1,6 @@
 package vn.hcmute.springboot.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.springframework.http.HttpStatus;
 
@@ -28,6 +29,8 @@ public class GetJobResponse {
   private Boolean isApplied;
   private Double minSalary;
   private Double maxSalary;
+  @JsonFormat(pattern = "dd/MM/yyyy")
+  private LocalDate appliedAt;
   private String message;
   private HttpStatus status;
   public GetJobResponse(String message, HttpStatus status) {
