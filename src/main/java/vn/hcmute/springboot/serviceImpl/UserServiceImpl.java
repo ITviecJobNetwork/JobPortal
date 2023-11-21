@@ -2,19 +2,9 @@ package vn.hcmute.springboot.serviceImpl;
 
 
 import jakarta.mail.MessagingException;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -23,7 +13,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import vn.hcmute.springboot.exception.BadRequestException;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.exception.UnauthorizedException;
@@ -34,6 +23,15 @@ import vn.hcmute.springboot.request.FavouriteJobRequest;
 import vn.hcmute.springboot.request.WriteReviewRequest;
 import vn.hcmute.springboot.response.*;
 import vn.hcmute.springboot.service.UserService;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -56,24 +54,22 @@ public class UserServiceImpl implements UserService {
   private final CompanyRepository companyRepository;
   private final CompanyReviewRepository companyReviewRepository;
   private final CompanyFollowRepository companyFollowRepository;
-  private final ApplyJobRepository applyJobRepository;
-  private final AdminRepository adminRepository;
 
 
   public void handleUserStatus() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
       MessageResponse.builder()
-          .message("Truy cập không được ủy quyền")
-          .status(HttpStatus.UNAUTHORIZED)
-          .build();
+              .message("Truy cập không được ủy quyền")
+              .status(HttpStatus.UNAUTHORIZED)
+              .build();
     }
   }
 
   @Override
   public MessageResponse sendNewPasswordToEmail(String email) {
     var user = userRepository.findByUsername(email)
-        .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
     if (user.getStatus().equals(UserStatus.INACTIVE)) {
       String messageError = "Người dùng chưa xác thực";
       throw new BadRequestException(messageError);
@@ -88,21 +84,21 @@ public class UserServiceImpl implements UserService {
     }
     userRepository.save(user);
     return MessageResponse.builder()
-        .status(HttpStatus.OK)
-        .message("Mật khẩu mới đã được gửi đến email của bạn")
-        .build();
+            .status(HttpStatus.OK)
+            .message("Mật khẩu mới đã được gửi đến email của bạn")
+            .build();
   }
 
   @Override
   public MessageResponse changePassword(String currentPassword, String newPassword,
-      String confirmPassword) {
+                                        String confirmPassword) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
       String message = "Người dùng chưa đăng nhập";
       throw new UnauthorizedException(message);
     }
     var user = userRepository.findByUsername(authentication.getName())
-        .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
     String initialPassword = user.getPassword();
     if (Objects.equals(currentPassword, newPassword)) {
       String message = "Mật khẩu mới và mật khẩu hiện tại không được giống nhau";
@@ -119,9 +115,9 @@ public class UserServiceImpl implements UserService {
     user.setPassword(encoder.encode(newPassword));
     userRepository.save(user);
     return MessageResponse.builder()
-        .message("Thay đổi mật khẩu thành công")
-        .status(HttpStatus.OK)
-        .build();
+            .message("Thay đổi mật khẩu thành công")
+            .status(HttpStatus.OK)
+            .build();
   }
 
   @Override
@@ -129,7 +125,7 @@ public class UserServiceImpl implements UserService {
     handleUserStatus();
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-        .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
     boolean existUser = userRepository.existsByNickname(newNickName);
     if (existUser) {
       throw new BadRequestException("Nickname đã có người sử dụng vui lòng chọn nickname khác");
@@ -137,9 +133,9 @@ public class UserServiceImpl implements UserService {
     user.setNickname(newNickName);
     userRepository.save(user);
     return MessageResponse.builder()
-        .message("Thay đổi biệt danh thành công")
-        .status(HttpStatus.OK)
-        .build();
+            .message("Thay đổi biệt danh thành công")
+            .status(HttpStatus.OK)
+            .build();
   }
 
   @Override
@@ -208,33 +204,34 @@ public class UserServiceImpl implements UserService {
   public MessageResponse uploadUserCv(String fileCv) throws IOException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-        .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
     user.setLinkCV(fileCv);
     userRepository.save(user);
     return MessageResponse.builder()
-        .message("Upload CV thành công")
-        .status(HttpStatus.OK)
-        .build();
+            .message("Đăng tải CV thành công")
+            .updatedAt(LocalDate.now())
+            .status(HttpStatus.OK)
+            .build();
   }
 
   @Override
   public MessageResponse writeCoverLetter(String coverLetter) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-        .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
     user.setCoverLetter(coverLetter);
     userRepository.save(user);
     return MessageResponse.builder()
-        .message("Viết cover-letter thành công")
-        .status(HttpStatus.OK)
-        .build();
+            .message("Viết cover-letter thành công")
+            .status(HttpStatus.OK)
+            .build();
   }
 
   @Override
   public MessageResponse resetPassword(String email, String currentPassword, String newPassword,
-      String confirmPassword) {
+                                       String confirmPassword) {
     var user = userRepository.findByUsername(email)
-        .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
 
     if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
       String message = "Mật khẩu hiện tại không đúng";
@@ -252,9 +249,9 @@ public class UserServiceImpl implements UserService {
     user.setPassword(passwordEncoder.encode(newPassword));
     userRepository.save(user);
     return MessageResponse.builder()
-        .message("Thay đổi mật khẩu thành công")
-        .status(HttpStatus.OK)
-        .build();
+            .message("Thay đổi mật khẩu thành công")
+            .status(HttpStatus.OK)
+            .build();
   }
 
   @Override
@@ -262,11 +259,11 @@ public class UserServiceImpl implements UserService {
 
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-        .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
     var job = jobRepository.findById(jobId)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công việc"));
-    var jobAlreadySaved = saveJobRepository.existsByCandidateAndJob(user,job);
-    if(jobAlreadySaved){
+    var jobAlreadySaved = saveJobRepository.existsByCandidateAndJob(user, job);
+    if (jobAlreadySaved) {
       throw new BadRequestException("Bạn đã lưu công việc này trước đó");
     }
     if (hasAlreadyApplied(user, job)) {
@@ -305,7 +302,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public Page<JobApplyResponse>  getAppliedJobs(User user,Pageable pageRequest) {
+  public Page<JobApplyResponse> getAppliedJobs(User user, Pageable pageRequest) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     user = userRepository.findByUsernameIgnoreCase(authentication.getName())
             .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
@@ -330,7 +327,7 @@ public class UserServiceImpl implements UserService {
   public MessageResponse deleteSaveJobs(Integer id) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-        .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
     var job = jobRepository.findById(id).orElse(null);
     var saveJob = saveJobRepository.findByCandidateAndJob(user, job);
     if (user != null) {
@@ -338,23 +335,23 @@ public class UserServiceImpl implements UserService {
     }
 
     return MessageResponse.builder()
-        .message("Xóa công việc đã lưu thành công")
-        .status(HttpStatus.OK)
-        .build();
+            .message("Xóa công việc đã lưu thành công")
+            .status(HttpStatus.OK)
+            .build();
   }
 
   @Override
   public MessageResponse saveFavouriteJobType(FavouriteJobRequest request) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-        .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
     List<Skill> skills = updateSkills(request.getSkills());
-    if(user==null){
+    if (user == null) {
       throw new UnauthorizedException("Không tìm thấy user");
     }
-    if(request.getId()!=null){
+    if (request.getId() != null) {
       FavouriteJobType existingFavouriteJobType = favouriteJobTypeRepository.findById(request.getId())
-          .orElseThrow(() -> new NotFoundException("Không tìm thấy FavouriteJobType"));
+              .orElseThrow(() -> new NotFoundException("Không tìm thấy FavouriteJobType"));
       existingFavouriteJobType.setMinSalary(request.getMinSalary());
       existingFavouriteJobType.setMaxSalary(request.getMaxSalary());
       existingFavouriteJobType.setCurrentSalary(request.getCurrentSalary());
@@ -368,13 +365,12 @@ public class UserServiceImpl implements UserService {
       existingFavouriteJobType.setJobTypes(jobTypes);
       favouriteJobTypeRepository.save(existingFavouriteJobType);
       return MessageResponse.builder()
-          .message("Cập nhật công việc ưa thích thành công")
-          .status(HttpStatus.OK)
-          .build();
+              .message("Cập nhật công việc ưa thích thành công")
+              .status(HttpStatus.OK)
+              .build();
 
-    }
-    else{
-      var favouriteJobType =new FavouriteJobType();
+    } else {
+      var favouriteJobType = new FavouriteJobType();
       List<Skill> favouriteSkill = updateSkills(request.getSkills());
       favouriteJobType.setJobTypeSkills(favouriteSkill);
 
@@ -405,29 +401,27 @@ public class UserServiceImpl implements UserService {
         throw new BadRequestException("Bạn chỉ có thể chọn tối đa 5 loại công ty");
       }
       return MessageResponse.builder()
-          .message("Lưu công việc ưa thích thành công")
-          .status(HttpStatus.OK)
-          .build();
+              .message("Lưu công việc ưa thích thành công")
+              .status(HttpStatus.OK)
+              .build();
     }
-
 
 
   }
 
   @Override
-  public MessageResponse writeCompanyReview(Integer companyId,WriteReviewRequest request) {
+  public MessageResponse writeCompanyReview(Integer companyId, WriteReviewRequest request) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-        .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
     var company = companyRepository.findById(companyId)
-        .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
     if (user == null || company == null) {
       return MessageResponse.builder()
-          .message("User or company not found")
-          .status(HttpStatus.NOT_FOUND)
-          .build();
-    }
-    else {
+              .message("User or company not found")
+              .status(HttpStatus.NOT_FOUND)
+              .build();
+    } else {
       CompanyReview companyReview = new CompanyReview();
       companyReview.setCandidate(user);
       companyReview.setCompany(company);
@@ -450,18 +444,18 @@ public class UserServiceImpl implements UserService {
 
     }
     return MessageResponse.builder()
-        .message("Viết đánh giá thành công")
-        .status(HttpStatus.OK)
-        .build();
+            .message("Viết đánh giá thành công")
+            .status(HttpStatus.OK)
+            .build();
   }
 
   @Override
   public void followCompany(Integer companyId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-        .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
     var company = companyRepository.findById(companyId);
-    if(company.isEmpty()){
+    if (company.isEmpty()) {
       throw new NotFoundException("Không tìm thấy công ty");
     }
     var existingFollow = companyFollowRepository.findByUserIdAndCompanyId(user.getId(),
@@ -481,17 +475,16 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public MessageResponse activeAccount(String userName,String adminEmail) throws MessagingException {
-      try{
-        emailService.sendReasonToActiveFromUser(userName,adminEmail) ;
-          return MessageResponse.builder()
-                  .message("Gửi yêu cầu kích hoạt tài khoản thành công")
-                  .status(HttpStatus.OK)
-                  .build();
-        }
-      catch (MessagingException e){
-        throw new BadRequestException("Không thể gửi yêu cầu kích hoạt tài khoản");
-      }
+  public MessageResponse activeAccount(String userName, String adminEmail) throws MessagingException {
+    try {
+      emailService.sendReasonToActiveFromUser(userName, adminEmail);
+      return MessageResponse.builder()
+              .message("Gửi yêu cầu kích hoạt tài khoản thành công")
+              .status(HttpStatus.OK)
+              .build();
+    } catch (MessagingException e) {
+      throw new BadRequestException("Không thể gửi yêu cầu kích hoạt tài khoản");
+    }
 
   }
 
@@ -527,6 +520,7 @@ public class UserServiceImpl implements UserService {
     }
     return jobTypes;
   }
+
   private boolean isExactFile(String fileName) {
     String[] fileExtensions = {".word", ".pdf", ".docx"};
 
@@ -541,14 +535,16 @@ public class UserServiceImpl implements UserService {
   private boolean hasAlreadyApplied(User candidate, Job job) {
 
     ApplicationForm applicationForms = applicationFormRepository.findByCandidateAndJob(
-        candidate, job);
+            candidate, job);
     return applicationForms != null;
   }
+
   private List<GetJobResponse> mapJobsToGetJobResponses(List<Job> jobs) {
     return jobs.stream()
             .map(this::mapToGetJobResponse)
             .collect(Collectors.toList());
   }
+
   private GetJobResponse mapToGetJobResponse(Job job) {
 
     var skills = skillRepository.findSkillByJob(job);
@@ -569,7 +565,8 @@ public class UserServiceImpl implements UserService {
             .location(job.getLocation().getCityName())
             .build();
   }
-  private SaveJobResponse mapToSaveJobResponse(Job job){
+
+  private SaveJobResponse mapToSaveJobResponse(Job job) {
     var skills = skillRepository.findSkillByJob(job);
     List<String> skillNames = skills.stream()
             .map(Skill::getTitle) // Assuming 'name' is an attribute in Skill
@@ -590,7 +587,8 @@ public class UserServiceImpl implements UserService {
             .build();
 
   }
-  private JobApplyResponse mapToApplyJobResponse(Job job){
+
+  private JobApplyResponse mapToApplyJobResponse(Job job) {
     var skills = skillRepository.findSkillByJob(job);
     List<String> skillNames = skills.stream()
             .map(Skill::getTitle)
@@ -611,8 +609,6 @@ public class UserServiceImpl implements UserService {
             .build();
 
   }
-
-
 
 
 }

@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
+import java.time.LocalDate;
+
 
 @Getter
 @Setter
@@ -16,5 +18,11 @@ import org.springframework.http.HttpStatus;
 public class MessageResponse {
   private String message;
   private HttpStatus status;
+  private LocalDate updatedAt;
+
+  public MessageResponse(String message, HttpStatus status) {
+    this.message = message;
+    this.status = status;
+  }
 
 }
