@@ -13,10 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import vn.hcmute.springboot.model.CompanyReviewStatus;
 import vn.hcmute.springboot.repository.AdminRepository;
-import vn.hcmute.springboot.request.ChangeFullNameRequest;
-import vn.hcmute.springboot.request.ChangePasswordRequest;
-import vn.hcmute.springboot.request.DeActiveRequest;
-import vn.hcmute.springboot.request.LoginRequest;
+import vn.hcmute.springboot.request.*;
 import vn.hcmute.springboot.response.*;
 import vn.hcmute.springboot.security.JwtService;
 import vn.hcmute.springboot.service.AdminService;
@@ -103,6 +100,13 @@ public class AdminController {
   public ResponseEntity<MessageResponse> updateStatusCompanyReview(@PathVariable Integer companyReviewId, @RequestBody CompanyReviewStatus status){
     adminService.updateStatusCompanyReview(companyReviewId, status);
     return ResponseEntity.ok(new MessageResponse("Cập nhật thành công", HttpStatus.OK));
+  }
+
+  @PostMapping("/update-post-job-status/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<MessageResponse> updatePostJobStatus(@PathVariable Integer id, @RequestBody UpdateJobStatusRequest status) throws MessagingException {
+    return ResponseEntity.ok(adminService.updatePostJobStatus(id, status.getStatus().toString()));
+
   }
 
 }

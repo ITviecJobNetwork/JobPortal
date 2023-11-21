@@ -2,6 +2,7 @@ package vn.hcmute.springboot.service;
 
 import jakarta.mail.MessagingException;
 import vn.hcmute.springboot.model.ApplicationForm;
+import vn.hcmute.springboot.model.JobStatus;
 import vn.hcmute.springboot.model.UserStatus;
 
 public interface EmailService {
@@ -20,6 +21,7 @@ public interface EmailService {
 
   void sendEmailActiveFromAdmin(String email) throws MessagingException;
 
+  void sendEmailUpdateStatusPostJobForRecruiter(String email, JobStatus status) throws MessagingException;
 
 
 }

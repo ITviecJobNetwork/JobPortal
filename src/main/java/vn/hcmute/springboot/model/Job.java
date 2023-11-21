@@ -83,5 +83,9 @@ public class Job {
   @OneToMany(mappedBy = "job", fetch = FetchType.EAGER)
   private List<ApplicationForm> applicationForms;
 
+  @Column(name = "status")
+  @Enumerated(EnumType.STRING)
+  private JobStatus status;
+
 
 }

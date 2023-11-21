@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import vn.hcmute.springboot.model.ApplicationForm;
 import vn.hcmute.springboot.model.ApplicationStatus;
+import vn.hcmute.springboot.model.JobStatus;
 import vn.hcmute.springboot.model.UserStatus;
 import vn.hcmute.springboot.service.EmailService;
 
@@ -374,6 +375,106 @@ public class EmailServiceImpl implements EmailService {
         mimeMessageHelper.setTo(email);
         mimeMessageHelper.setSubject("Reason for active account");
         mimeMessageHelper.setText("Tài khoản của bạn đã được kích hoạt chúc mừng bạn: ");
+        javaMailSender.send(mimeMessage);
+    }
+
+    @Override
+    public void sendEmailUpdateStatusPostJobForRecruiter(String email, JobStatus status) throws MessagingException {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
+
+        mimeMessageHelper.setTo(email);
+        mimeMessageHelper.setSubject("Update status for posting job by Admin for Recruiter");
+        String emailContent="""
+                <html>
+                    <head>
+                        <style>
+                            body {
+                                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                background-color: #e9eff1;
+                                color: #4a4a4a;
+                                margin: 0;
+                                padding: 0;
+                            }
+                            .container {
+                                max-width: 600px;
+                                margin: 20px auto;
+                                background: #fff;
+                                border-radius: 8px;
+                                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+                                padding: 30px;
+                                text-align: center;
+                            }
+                            h1 {
+                                color: #007bff;
+                                font-size: 24px;
+                                margin-bottom: 10px;
+                            }
+                            h2 {
+                                color: #333;
+                                font-size: 20px;
+                                margin-top: 5px;
+                            }
+                            p {
+                                font-size: 16px;
+                                line-height: 1.5;
+                                color: #666;
+                            }
+                            .jobStatus {
+                                display: inline-block;
+                                margin: 20px auto;
+                                padding: 10px 20px;
+                                font-size: 24px;
+                                font-weight: bold;
+                                color: #007bff;
+                                background-color: #f0f8ff;
+                                border: 1px solid #b6dfff;
+                                border-radius: 5px;
+                            }
+                            .footer {
+                                 text-align: center;
+                                 padding: 20px;
+                                 font-size: 14px;
+                                 color: #777;
+                                 background-color: #f8f8f8;
+                                 border-top: 1px solid #e7e7e7;
+                                  }
+                            .footer a {
+                                  color: #007bff;
+                                  text-decoration: none;
+                                   }
+                            .header {
+                                  background-color: #000;
+                                  padding: 10px;
+                                  text-align: center;
+                            }
+                            .header img {
+                                  max-height: 60px;
+                            }                   \s
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                              <img src="https://ci5.googleusercontent.com/proxy/5R6tqKxblgiFiYicXqxWrIU9EXWsSp_V-ISvQh2ifk3YI9a1slctTn0yYa0oqOtl4uTW3PieCAhmR2ETVO86GgIXrJj74Td6-Cpy7ULFDoz3-LaeF1DS99y9AckcVrjZqHOmLalNRq3hA7_d-_MtXhoDnEPw-GShCZ11Uw=s0-d-e1-ft#https://itviec.com/assets/mails/logo-5f3371a704b475a80f27523e1bcfc4853c03bd7e32b8893971074a64d48bdd6c.png" alt="Company Logo">
+                        </div>
+                        <div class="container">
+                            <div class="username">Hello %s</div>
+                            <h1>Update status for posting job into system</h1>
+                            <p>Thank you for collaborating with us. Your job status about job after updating is:</p>
+                            <div class="jobStatus">%s</div>
+                            <p><strong>Thank you for choosing us!</strong></p>
+                        </div>
+                        <div class="footer">
+                              <p>Need help? Contact us at <a href="mailto:namvo.010202@gmail.com">namvo.010202@gmail.com</a></p>
+                               <p>&copy; 2023 ITViec. All rights reserved.</p>
+                        </div>
+                    </body>
+                </html>
+                        
+                """.formatted(email,status);
+
+
+        mimeMessageHelper.setText(emailContent, true);
         javaMailSender.send(mimeMessage);
     }
 }

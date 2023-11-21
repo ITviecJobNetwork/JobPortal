@@ -31,7 +31,6 @@ import vn.hcmute.springboot.service.EmailService;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -52,6 +51,7 @@ public class AdminServiceImpl implements AdminService {
   private final EmailService emailService;
   private final RecruiterRepository recruiterRepository;
   private final CandidateSkillRepository candidateSkillRepository;
+  private final JobRepository jobRepository;
 
   @Override
   public JwtResponse loginAdmin(LoginRequest request) {
@@ -361,6 +361,56 @@ public class AdminServiceImpl implements AdminService {
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy review"));
     companyReview.setStatus(status);
     companyReviewRepository.save(companyReview);
+  }
+
+  @Override
+  public MessageResponse updatePostJobStatus(Integer id, String status) throws MessagingException {
+    var adminName = SecurityContextHolder.getContext().getAuthentication().getName();
+    adminRepository.findByEmail(adminName)
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy admin hoặc admin chưa đăng nhập"));
+    var job = jobRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy job"));
+    var company = job.getCompany();
+    var recruiter = recruiterRepository.findByUsername(company.getRecruiter().getUsername())
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy recruiter"));
+    if(job.getStatus()==null){
+      if(status.equals(JobStatus.APPROVED.toString())){
+        job.setStatus(JobStatus.APPROVED);
+        jobRepository.save(job);
+        try{
+          emailService.sendEmailUpdateStatusPostJobForRecruiter(recruiter.getUsername(), JobStatus.APPROVED);
+        }
+        catch(Exception e){
+          throw new BadRequestException("Không thể gửi email tới nhà tuyển dụng");
+        }
+
+        return MessageResponse.builder()
+                .message("Duyệt job thành công")
+                .status(HttpStatus.OK)
+                .build();
+      }
+      else{
+        job.setStatus(JobStatus.REJECTED);
+        jobRepository.save(job);
+        try{
+          emailService.sendEmailUpdateStatusPostJobForRecruiter(recruiter.getUsername(), JobStatus.REJECTED);
+        }
+        catch(Exception e){
+          throw new BadRequestException("Không thể gửi email tới nhà tuyển dụng");
+        }
+        return MessageResponse.builder()
+                .message("Từ chối job thành công")
+                .status(HttpStatus.OK)
+                .build();
+      }
+    }
+    if(job.getStatus().equals(JobStatus.APPROVED)){
+      throw new BadRequestException("Job đã duyệt trước đó");
+    }
+    return MessageResponse.builder()
+            .message("Job đã từ chối trước đó")
+            .status(HttpStatus.OK)
+            .build();
   }
 
   public CandidateExperienceResponse convertToCandidateExperienceResponse(CandidateExperience experience){

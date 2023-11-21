@@ -41,4 +41,6 @@ public interface AdminService {
 
   void updateStatusCompanyReview (Integer id, CompanyReviewStatus status);
 
+  MessageResponse updatePostJobStatus (Integer id, String status) throws MessagingException;
+
 }
