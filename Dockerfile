@@ -6,5 +6,5 @@ ADD /target/shop.war /usr/local/tomcat/webapps/
 
 EXPOSE 8080
 CMD ["catalina.sh", "run"]
-# Use Heroku's OpenJDK image as the base image
+
 
