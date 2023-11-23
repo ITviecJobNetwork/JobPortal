@@ -429,6 +429,7 @@ public class JobServiceImpl implements JobService {
 
   @Override
   public Page<GetJobResponse> findJobsWithFilters(
+      String location,
       String keyword,
       Double salaryMin,
       Double salaryMax,
@@ -440,6 +441,7 @@ public class JobServiceImpl implements JobService {
   ) {
     Pageable pageable = PageRequest.of(page, size);
     var result = jobRepository.findByKeywordAndFilters(
+            location,
         keyword,
         salaryMin,
         salaryMax,

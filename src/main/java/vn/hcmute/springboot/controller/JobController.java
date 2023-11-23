@@ -66,6 +66,7 @@ public class JobController {
 
   @GetMapping("/searchByKeyword")
   public ResponseEntity<Page<GetJobResponse>> findJobs(
+          @RequestParam(value = "location", required = false) String location,
           @RequestParam(value = "keyword", required = false) String keyword,
           @RequestParam(value = "salaryMin", required = false) Double salaryMin,
           @RequestParam(value = "salaryMax", required = false) Double salaryMax,
@@ -75,7 +76,7 @@ public class JobController {
           @RequestParam(value = "page", defaultValue = "0") int page,
           @RequestParam(value = "size", defaultValue = "20") int size) {
 
-    Page<GetJobResponse> jobs = jobService.findJobsWithFilters(keyword, salaryMin, salaryMax, companyType,
+    Page<GetJobResponse> jobs = jobService.findJobsWithFilters(location,keyword, salaryMin, salaryMax, companyType,
             jobType, candidateLevel, page, size);
 
     return new ResponseEntity<>(jobs, HttpStatus.OK);

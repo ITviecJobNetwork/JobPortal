@@ -40,8 +40,8 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
           "LEFT JOIN j.candidateLevels cl " +
           "LEFT JOIN j.skills s " +
           "WHERE " +
-          "(:keyword is null OR :keyword = '' OR REPLACE(j.title, ' ', '') LIKE CONCAT('%', REPLACE(:keyword, ' ', ''), '%') "
-          +
+          "(:location is null OR REPLACE(l.cityName, ' ', '') LIKE CONCAT('%', REPLACE(:location, ' ', ''), '%')) " +
+          "AND (:keyword is null OR :keyword = '' OR REPLACE(j.title, ' ', '') LIKE CONCAT('%', REPLACE(:keyword, ' ', ''), '%') " +
           "OR REPLACE(c.name, ' ', '') LIKE CONCAT('%', REPLACE(:keyword, ' ', ''), '%') " +
           "OR REPLACE(l.cityName, ' ', '') LIKE CONCAT('%', REPLACE(:keyword, ' ', ''), '%') " +
           "OR REPLACE(cl.candidateLevel, ' ', '') LIKE CONCAT('%', REPLACE(:keyword, ' ', ''), '%') " +
@@ -51,14 +51,15 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
           "AND (:companyType is null OR j.company.companyType.type IN :companyType) " +
           "AND (:jobType is null OR j.jobType.jobType IN :jobType) " +
           "AND (:candidateLevel is null OR REPLACE(cl.candidateLevel, ' ', '') IN :candidateLevel)")
-  Page<Job> findByKeywordAndFilters(
-          @Param("keyword") String keyword,
-          @Param("salaryMin") Double salaryMin,
-          @Param("salaryMax") Double salaryMax,
-          @Param("companyType") List<String> companyType,
-          @Param("jobType") List<String> jobType,
-          @Param("candidateLevel") List<String> candidateLevel,
-          Pageable pageable);
+  Page<Job> findByKeywordAndFilters(@Param("location") String location,
+                                    @Param("keyword") String keyword,
+                                    @Param("salaryMin") Double salaryMin,
+                                    @Param("salaryMax") Double salaryMax,
+                                    @Param("companyType") List<String> companyType,
+                                    @Param("jobType") List<String> jobType,
+                                    @Param("candidateLevel") List<String> candidateLevel,
+                                    Pageable pageable);
+
 
   @Query("SELECT j FROM Job j WHERE j.id != :appliedJobId "
           + "AND j.title LIKE %:title% " + "OR j.location.cityName LIKE %:location%")

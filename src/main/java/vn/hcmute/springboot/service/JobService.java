@@ -19,6 +19,7 @@ public interface JobService {
   Page<GetJobResponse> findByLocation(String location,int page, int size);
 
   Page<GetJobResponse> findJobsWithFilters(
+          String location,
       String keyword,
       Double salaryMin,
       Double salaryMax,
