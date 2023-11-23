@@ -204,17 +204,12 @@ public class UserServiceImpl implements UserService {
   public MessageResponse uploadUserCv(String fileCv) throws IOException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
     user.setLinkCV(fileCv);
     userRepository.save(user);
-    if(user.getLinkCV()!=null && fileCv!=null){
+    if(fileCv!=null){
       user.setLinkCV(fileCv);
       user.setUpdatedCvAt(LocalDateTime.now());
-      userRepository.save(user);
-    }
-    if(fileCv!=null && user.getLinkCV()==null){
-      user.setLinkCV(fileCv);
-      user.setUpdatedCvAt(null);
       userRepository.save(user);
     }
     return MessageResponse.builder()
@@ -227,11 +222,11 @@ public class UserServiceImpl implements UserService {
   public MessageResponse writeCoverLetter(String coverLetter) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
     user.setCoverLetter(coverLetter);
     userRepository.save(user);
     return MessageResponse.builder()
-            .message("Viết cover-letter thành công")
+            .message("Cập nhật thư xin việc thành công")
             .status(HttpStatus.OK)
             .build();
   }
@@ -295,7 +290,7 @@ public class UserServiceImpl implements UserService {
   public List<SaveJobResponse> getSavedJobs(User user) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
     if (user != null) {
 
       List<SaveJobs> savedJobs = saveJobRepository.findByCandidate(user);
@@ -314,7 +309,7 @@ public class UserServiceImpl implements UserService {
   public Page<JobApplyResponse> getAppliedJobs(User user, Pageable pageRequest) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
     if (user != null) {
       List<ApplicationForm> applicationForms = applicationFormRepository.findByCandidate(user);
       List<Job> appliedJobs = applicationForms.stream()
@@ -336,7 +331,7 @@ public class UserServiceImpl implements UserService {
   public MessageResponse deleteSaveJobs(Integer id) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
     var job = jobRepository.findById(id).orElse(null);
     var saveJob = saveJobRepository.findByCandidateAndJob(user, job);
     if (user != null) {
@@ -353,14 +348,14 @@ public class UserServiceImpl implements UserService {
   public MessageResponse saveFavouriteJobType(FavouriteJobRequest request) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
     List<Skill> skills = updateSkills(request.getSkills());
     if (user == null) {
-      throw new UnauthorizedException("Không tìm thấy user");
+      throw new UnauthorizedException("Không tìm thấy người dùng");
     }
     if (request.getId() != null) {
       FavouriteJobType existingFavouriteJobType = favouriteJobTypeRepository.findById(request.getId())
-              .orElseThrow(() -> new NotFoundException("Không tìm thấy FavouriteJobType"));
+              .orElseThrow(() -> new NotFoundException("Không tìm thấy loại công việc yêu thích"));
       existingFavouriteJobType.setMinSalary(request.getMinSalary());
       existingFavouriteJobType.setMaxSalary(request.getMaxSalary());
       existingFavouriteJobType.setCurrentSalary(request.getCurrentSalary());
@@ -422,12 +417,12 @@ public class UserServiceImpl implements UserService {
   public MessageResponse writeCompanyReview(Integer companyId, WriteReviewRequest request) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
     var company = companyRepository.findById(companyId)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
     if (user == null || company == null) {
       return MessageResponse.builder()
-              .message("User or company not found")
+              .message("Không tìm thấy nhà tuyển dụng")
               .status(HttpStatus.NOT_FOUND)
               .build();
     } else {
@@ -462,10 +457,10 @@ public class UserServiceImpl implements UserService {
   public void followCompany(Integer companyId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
     var company = companyRepository.findById(companyId);
     if (company.isEmpty()) {
-      throw new NotFoundException("Không tìm thấy công ty");
+      throw new NotFoundException("Không tìm thấy nhà tuyển dụng");
     }
     var existingFollow = companyFollowRepository.findByUserIdAndCompanyId(user.getId(),
             company.get().getId());
