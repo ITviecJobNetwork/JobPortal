@@ -27,10 +27,7 @@ import vn.hcmute.springboot.service.UserService;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -45,7 +42,6 @@ public class UserServiceImpl implements UserService {
   private final PasswordEncoder passwordEncoder;
   private final ApplicationFormRepository applicationFormRepository;
   private final JobRepository jobRepository;
-  private final FileUploadServiceImpl fileService;
   private final SaveJobRepository saveJobRepository;
   private final FavouriteJobTypeRepository favouriteJobTypeRepository;
   private final JobTypeRepository jobTypeRepository;
@@ -54,6 +50,7 @@ public class UserServiceImpl implements UserService {
   private final CompanyRepository companyRepository;
   private final CompanyReviewRepository companyReviewRepository;
   private final CompanyFollowRepository companyFollowRepository;
+  private final ApplyJobRepository applyJobRepository;
 
 
   public void handleUserStatus() {
@@ -139,12 +136,12 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public ApplyJobResponse applyJob(ApplyJobRequest request) throws IOException {
+  public ApplyJobResponse applyJob(Integer jobId,ApplyJobRequest request) throws IOException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
             .orElseThrow(() -> new NotFoundException("Bạn chưa đăng nhập vui lòng đăng nhập"));
     var username = user.getUsername();
-    var job = jobRepository.findById(request.getJobId()).orElse(null);
+    var job = jobRepository.findById(jobId).orElse(null);
     if (job == null) {
       throw new NotFoundException("Không tìm thấy công việc");
     }
@@ -178,14 +175,20 @@ public class UserServiceImpl implements UserService {
     applicationForm.setIsApplied(true);
     applicationForm.setLinkCV(request.getLinkCv());
     applicationForm.setSubmittedAt(LocalDate.from(LocalDateTime.now()));
+    applicationForm.setJob(job);
 
-    List<Job> relatedJobs = jobRepository.findSimilarJobsByTitleAndLocation(request.getJobId(), job.getTitle(), job.getLocation().getCityName());
+    List<Job> relatedJobs = jobRepository.findSimilarJobsByTitleAndLocation(jobId, job.getTitle(), job.getLocation().getCityName());
     List<Job> top5RelatedJobs = relatedJobs.stream().limit(5).toList();
     String position = job.getTitle();
     String company = job.getCompany().getName();
     String message = String.format(
             "Chúng tôi đã nhận được CV của bạn cho:%n\nVị trí: %s%nCông ty: %s%nCV của bạn sẽ được gửi tới nhà tuyển dụng sau khi được JobPortal xét duyệt. Vui lòng theo dõi email %s để cập nhật thông tin về tình trạng CV.",
             position, company, username);
+    if (job.getApplyCounts() == null) {
+      job.setApplyCounts(0);
+    }
+    job.setApplyCounts(job.getApplyCounts() + 1);
+    jobRepository.save(job);
     SaveJobs saveJobs = saveJobRepository.findByCandidateAndJob(user, job);
     if (saveJobs != null) {
       saveJobRepository.delete(saveJobs);
@@ -552,11 +555,27 @@ public class UserServiceImpl implements UserService {
   }
 
   private GetJobResponse mapToGetJobResponse(Job job) {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    var userName = authentication.getName();
+    Optional<User> userOpt = userRepository.findByUsername(userName);
 
     var skills = skillRepository.findSkillByJob(job);
     List<String> skillNames = skills.stream()
-            .map(Skill::getTitle) // Assuming 'name' is an attribute in Skill
+            .map(Skill::getTitle)
             .toList();
+
+    boolean isSaved = false;
+    boolean isApplied = false;
+
+    if (userOpt.isPresent()) {
+      User user = userOpt.get();
+      var savedJob = saveJobRepository.findByCandidateAndJob(user, job);
+      if (savedJob != null) {
+        isSaved = savedJob.getIsSaved();
+      }
+
+    }
+
     return GetJobResponse.builder()
             .jobId(job.getId())
             .title(job.getTitle())
@@ -567,10 +586,16 @@ public class UserServiceImpl implements UserService {
             .createdDate(job.getCreatedAt().toLocalDate())
             .expiredDate(job.getExpireAt())
             .requirements(job.getRequirements())
+            .minSalary(job.getMinSalary())
+            .maxSalary(job.getMaxSalary())
+            .isSaved(isSaved)
+            .isApplied(isApplied)
+            .appliedAt(null)
             .jobType(job.getJobType().getJobType())
             .location(job.getLocation().getCityName())
             .build();
   }
+
 
   private SaveJobResponse mapToSaveJobResponse(Job job) {
     var skills = skillRepository.findSkillByJob(job);

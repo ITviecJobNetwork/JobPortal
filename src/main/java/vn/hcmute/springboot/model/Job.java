@@ -88,4 +88,9 @@ public class Job {
   private JobStatus status;
 
 
+  @Column(name="view_counts")
+  private Integer viewCounts=0;
+
+  @Column(name="apply_counts")
+  private Integer applyCounts=0;
 }

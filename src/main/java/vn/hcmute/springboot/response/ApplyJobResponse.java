@@ -15,10 +15,6 @@ public class ApplyJobResponse {
   private String message;
   private HttpStatus status;
 
-  public ApplyJobResponse(String message, HttpStatus status) {
-    this.message = message;
-    this.status = status;
-  }
 
 
 }

@@ -592,6 +592,11 @@ public class JobServiceImpl implements JobService {
       viewJob.setJob(job.get());
       viewJob.setViewAt(LocalDateTime.now());
       viewJob.setIsViewed(true);
+      if(job.get().getViewCounts() == null) {
+        job.get().setViewCounts(0);
+      }
+      job.get().setViewCounts(job.get().getViewCounts() + 1);
+      jobRepository.save(job.get());
       viewJobRepository.save(viewJob);
 
     }

@@ -5,6 +5,7 @@ import lombok.*;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -29,6 +30,7 @@ public class GetJobResponse {
   private Boolean isApplied;
   private Double minSalary;
   private Double maxSalary;
+  private String levelJob;
   @JsonFormat(pattern = "dd/MM/yyyy")
   private LocalDate appliedAt;
   private String message;

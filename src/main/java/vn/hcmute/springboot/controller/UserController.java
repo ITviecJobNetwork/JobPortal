@@ -64,11 +64,11 @@ public class UserController {
     return new ResponseEntity<>(changeNickName, HttpStatus.OK);
   }
 
-  @PostMapping(value = "/applyJob")
-  public ResponseEntity<ApplyJobResponse> applyJob(
+  @PostMapping(value = "/{jobId}applyJob")
+  public ResponseEntity<ApplyJobResponse> applyJob(@PathVariable Integer jobId,
           @Valid @RequestBody ApplyJobRequest request) throws IOException {
 
-    return new ResponseEntity<>(userService.applyJob(request), HttpStatus.OK);
+    return new ResponseEntity<>(userService.applyJob(jobId,request), HttpStatus.OK);
   }
 
   @GetMapping("/appliedJobs")

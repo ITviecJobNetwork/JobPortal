@@ -20,7 +20,7 @@ public interface UserService {
 
   MessageResponse changeNickName (String newNickName);
 
-  ApplyJobResponse applyJob(ApplyJobRequest request) throws IOException;
+  ApplyJobResponse applyJob(Integer jobId,ApplyJobRequest request) throws IOException;
 
   MessageResponse uploadUserCv(String fileCv) throws IOException;
 

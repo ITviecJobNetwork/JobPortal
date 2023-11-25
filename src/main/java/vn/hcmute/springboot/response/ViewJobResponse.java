@@ -14,10 +14,6 @@ public class ViewJobResponse {
   private String message;
   private HttpStatus status;
 
-  public ViewJobResponse(String message, HttpStatus status) {
-    this.message = message;
-    this.status = status;
-  }
 
   public ViewJobResponse(Page<GetJobResponse> jobs) {
     this.jobs = jobs;

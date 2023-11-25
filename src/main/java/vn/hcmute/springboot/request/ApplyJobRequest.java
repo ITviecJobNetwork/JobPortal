@@ -8,7 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 @Setter
 public class ApplyJobRequest {
-  private Integer jobId;
   @NotBlank(message = "Please enter your name")
   private String candidateName;
   @NotBlank(message = "Please upload your CV")
