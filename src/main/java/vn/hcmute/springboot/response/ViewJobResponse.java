@@ -8,11 +8,10 @@ import org.springframework.http.HttpStatus;
 @Setter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
+
 public class ViewJobResponse {
   Page<GetJobResponse> jobs;
-  private String message;
-  private HttpStatus status;
+
 
 
   public ViewJobResponse(Page<GetJobResponse> jobs) {

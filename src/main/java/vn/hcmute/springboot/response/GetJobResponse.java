@@ -30,14 +30,9 @@ public class GetJobResponse {
   private Boolean isApplied;
   private Double minSalary;
   private Double maxSalary;
-  private String levelJob;
+  private String level;
   @JsonFormat(pattern = "dd/MM/yyyy")
   private LocalDate appliedAt;
-  private String message;
-  private HttpStatus status;
-  public GetJobResponse(String message, HttpStatus status) {
-    this.message = message;
-    this.status = status;
-  }
+
 
 }

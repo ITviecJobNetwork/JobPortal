@@ -9,16 +9,14 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.exception.UnauthorizedException;
-import vn.hcmute.springboot.model.ApplicationForm;
-import vn.hcmute.springboot.model.Job;
-import vn.hcmute.springboot.model.Skill;
-import vn.hcmute.springboot.model.ViewJobs;
+import vn.hcmute.springboot.model.*;
 import vn.hcmute.springboot.repository.*;
 import vn.hcmute.springboot.response.GetJobResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.response.ViewJobResponse;
 import vn.hcmute.springboot.service.JobService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,6 +85,7 @@ public class JobServiceImpl implements JobService {
         }
       }
       var skills = skillRepository.findSkillByJob(job);
+
       List<String> skillNames = skills.stream()
               .map(Skill::getTitle)
               .toList();
@@ -108,8 +107,12 @@ public class JobServiceImpl implements JobService {
               .isSaved(isSaved)
               .isApplied(isApplied)
               .build();
-
       getJobResponses.add(getJobResponse);
+      return allJobs.map(jobs -> {
+        String jobLevel = determineJobLevel(jobs);
+        return createGetJobResponseWithLevel(jobs, jobLevel);
+      });
+
     }
     return new PageImpl<>(getJobResponses, PageRequest.of(page, size), allJobs.getTotalElements());
   }
@@ -186,6 +189,10 @@ public class JobServiceImpl implements JobService {
                 .build();
 
         getJobResponses.add(getJobResponse);
+        return jobs.map(jobLevels -> {
+          String jobLevel = determineJobLevel(jobLevels);
+          return createGetJobResponseWithLevel(jobLevels, jobLevel);
+        });
       }
       return new PageImpl<>(getJobResponses, PageRequest.of(page, size), jobs.getTotalElements());
     }
@@ -265,6 +272,10 @@ public class JobServiceImpl implements JobService {
                 .build();
 
         getJobResponses.add(getJobResponse);
+        return result.map(jobLevels -> {
+          String jobLevel = determineJobLevel(jobLevels);
+          return createGetJobResponseWithLevel(jobLevels, jobLevel);
+        });
       }
       return new PageImpl<>(getJobResponses, PageRequest.of(page, size), result.getTotalElements());
     }
@@ -342,6 +353,10 @@ public class JobServiceImpl implements JobService {
                 .build();
 
         getJobResponses.add(getJobResponse);
+        return result.map(jobLevels -> {
+          String jobLevel = determineJobLevel(jobLevels);
+          return createGetJobResponseWithLevel(jobLevels, jobLevel);
+        });
       }
       return new PageImpl<>(getJobResponses, PageRequest.of(page, size), result.getTotalElements());
     }
@@ -419,6 +434,10 @@ public class JobServiceImpl implements JobService {
                 .build();
 
         getJobResponses.add(getJobResponse);
+        return result.map(jobLevels -> {
+          String jobLevel = determineJobLevel(jobLevels);
+          return createGetJobResponseWithLevel(jobLevels, jobLevel);
+        });
       }
       return new PageImpl<>(getJobResponses, PageRequest.of(page, size), result.getTotalElements());
     }
@@ -522,6 +541,10 @@ public class JobServiceImpl implements JobService {
               .build();
 
       getJobResponses.add(getJobResponse);
+      return result.map(jobLevels -> {
+        String jobLevel = determineJobLevel(jobLevels);
+        return createGetJobResponseWithLevel(jobLevels, jobLevel);
+      });
     }
     return new PageImpl<>(getJobResponses, PageRequest.of(page, size), result.getTotalElements());
   }
@@ -627,7 +650,11 @@ public class JobServiceImpl implements JobService {
       throw new NotFoundException("Bạn chưa xem công việc nào");
     } else {
       List<GetJobResponse> getJobResponses = viewJob.getContent().stream()
-              .map(viewJobResponse -> createGetJobResponse(viewJobResponse.getJob(), false, false))
+              .map(viewJobResponse -> {
+                Job job = viewJobResponse.getJob();
+
+                return createGetJobResponseWithUserDetails(job,user.get());
+              })
               .collect(Collectors.toList());
       Page<GetJobResponse> getJobResponsesPage = new PageImpl<>(getJobResponses, viewJob.getPageable(), viewJob.getTotalElements());
       return new ViewJobResponse(getJobResponsesPage);
@@ -661,5 +688,87 @@ public class JobServiceImpl implements JobService {
             .appliedAt(null)
             .build();
   }
+  private GetJobResponse createGetJobResponseWithLevel(Job job, String level) {
+    var skills = skillRepository.findSkillByJob(job);
+    List<String> skillNames = skills.stream()
+            .map(Skill::getTitle)
+            .toList();
+    return GetJobResponse.builder()
+            .jobId(job.getId())
+            .title(job.getTitle())
+            .companyName(job.getCompany().getName())
+            .companyId(job.getCompany().getId())
+            .address(job.getCompany().getAddress())
+            .skills(skillNames)
+            .description(job.getDescription())
+            .createdDate(job.getCreatedAt().toLocalDate())
+            .expiredDate(job.getExpireAt())
+            .requirements(job.getRequirements())
+            .jobType(job.getJobType().getJobType())
+            .location(job.getLocation().getCityName())
+            .minSalary(job.getMinSalary())
+            .maxSalary(job.getMaxSalary())
+            .level(level)
+            .isSaved(false)
+            .isApplied(false)
+            .appliedAt(null)
+            .level(level)
+            .build();
+  }
+  private String determineJobLevel(Job job) {
+    final int SUPER_HOT_VIEW_THRESHOLD = 1000;
+    final int SUPER_HOT_APPLICATION_THRESHOLD = 1000;
+    final int HOT_VIEW_THRESHOLD = 500;
+
+    if (job.getViewCounts() == null) {
+      job.setViewCounts(0);
+    }
+    if (job.getApplyCounts() == null) {
+      job.setApplyCounts(0);
+    }
+
+    if (job.getViewCounts() >= SUPER_HOT_VIEW_THRESHOLD && job.getApplyCounts() >= SUPER_HOT_APPLICATION_THRESHOLD) {
+      return JobLevel.SUPER_HOT.toString();
+    }
+
+    if (job.getViewCounts() >= HOT_VIEW_THRESHOLD) {
+      return JobLevel.HOT.toString();
+    }
+    return JobLevel.NORMAL.toString();
+  }
+  private GetJobResponse createGetJobResponseWithUserDetails(Job job, User currentUser) {
+    boolean isSaved = saveJobsRepository.findByCandidateAndJob(currentUser, job) != null;
+    boolean isApplied = applyJobRepository.findByCandidateAndJob(currentUser, job) != null;
+    String level = determineJobLevel(job);
+    LocalDate appliedAt = job.getApplicationForms().stream()
+            .filter(applicationForm -> applicationForm.getCandidate().equals(currentUser))
+            .map(ApplicationForm::getSubmittedAt)
+            .findFirst()
+            .orElse(null);
+    return GetJobResponse.builder()
+            .jobId(job.getId())
+            .title(job.getTitle())
+            .companyName(job.getCompany().getName())
+            .companyId(job.getCompany().getId())
+            .address(job.getCompany().getAddress())
+            .skills(job.getSkills().stream().map(Skill::getTitle).toList())
+            .description(job.getDescription())
+            .createdDate(job.getCreatedAt().toLocalDate())
+            .expiredDate(job.getExpireAt())
+            .requirements(job.getRequirements())
+            .jobType(job.getJobType().getJobType())
+            .location(job.getLocation().getCityName())
+            .minSalary(job.getMinSalary())
+            .maxSalary(job.getMaxSalary())
+            .isSaved(isSaved)
+            .isApplied(isApplied)
+            .appliedAt(appliedAt)
+            .level(level)
+            .build();
+  }
+
+
+
+
 
 }

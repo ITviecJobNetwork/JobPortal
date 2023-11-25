@@ -82,9 +82,12 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
           @Param("recruiterId") Integer recruiterId
   );
 
-  @Query("SELECT j FROM Job j JOIN j.applicationForms u WHERE u = :user")
-  Page<Job> findAppliedJobs(@Param("user") User user, Pageable pageable);
 
+  @Query("SELECT j FROM Job j ORDER BY j.viewCounts DESC, j.applyCounts DESC")
+  List<Job> findSuperHotJobs(Pageable pageable);
+
+  @Query("SELECT j FROM Job j ORDER BY j.viewCounts DESC")
+  List<Job> findHotJobs(Pageable pageable);
 }
 
 

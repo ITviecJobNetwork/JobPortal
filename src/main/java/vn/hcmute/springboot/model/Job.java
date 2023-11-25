@@ -93,4 +93,5 @@ public class Job {
 
   @Column(name="apply_counts")
   private Integer applyCounts=0;
+
 }
