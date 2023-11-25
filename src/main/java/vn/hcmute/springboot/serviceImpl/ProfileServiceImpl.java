@@ -217,13 +217,24 @@ public class ProfileServiceImpl implements ProfileService {
     var userName = authentication.getName();
     var user = userRepository.findByUsername(userName)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
-    user.setAboutMe(request.getAboutMe());
+
+    String message;
+    if (user.getAboutMe() == null || user.getAboutMe().isEmpty()) {
+      user.setAboutMe(request.getAboutMe());
+      message = "Viết giới thiệu bản thân thành công";
+    } else {
+      user.setAboutMe(request.getAboutMe());
+      message = "Cập nhật giới thiệu bản thân thành công";
+    }
+
     userRepository.save(user);
+
     return MessageResponse.builder()
-            .message("Cập nhật giới thiệu bản thân thành công")
+            .message(message)
             .status(HttpStatus.OK)
             .build();
   }
+
 
   @Override
   public MessageResponse addSkill(AddSkillRequest request) {

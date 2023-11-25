@@ -74,10 +74,11 @@ public class JobController {
           @RequestParam(value = "jobType", required = false) List<String> jobType,
           @RequestParam(value = "candidateLevel", required = false) List<String> candidateLevel,
           @RequestParam(value = "page", defaultValue = "0") int page,
-          @RequestParam(value = "size", defaultValue = "20") int size) {
+          @RequestParam(value = "size", defaultValue = "20") int size,
+          @RequestParam(value = "salarySortDirection", defaultValue = "DESC") String salarySortDirection) {
 
     Page<GetJobResponse> jobs = jobService.findJobsWithFilters(location,keyword, salaryMin, salaryMax, companyType,
-            jobType, candidateLevel, page, size);
+            jobType, candidateLevel, page, size, salarySortDirection);
 
     return new ResponseEntity<>(jobs, HttpStatus.OK);
   }

@@ -1,17 +1,9 @@
 package vn.hcmute.springboot.serviceImpl;
 
 
-
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -27,6 +19,11 @@ import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.response.ViewJobResponse;
 import vn.hcmute.springboot.service.JobService;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class JobServiceImpl implements JobService {
@@ -40,6 +37,7 @@ public class JobServiceImpl implements JobService {
   private final SaveJobRepository saveJobsRepository;
   private final ApplicationFormRepository applyJobRepository;
   private final ViewJobRepository viewJobRepository;
+
   @Override
   public Page<GetJobResponse> findAllJob(int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
@@ -117,12 +115,12 @@ public class JobServiceImpl implements JobService {
   }
 
   @Override
-  public Page<GetJobResponse> findJobByJobSkill(String skill,int page, int size) {
+  public Page<GetJobResponse> findJobByJobSkill(String skill, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
     Skill skillName = skillRepository.findByName(skill);
 
     if (skill != null) {
-      var jobs = jobRepository.findJobsBySkills(skillName,pageable);
+      var jobs = jobRepository.findJobsBySkills(skillName, pageable);
       var userName = SecurityContextHolder.getContext().getAuthentication().getName();
       List<GetJobResponse> getJobResponses = new ArrayList<>();
       for (Job job : jobs) {
@@ -197,11 +195,11 @@ public class JobServiceImpl implements JobService {
   }
 
   @Override
-  public Page<GetJobResponse> findJobByCandidateLevel(String level,int page, int size) {
+  public Page<GetJobResponse> findJobByCandidateLevel(String level, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
     var candidateLevel = candidateLevelRepository.findByCandidateLevel(level);
     if (candidateLevel != null) {
-      var result = jobRepository.findJobsByCandidateLevel(candidateLevel.getCandidateLevel(),pageable);
+      var result = jobRepository.findJobsByCandidateLevel(candidateLevel.getCandidateLevel(), pageable);
       var userName = SecurityContextHolder.getContext().getAuthentication().getName();
       List<GetJobResponse> getJobResponses = new ArrayList<>();
       for (Job job : result) {
@@ -274,11 +272,11 @@ public class JobServiceImpl implements JobService {
   }
 
   @Override
-  public Page<GetJobResponse> findJobByCompanyName(String companyName,int page, int size) {
+  public Page<GetJobResponse> findJobByCompanyName(String companyName, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
-    var company = companyRepository.findCompanyByName(companyName,pageable);
-    if (company!=null) {
-      var result = jobRepository.findJobsByCompanyName(companyName,pageable);
+    var company = companyRepository.findCompanyByName(companyName, pageable);
+    if (company != null) {
+      var result = jobRepository.findJobsByCompanyName(companyName, pageable);
       var userName = SecurityContextHolder.getContext().getAuthentication().getName();
       List<GetJobResponse> getJobResponses = new ArrayList<>();
       for (Job job : result) {
@@ -351,11 +349,11 @@ public class JobServiceImpl implements JobService {
   }
 
   @Override
-  public Page<GetJobResponse> findByLocation(String location,int page, int size) {
+  public Page<GetJobResponse> findByLocation(String location, int page, int size) {
     var locationName = locationRepository.findByCityName(location);
     Pageable pageable = PageRequest.of(page, size);
     if (locationName != null) {
-      var result = jobRepository.findJobByLocation(location,pageable);
+      var result = jobRepository.findJobByLocation(location, pageable);
       var userName = SecurityContextHolder.getContext().getAuthentication().getName();
       List<GetJobResponse> getJobResponses = new ArrayList<>();
       for (Job job : result) {
@@ -424,31 +422,37 @@ public class JobServiceImpl implements JobService {
       }
       return new PageImpl<>(getJobResponses, PageRequest.of(page, size), result.getTotalElements());
     }
-    throw new NotFoundException("Không có công việc với tên địa điểm là " +location);
+    throw new NotFoundException("Không có công việc với tên địa điểm là " + location);
   }
 
   @Override
   public Page<GetJobResponse> findJobsWithFilters(
-      String location,
-      String keyword,
-      Double salaryMin,
-      Double salaryMax,
-      List<String> companyType,
-      List<String> jobType,
-      List<String> candidateLevel,
-      int page,
-      int size
+          String location,
+          String keyword,
+          Double salaryMin,
+          Double salaryMax,
+          List<String> companyType,
+          List<String> jobType,
+          List<String> candidateLevel,
+          int page,
+          int size,
+          String salarySortDirection
   ) {
-    Pageable pageable = PageRequest.of(page, size);
+    Sort sort = Sort.unsorted();
+    if (salarySortDirection != null && !salarySortDirection.isEmpty()) {
+      sort = Sort.by(Sort.Direction.fromString(salarySortDirection), "minSalary");
+    }
+
+    Pageable pageable = PageRequest.of(page, size, sort);
     var result = jobRepository.findByKeywordAndFilters(
             location,
-        keyword,
-        salaryMin,
-        salaryMax,
-        companyType,
-        jobType,
-        candidateLevel,
-        pageable
+            keyword,
+            salaryMin,
+            salaryMax,
+            companyType,
+            jobType,
+            candidateLevel,
+            pageable
     );
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
     List<GetJobResponse> getJobResponses = new ArrayList<>();
@@ -571,7 +575,7 @@ public class JobServiceImpl implements JobService {
   public MessageResponse viewJob(Integer id) {
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
     if (userName == null) {
-     throw new UnauthorizedException("Bạn chưa đăng nhập");
+      throw new UnauthorizedException("Bạn chưa đăng nhập");
     }
     var user = userRepository.findByUsername(userName);
     if (user.isEmpty()) {

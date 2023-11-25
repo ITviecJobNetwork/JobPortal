@@ -129,7 +129,7 @@ public class UserProfileController {
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<MessageResponse> writeAboutMe(@RequestBody AboutMeRequest request) {
     var aboutMe=profileService.writeAboutMe(request);
-    return new ResponseEntity<>(HttpStatus.OK);
+    return new ResponseEntity<>(aboutMe,HttpStatus.OK);
   }
 
 

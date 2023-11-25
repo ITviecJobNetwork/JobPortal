@@ -223,10 +223,21 @@ public class UserServiceImpl implements UserService {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+    if(coverLetter!=null && user.getCoverLetter()!=null){
+      user.setCoverLetter(coverLetter);
+      userRepository.save(user);
+      return MessageResponse.builder()
+              .message("Cập nhật thư xin việc thành công")
+              .status(HttpStatus.OK)
+              .build();
+    }
+    if(coverLetter!=null && coverLetter.length()>500){
+      throw new BadRequestException("Cover letter không được quá 500 ký tự");
+    }
     user.setCoverLetter(coverLetter);
     userRepository.save(user);
     return MessageResponse.builder()
-            .message("Cập nhật thư xin việc thành công")
+            .message("Viết thư xin việc thành công")
             .status(HttpStatus.OK)
             .build();
   }
