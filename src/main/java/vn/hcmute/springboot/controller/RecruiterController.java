@@ -44,8 +44,6 @@ public class RecruiterController {
   }
   @PostMapping("/login")
   public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest loginRequest) {
-
-
     var userLogin = recruiterService.loginRecruiter(loginRequest);
     return new ResponseEntity<>(userLogin, HttpStatus.OK);
   }

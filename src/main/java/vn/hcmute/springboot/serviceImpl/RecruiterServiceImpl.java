@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -65,10 +66,13 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
     var recruiter = Recruiters.builder()
             .username(recruiterRegisterRequest.getUsername())
-            .password(passwordEncoder.encode(password))
+            .fullname(recruiterRegisterRequest.getFullName())
+            .workTitle(recruiterRegisterRequest.getWorkTitle())
+            .websiteUrl(recruiterRegisterRequest.getWebsiteUrl())
             .companyName(recruiterRegisterRequest.getCompanyName())
+            .password(encoder.encode(password))
             .phoneNumber(recruiterRegisterRequest.getPhoneNumber())
-            .locations(recruiterRegisterRequest.getCompanyLocation())
+            .location(recruiterRegisterRequest.getCompanyLocation())
             .status(RecruiterStatus.ACTIVE)
             .build();
     recruiterRepository.save(recruiter);

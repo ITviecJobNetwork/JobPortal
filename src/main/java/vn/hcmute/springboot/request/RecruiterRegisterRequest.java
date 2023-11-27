@@ -27,8 +27,9 @@ public class RecruiterRegisterRequest {
   private String companyName;
 
   @NotBlank(message = "Company Location is required")
-  private List<Location> companyLocation;
-
+  private String companyLocation;
   private String websiteUrl;
+  private String hearAboutUs;
+
 
 }

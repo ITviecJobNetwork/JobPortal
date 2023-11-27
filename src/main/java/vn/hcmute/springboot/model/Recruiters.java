@@ -15,7 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
+
 import jakarta.persistence.*;
 import java.util.List;
 import java.util.Set;
@@ -59,12 +59,8 @@ public class Recruiters implements UserDetails {
   @Column(name = "username", length = 255)
   private String username;
 
-  @ManyToMany(fetch = FetchType.EAGER)
-  @JoinTable(
-      name = "recruiter_location",
-      joinColumns = @JoinColumn(name = "recruiter_id"),
-      inverseJoinColumns = @JoinColumn(name = "location_id"))
-  private List<Location> locations;
+  @Column(name = "location")
+  private String location;
 
   @Column(name = "country", length = 255)
   private String country;
@@ -121,6 +117,12 @@ public class Recruiters implements UserDetails {
 
   @OneToMany(mappedBy = "recruiters",fetch = FetchType.EAGER)
   private List<Token> tokens;
+
+  @Column(name="fullname")
+  private String fullname;
+
+  @Column(name="work_title")
+  private String workTitle;
 
   public <E> Recruiters(String username, String password, ArrayList<E> es) {
     this.username = username;
