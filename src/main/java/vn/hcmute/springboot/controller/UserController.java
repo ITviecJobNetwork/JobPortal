@@ -64,7 +64,7 @@ public class UserController {
     return new ResponseEntity<>(changeNickName, HttpStatus.OK);
   }
 
-  @PostMapping(value = "/{jobId}applyJob")
+  @PostMapping(value = "/{jobId}/applyJob")
   public ResponseEntity<ApplyJobResponse> applyJob(@PathVariable Integer jobId,
           @Valid @RequestBody ApplyJobRequest request) throws IOException {
 
