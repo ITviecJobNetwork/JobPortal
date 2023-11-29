@@ -29,6 +29,7 @@ import vn.hcmute.springboot.service.OtpService;
 import vn.hcmute.springboot.service.RecruiterService;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Objects;
@@ -71,6 +72,7 @@ public class RecruiterServiceImpl implements RecruiterService {
             .websiteUrl(recruiterRegisterRequest.getWebsiteUrl())
             .companyName(recruiterRegisterRequest.getCompanyName())
             .password(encoder.encode(password))
+            .createdDate(LocalDateTime.now())
             .phoneNumber(recruiterRegisterRequest.getPhoneNumber())
             .location(recruiterRegisterRequest.getCompanyLocation())
             .status(RecruiterStatus.ACTIVE)

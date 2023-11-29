@@ -99,7 +99,7 @@ public class Recruiters implements UserDetails {
   private String linkedInUrl;
 
   @Column(name = "created_date")
-  private LocalDate createdDate;
+  private LocalDateTime createdDate;
 
   @Column(name = "last_modified_date")
   private LocalDate lastModifiedDate;
