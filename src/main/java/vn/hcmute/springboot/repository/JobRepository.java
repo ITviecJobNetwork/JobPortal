@@ -50,7 +50,7 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
           "AND (:salaryMax is null OR j.maxSalary <= :salaryMax) " +
           "AND (:companyType is null OR j.company.companyType.type IN :companyType) " +
           "AND (:jobType is null OR j.jobType.jobType IN :jobType) " +
-          "AND (:candidateLevel is null OR REPLACE(cl.candidateLevel, ' ', '') IN :candidateLevel)")
+          "AND (:candidateLevel is null OR cl.candidateLevel IN :candidateLevel) ")
   Page<Job> findByKeywordAndFilters(@Param("location") String location,
                                     @Param("keyword") String keyword,
                                     @Param("salaryMin") Double salaryMin,

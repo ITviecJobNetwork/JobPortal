@@ -6,13 +6,13 @@ import vn.hcmute.springboot.model.JobStatus;
 import vn.hcmute.springboot.model.UserStatus;
 
 public interface EmailService {
-  void sendOtpToEmail(String email, String otp) throws MessagingException;
+  void sendOtpToEmail(String fullName,String email, String otp) throws MessagingException;
 
-  void sendNewPasswordToEmail(String email, String newPassword) throws MessagingException;
+  void sendNewPasswordToEmail(String fullName,String email, String newPassword) throws MessagingException;
 
   void sendConfirmRegistrationToRecruiter(String email,String password) throws MessagingException;
 
-  void sendApplicationUpdateEmail(ApplicationForm applicationForm) throws MessagingException;
+  void sendApplicationUpdateEmail(ApplicationForm applicationForm,String reason) throws MessagingException;
 
   void sendReasonDeActiveUser(String email, String reason, UserStatus status) throws MessagingException;
 

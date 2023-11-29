@@ -59,8 +59,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
               .build();
     }
     var otp = String.valueOf(otpService.generateOtp());
+    var nickname = request.getNickname();
+    var username = request.getUsername();
     try {
-      emailService.sendOtpToEmail(request.getUsername(), otp);
+      emailService.sendOtpToEmail(nickname, username, otp);
     } catch (MessagingException e) {
       return MessageResponse.builder()
               .message("Không thể gửi OTP, vui lòng thử lại")
@@ -200,8 +202,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     var user = repository.findByUsername(email)
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng với email: " + email));
     var otp = String.valueOf(otpService.generateOtp());
+    var nickname = user.getNickname();
     try {
-      emailService.sendOtpToEmail(email, otp);
+      emailService.sendOtpToEmail(nickname, email, otp);
     } catch (MessagingException e) {
       throw new BadRequestException("Không thể gửi mã OTP, vui lòng thử lại");
     }

@@ -21,7 +21,7 @@ public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender javaMailSender;
 
-    public void sendOtpToEmail(String email, String otp) throws MessagingException {
+    public void sendOtpToEmail(String fullName,String email, String otp) throws MessagingException {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
 
@@ -37,6 +37,9 @@ public class EmailServiceImpl implements EmailService {
                                 color: #4a4a4a;
                                 margin: 0;
                                 padding: 0;
+                                box-sizing: border-box;
+                                border: 1px solid #e7e7e7;
+                                border-radius: 5px;
                             }
                             .container {
                                 max-width: 600px;
@@ -85,22 +88,34 @@ public class EmailServiceImpl implements EmailService {
                                   color: #007bff;
                                   text-decoration: none;
                                    }
-                            .header {
-                                  background-color: #000;
-                                  padding: 10px;
-                                  text-align: center;
-                            }
-                            .header img {
-                                  max-height: 60px;
+                           .header {
+                                 background: linear-gradient(to left, #54151c, #121212);
+                                 padding: 10px;
+                                 text-align: center;
+                                 display: flex;        /* Establishes flex container */
+                                
+                           }
+                         
+                           .header img {
+                                max-height: 60px;
+                           }                 \s
+                           .header img.robby-logo {
+                               margin-left: auto; /* Pushes the image to the far right */
+                           }
+                            .header img logo {
+                                 overflow-clip-margin: content-box;
+                                 overflow: clip;
                             }                   \s
+                            
                         </style>
                     </head>
                     <body>
-                        <div class="header">
-                              <img src="https://ci5.googleusercontent.com/proxy/5R6tqKxblgiFiYicXqxWrIU9EXWsSp_V-ISvQh2ifk3YI9a1slctTn0yYa0oqOtl4uTW3PieCAhmR2ETVO86GgIXrJj74Td6-Cpy7ULFDoz3-LaeF1DS99y9AckcVrjZqHOmLalNRq3hA7_d-_MtXhoDnEPw-GShCZ11Uw=s0-d-e1-ft#https://itviec.com/assets/mails/logo-5f3371a704b475a80f27523e1bcfc4853c03bd7e32b8893971074a64d48bdd6c.png" alt="Company Logo">
-                        </div>
+                       <div class="header">
+                                      <img class="company-logo" src="https://ci5.googleusercontent.com/proxy/5R6tqKxblgiFiYicXqxWrIU9EXWsSp_V-ISvQh2ifk3YI9a1slctTn0yYa0oqOtl4uTW3PieCAhmR2ETVO86GgIXrJj74Td6-Cpy7ULFDoz3-LaeF1DS99y9AckcVrjZqHOmLalNRq3hA7_d-_MtXhoDnEPw-GShCZ11Uw=s0-d-e1-ft#https://itviec.com/assets/mails/logo-5f3371a704b475a80f27523e1bcfc4853c03bd7e32b8893971074a64d48bdd6c.png" alt="Company Logo">
+                                      <img class="robby-logo" src="https://ci3.googleusercontent.com/proxy/LiwLsNl3KZ4TrBBh2ueCTiEEIUpOB_1iNfwOepxdnvMN9RJLf9mfUbH5VnIpXNIUy22t8NtLDviI-ChAHvh9eZsUhc-OGftDnij-tLl-o0CxX7bHHN2zFN-tuS7XoVN3gh4WIJHZxB9znohrEUMyA8S_f0dnPwiw6e5fczbuBa4ouC4uqnSQi6Wn=s0-d-e1-ft#https://itviec.com/assets/mails/robby-subscription-a000c03aa20a8f2397802b9b2addb7974f6352bf61491e0a0fc9c18f08a56b9d.png" alt="Robby">
+                       </div>
                         <div class="container">
-                            <div class="username">%s</div>
+                            <div class="fullName">Hello %s</div>
                             <h1>OTP Verification</h1>
                             <p>Thank you for registering with us. Your One Time Password (OTP) is:</p>
                             <div class="otp">%s</div>
@@ -110,18 +125,19 @@ public class EmailServiceImpl implements EmailService {
                         <div class="footer">
                               <p>Need help? Contact us at <a href="mailto:namvo.010202@gmail.com">namvo.010202@gmail.com</a></p>
                                <p>&copy; 2023 ITViec. All rights reserved.</p>
+                               <img src="https://ci6.googleusercontent.com/proxy/NjOu3s3nFdBUONQj9O0ktDdjC5WxtAQNrRKM1TG-2NQWRdryBS-Bx0U9szshS12TgzhMJYnxoraZRYd4UjjfSEEx0m2Irx8s7Ap7H3nHTOjRveO4wfhZm9xxqXVRQDE60FJrAf_ek-CxAC-YqJqDsijBb3fCtbVPc4LNPtmGS-xF0qA=s0-d-e1-ft#https://itviec.com/assets/mails/logo-footer-11a1a4f9da6eceebada93c51a35ab4aa76d574bfb58880c5167700cf589a7ea9.png" alt="Company Logo">
                         </div>
                     </body>
                 </html>
                         
-                """.formatted(email,otp), true);
+                """.formatted(fullName,otp), true);
 
         javaMailSender.send(mimeMessage);
     }
 
 
     @Override
-    public void sendNewPasswordToEmail(String email, String newPassword) throws MessagingException {
+    public void sendNewPasswordToEmail(String fullName,String email, String newPassword) throws MessagingException {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
         mimeMessageHelper.setTo(email);
@@ -185,19 +201,26 @@ public class EmailServiceImpl implements EmailService {
                                   text-decoration: none;
                                    }
                             .header {
-                                  background-color: #000;
-                                  padding: 10px;
-                                  text-align: center;
-                            }
-                            .header img {
-                                  max-height: 60px;
-                            }                   \s
+                                 background: linear-gradient(to left, #54151c, #121212);
+                                 padding: 10px;
+                                 text-align: center;
+                                 display: flex;        /* Establishes flex container */
+                                
+                           }
+                         
+                           .header img {
+                                max-height: 60px;
+                           }                 \s
+                           .header img.robby-logo {
+                               margin-left: auto; /* Pushes the image to the far right */
+                           }                   \s
                         </style>
                     </head>
                     <body>
                         <div class="header">
-                              <img src="https://ci5.googleusercontent.com/proxy/5R6tqKxblgiFiYicXqxWrIU9EXWsSp_V-ISvQh2ifk3YI9a1slctTn0yYa0oqOtl4uTW3PieCAhmR2ETVO86GgIXrJj74Td6-Cpy7ULFDoz3-LaeF1DS99y9AckcVrjZqHOmLalNRq3hA7_d-_MtXhoDnEPw-GShCZ11Uw=s0-d-e1-ft#https://itviec.com/assets/mails/logo-5f3371a704b475a80f27523e1bcfc4853c03bd7e32b8893971074a64d48bdd6c.png" alt="Company Logo">
-                        </div>
+                                      <img class="company-logo" src="https://ci5.googleusercontent.com/proxy/5R6tqKxblgiFiYicXqxWrIU9EXWsSp_V-ISvQh2ifk3YI9a1slctTn0yYa0oqOtl4uTW3PieCAhmR2ETVO86GgIXrJj74Td6-Cpy7ULFDoz3-LaeF1DS99y9AckcVrjZqHOmLalNRq3hA7_d-_MtXhoDnEPw-GShCZ11Uw=s0-d-e1-ft#https://itviec.com/assets/mails/logo-5f3371a704b475a80f27523e1bcfc4853c03bd7e32b8893971074a64d48bdd6c.png" alt="Company Logo">
+                                      <img class="robby-logo" src="https://ci3.googleusercontent.com/proxy/LiwLsNl3KZ4TrBBh2ueCTiEEIUpOB_1iNfwOepxdnvMN9RJLf9mfUbH5VnIpXNIUy22t8NtLDviI-ChAHvh9eZsUhc-OGftDnij-tLl-o0CxX7bHHN2zFN-tuS7XoVN3gh4WIJHZxB9znohrEUMyA8S_f0dnPwiw6e5fczbuBa4ouC4uqnSQi6Wn=s0-d-e1-ft#https://itviec.com/assets/mails/robby-subscription-a000c03aa20a8f2397802b9b2addb7974f6352bf61491e0a0fc9c18f08a56b9d.png" alt="Robby">
+                       </div>
                         <div class="container">
                             <div class="username">Hello %s</div>
                             
@@ -282,20 +305,27 @@ public class EmailServiceImpl implements EmailService {
                                   color: #007bff;
                                   text-decoration: none;
                                    }
-                            .header {
-                                  background-color: #000;
-                                  padding: 10px;
-                                  text-align: center;
-                            }
-                            .header img {
-                                  max-height: 60px;
-                            }                   \s
+                           .header {
+                                 background: linear-gradient(to right, #54151c, #121212);
+                                 padding: 10px;
+                                 text-align: center;
+                                 display: flex;        /* Establishes flex container */
+                                
+                           }
+                         
+                           .header img {
+                                max-height: 60px;
+                           }                 \s
+                           .header img.robby-logo {
+                               margin-left: auto; /* Pushes the image to the far right */
+                           }                 \s
                         </style>
                     </head>
                     <body>
                         <div class="header">
-                              <img src="https://ci5.googleusercontent.com/proxy/5R6tqKxblgiFiYicXqxWrIU9EXWsSp_V-ISvQh2ifk3YI9a1slctTn0yYa0oqOtl4uTW3PieCAhmR2ETVO86GgIXrJj74Td6-Cpy7ULFDoz3-LaeF1DS99y9AckcVrjZqHOmLalNRq3hA7_d-_MtXhoDnEPw-GShCZ11Uw=s0-d-e1-ft#https://itviec.com/assets/mails/logo-5f3371a704b475a80f27523e1bcfc4853c03bd7e32b8893971074a64d48bdd6c.png" alt="Company Logo">
-                        </div>
+                                      <img class="company-logo" src="https://ci5.googleusercontent.com/proxy/5R6tqKxblgiFiYicXqxWrIU9EXWsSp_V-ISvQh2ifk3YI9a1slctTn0yYa0oqOtl4uTW3PieCAhmR2ETVO86GgIXrJj74Td6-Cpy7ULFDoz3-LaeF1DS99y9AckcVrjZqHOmLalNRq3hA7_d-_MtXhoDnEPw-GShCZ11Uw=s0-d-e1-ft#https://itviec.com/assets/mails/logo-5f3371a704b475a80f27523e1bcfc4853c03bd7e32b8893971074a64d48bdd6c.png" alt="Company Logo">
+                                      <img class="robby-logo" src="https://ci3.googleusercontent.com/proxy/LiwLsNl3KZ4TrBBh2ueCTiEEIUpOB_1iNfwOepxdnvMN9RJLf9mfUbH5VnIpXNIUy22t8NtLDviI-ChAHvh9eZsUhc-OGftDnij-tLl-o0CxX7bHHN2zFN-tuS7XoVN3gh4WIJHZxB9znohrEUMyA8S_f0dnPwiw6e5fczbuBa4ouC4uqnSQi6Wn=s0-d-e1-ft#https://itviec.com/assets/mails/robby-subscription-a000c03aa20a8f2397802b9b2addb7974f6352bf61491e0a0fc9c18f08a56b9d.png" alt="Robby">
+                       </div>
                         <div class="container">
                             <div class="username">Hello %s</div>
                             
@@ -318,26 +348,200 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     @Async
-    public void sendApplicationUpdateEmail(ApplicationForm applicationForm) throws MessagingException {
+    public void sendApplicationUpdateEmail(ApplicationForm applicationForm,String reason) throws MessagingException {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
         mimeMessageHelper.setTo(applicationForm.getCandidate().getUsername());
         mimeMessageHelper.setSubject("Application Status Update");
+        String rejectContent = """
+                    <html>
+                    <head>
+                        <style>
+                            body {
+                                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                background-color: #e9eff1;
+                                color: #4a4a4a;
+                                margin: 0;
+                                padding: 0;
+                            }
+                            .container {
+                                max-width: 600px;
+                                margin: 20px auto;
+                                background: #fff;
+                                border-radius: 8px;
+                                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+                                padding: 30px;
+                                text-align: center;
+                            }
+                            h1 {
+                                color: #007bff;
+                                font-size: 24px;
+                                margin-bottom: 10px;
+                            }
+                            h2 {
+                                color: #333;
+                                font-size: 20px;
+                                margin-top: 5px;
+                            }
+                            p {
+                                font-size: 16px;
+                                line-height: 1.5;
+                                color: #666;
+                            }
+                            .password {
+                                display: inline-block;
+                                margin: 20px auto;
+                                padding: 10px 20px;
+                                font-size: 24px;
+                                font-weight: bold;
+                                color: #007bff;
+                                background-color: #f0f8ff;
+                                border: 1px solid #b6dfff;
+                                border-radius: 5px;
+                            }
+                            .footer {
+                                 text-align: center;
+                                 padding: 20px;
+                                 font-size: 14px;
+                                 color: #777;
+                                 background-color: #f8f8f8;
+                                 border-top: 1px solid #e7e7e7;
+                                  }
+                            .footer a {
+                                  color: #007bff;
+                                  text-decoration: none;
+                                   }
+                           .header {
+                                 background: linear-gradient(to right, #54151c, #121212);
+                                 padding: 10px;
+                                 text-align: center;
+                                 display: flex;        /* Establishes flex container */
+                                
+                           }
+                         
+                           .header img {
+                                max-height: 60px;
+                           }                 \s
+                           .header img.robby-logo {
+                               margin-left: auto; /* Pushes the image to the far right */
+                           }                 \s
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                                      <img class="company-logo" src="https://ci5.googleusercontent.com/proxy/5R6tqKxblgiFiYicXqxWrIU9EXWsSp_V-ISvQh2ifk3YI9a1slctTn0yYa0oqOtl4uTW3PieCAhmR2ETVO86GgIXrJj74Td6-Cpy7ULFDoz3-LaeF1DS99y9AckcVrjZqHOmLalNRq3hA7_d-_MtXhoDnEPw-GShCZ11Uw=s0-d-e1-ft#https://itviec.com/assets/mails/logo-5f3371a704b475a80f27523e1bcfc4853c03bd7e32b8893971074a64d48bdd6c.png" alt="Company Logo">
+                                      <img class="robby-logo" src="https://ci3.googleusercontent.com/proxy/LiwLsNl3KZ4TrBBh2ueCTiEEIUpOB_1iNfwOepxdnvMN9RJLf9mfUbH5VnIpXNIUy22t8NtLDviI-ChAHvh9eZsUhc-OGftDnij-tLl-o0CxX7bHHN2zFN-tuS7XoVN3gh4WIJHZxB9znohrEUMyA8S_f0dnPwiw6e5fczbuBa4ouC4uqnSQi6Wn=s0-d-e1-ft#https://itviec.com/assets/mails/robby-subscription-a000c03aa20a8f2397802b9b2addb7974f6352bf61491e0a0fc9c18f08a56b9d.png" alt="Robby">
+                       </div>
+                        <div class="container">
+                            <div class="username">Hello %s</div>
+                            
+                            <h1>Your CV has not been approved</h1>
+                            <p>Because of %s</p>
+                        </div>
+                        <div class="footer">
+                              <p>Need help? Contact us at <a href="mailto:namvo.010202@gmail.com">namvo.010202@gmail.com</a></p>
+                               <p>&copy; 2023 ITViec. All rights reserved.</p>
+                        </div>
+                    </body>
+                </html>
+                """.formatted(applicationForm.getCandidate().getUsername(),reason);
+        String approvedContent = """
+                    <html>
+                    <head>
+                        <style>
+                            body {
+                                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                background-color: #e9eff1;
+                                color: #4a4a4a;
+                                margin: 0;
+                                padding: 0;
+                            }
+                            .container {
+                                max-width: 600px;
+                                margin: 20px auto;
+                                background: #fff;
+                                border-radius: 8px;
+                                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+                                padding: 30px;
+                                text-align: center;
+                            }
+                            h1 {
+                                color: #007bff;
+                                font-size: 24px;
+                                margin-bottom: 10px;
+                            }
+                            h2 {
+                                color: #333;
+                                font-size: 20px;
+                                margin-top: 5px;
+                            }
+                            p {
+                                font-size: 16px;
+                                line-height: 1.5;
+                                color: #666;
+                            }
+                            .password {
+                                display: inline-block;
+                                margin: 20px auto;
+                                padding: 10px 20px;
+                                font-size: 24px;
+                                font-weight: bold;
+                                color: #007bff;
+                                background-color: #f0f8ff;
+                                border: 1px solid #b6dfff;
+                                border-radius: 5px;
+                            }
+                            .footer {
+                                 text-align: center;
+                                 padding: 20px;
+                                 font-size: 14px;
+                                 color: #777;
+                                 background-color: #f8f8f8;
+                                 border-top: 1px solid #e7e7e7;
+                                  }
+                            .footer a {
+                                  color: #007bff;
+                                  text-decoration: none;
+                                   }
+                           .header {
+                                 background: linear-gradient(to right, #54151c, #121212);
+                                 padding: 10px;
+                                 text-align: center;
+                                 display: flex;        /* Establishes flex container */
+                                
+                           }
+                         
+                           .header img {
+                                max-height: 60px;
+                           }                 \s
+                           .header img.robby-logo {
+                               margin-left: auto; /* Pushes the image to the far right */
+                           }                 \s
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                                      <img class="company-logo" src="https://ci5.googleusercontent.com/proxy/5R6tqKxblgiFiYicXqxWrIU9EXWsSp_V-ISvQh2ifk3YI9a1slctTn0yYa0oqOtl4uTW3PieCAhmR2ETVO86GgIXrJj74Td6-Cpy7ULFDoz3-LaeF1DS99y9AckcVrjZqHOmLalNRq3hA7_d-_MtXhoDnEPw-GShCZ11Uw=s0-d-e1-ft#https://itviec.com/assets/mails/logo-5f3371a704b475a80f27523e1bcfc4853c03bd7e32b8893971074a64d48bdd6c.png" alt="Company Logo">
+                                      <img class="robby-logo" src="https://ci3.googleusercontent.com/proxy/LiwLsNl3KZ4TrBBh2ueCTiEEIUpOB_1iNfwOepxdnvMN9RJLf9mfUbH5VnIpXNIUy22t8NtLDviI-ChAHvh9eZsUhc-OGftDnij-tLl-o0CxX7bHHN2zFN-tuS7XoVN3gh4WIJHZxB9znohrEUMyA8S_f0dnPwiw6e5fczbuBa4ouC4uqnSQi6Wn=s0-d-e1-ft#https://itviec.com/assets/mails/robby-subscription-a000c03aa20a8f2397802b9b2addb7974f6352bf61491e0a0fc9c18f08a56b9d.png" alt="Robby">
+                       </div>
+                        <div class="container">
+                            <div class="username">Hello %s</div>
+                            <h1>Your CV has been %s</h1>
+                            
+                        </div>
+                        <div class="footer">
+                              <p>Need help? Contact us at <a href="mailto:namvo.010202@gmail.com">namvo.010202@gmail.com</a></p>
+                               <p>&copy; 2023 ITViec. All rights reserved.</p>
+                        </div>
+                    </body>
+                </html>
+                """.formatted(applicationForm.getCandidate().getUsername(),applicationForm.getStatus());
 
         if (applicationForm.getStatus().equals(ApplicationStatus.REJECTED)) {
-            mimeMessageHelper.setText("Đơn ứng tuyển của bạn đã bị từ chối. Trạng thái mới: " + applicationForm.getStatus());
+            mimeMessageHelper.setText(rejectContent);
         }
-        if (applicationForm.getStatus().equals(ApplicationStatus.APPROVED)) {
-            mimeMessageHelper.setText("Đơn ứng tuyển của bạn đã được chấp nhận. Trạng thái mới: " + applicationForm.getStatus());
-        }
-        if (applicationForm.getStatus().equals(ApplicationStatus.DELIVERED)) {
-            mimeMessageHelper.setText("Đơn ứng tuyển của bạn đã được gửi. Trạng thái mới: " + applicationForm.getStatus());
-        }
-        if (applicationForm.getStatus().equals(ApplicationStatus.SUBMITTED)) {
-            mimeMessageHelper.setText("Đơn ứng tuyển của bạn đã được nộp. Trạng thái mới: " + applicationForm.getStatus());
-        }
-        if (applicationForm.getStatus().equals(ApplicationStatus.PENDING)) {
-            mimeMessageHelper.setText("Đơn ứng tuyển của bạn đang chờ duyệt. Trạng thái mới: " + applicationForm.getStatus());
+       else{
+           mimeMessageHelper.setText(approvedContent);
         }
 
         javaMailSender.send(mimeMessage);
@@ -444,19 +648,26 @@ public class EmailServiceImpl implements EmailService {
                                   text-decoration: none;
                                    }
                             .header {
-                                  background-color: #000;
-                                  padding: 10px;
-                                  text-align: center;
-                            }
-                            .header img {
-                                  max-height: 60px;
-                            }                   \s
+                                 background: linear-gradient(to right, #54151c, #121212);
+                                 padding: 10px;
+                                 text-align: center;
+                                 display: flex;        /* Establishes flex container */
+                                
+                           }
+                         
+                           .header img {
+                                max-height: 60px;
+                           }                 \s
+                           .header img.robby-logo {
+                               margin-left: auto; /* Pushes the image to the far right */
+                           }                 \s
                         </style>
                     </head>
                     <body>
                         <div class="header">
-                              <img src="https://ci5.googleusercontent.com/proxy/5R6tqKxblgiFiYicXqxWrIU9EXWsSp_V-ISvQh2ifk3YI9a1slctTn0yYa0oqOtl4uTW3PieCAhmR2ETVO86GgIXrJj74Td6-Cpy7ULFDoz3-LaeF1DS99y9AckcVrjZqHOmLalNRq3hA7_d-_MtXhoDnEPw-GShCZ11Uw=s0-d-e1-ft#https://itviec.com/assets/mails/logo-5f3371a704b475a80f27523e1bcfc4853c03bd7e32b8893971074a64d48bdd6c.png" alt="Company Logo">
-                        </div>
+                                      <img class="company-logo" src="https://ci5.googleusercontent.com/proxy/5R6tqKxblgiFiYicXqxWrIU9EXWsSp_V-ISvQh2ifk3YI9a1slctTn0yYa0oqOtl4uTW3PieCAhmR2ETVO86GgIXrJj74Td6-Cpy7ULFDoz3-LaeF1DS99y9AckcVrjZqHOmLalNRq3hA7_d-_MtXhoDnEPw-GShCZ11Uw=s0-d-e1-ft#https://itviec.com/assets/mails/logo-5f3371a704b475a80f27523e1bcfc4853c03bd7e32b8893971074a64d48bdd6c.png" alt="Company Logo">
+                                      <img class="robby-logo" src="https://ci3.googleusercontent.com/proxy/LiwLsNl3KZ4TrBBh2ueCTiEEIUpOB_1iNfwOepxdnvMN9RJLf9mfUbH5VnIpXNIUy22t8NtLDviI-ChAHvh9eZsUhc-OGftDnij-tLl-o0CxX7bHHN2zFN-tuS7XoVN3gh4WIJHZxB9znohrEUMyA8S_f0dnPwiw6e5fczbuBa4ouC4uqnSQi6Wn=s0-d-e1-ft#https://itviec.com/assets/mails/robby-subscription-a000c03aa20a8f2397802b9b2addb7974f6352bf61491e0a0fc9c18f08a56b9d.png" alt="Robby">
+                       </div>
                         <div class="container">
                             <div class="username">Hello %s</div>
                             <h1>Update status for posting job into system</h1>

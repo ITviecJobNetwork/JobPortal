@@ -50,7 +50,6 @@ public class UserServiceImpl implements UserService {
   private final CompanyRepository companyRepository;
   private final CompanyReviewRepository companyReviewRepository;
   private final CompanyFollowRepository companyFollowRepository;
-  private final ApplyJobRepository applyJobRepository;
 
 
   public void handleUserStatus() {
@@ -74,7 +73,7 @@ public class UserServiceImpl implements UserService {
     try {
       String newPassword = String.valueOf(otpService.generateNewPassword());
       user.setPassword(encoder.encode(newPassword));
-      emailService.sendNewPasswordToEmail(email, newPassword);
+      emailService.sendNewPasswordToEmail(user.getFullName(),email, newPassword);
     } catch (MessagingException e) {
       String messageError = "Không thể gửi mật khẩu mới, vui lòng thử lại";
       throw new BadRequestException(messageError);

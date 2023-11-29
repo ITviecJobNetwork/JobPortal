@@ -8,6 +8,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,7 +34,10 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +55,8 @@ public class RecruiterServiceImpl implements RecruiterService {
   private final JobTypeRepository jobTypeRepository;
   private final LocationRepository locationRepository;
   private final JobRepository jobRepository;
+  private final ApplicationFormRepository applicationFormRepository;
+  private final SkillRepository skillRepository;
 
   @Override
   public MessageResponse registerRecruiter(RecruiterRegisterRequest recruiterRegisterRequest) {
@@ -172,7 +179,7 @@ public class RecruiterServiceImpl implements RecruiterService {
   }
 
   @Override
-  public void changePassword(String currentPassword, String newPassword, String confirmPassword) {
+  public MessageResponse changePassword(String currentPassword, String newPassword, String confirmPassword) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || !authentication.isAuthenticated()) {
       MessageResponse.builder()
@@ -199,14 +206,14 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
     recruiter.setPassword(encoder.encode(newPassword));
     recruiterRepository.save(recruiter);
-    MessageResponse.builder()
+    return MessageResponse.builder()
             .message("Thay đổi mật khẩu thành công")
             .status(HttpStatus.OK)
             .build();
   }
 
   @Override
-  public void changeNickName(String newNickName) {
+  public MessageResponse changeNickName(String newNickName) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsernameIgnoreCase(authentication.getName())
             .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
@@ -216,14 +223,14 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
     recruiter.setNickname(newNickName);
     recruiterRepository.save(recruiter);
-    MessageResponse.builder()
+    return MessageResponse.builder()
             .message("Thay đổi biệt danh thành công")
             .status(HttpStatus.OK)
             .build();
   }
 
   @Override
-  public void resetPassword(String email, String currentPassword, String newPassword,
+  public MessageResponse resetPassword(String email, String currentPassword, String newPassword,
                             String confirmPassword) {
     var recruiter = recruiterRepository.findByUsername(email)
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
@@ -242,7 +249,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
     recruiter.setPassword(encoder.encode(newPassword));
     recruiterRepository.save(recruiter);
-    MessageResponse.builder()
+    return MessageResponse.builder()
             .message("Thay đổi mật khẩu thành công")
             .status(HttpStatus.OK)
             .build();
@@ -260,7 +267,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     try {
       var newPassword = String.valueOf(otpService.generateNewPassword());
       recruiter.setPassword(encoder.encode(newPassword));
-      emailService.sendNewPasswordToEmail(email, newPassword);
+      emailService.sendNewPasswordToEmail(recruiter.getFullname(),email, newPassword);
     } catch (MessagingException e) {
       var messageError = "Không thể gửi mật khẩu mới, vui lòng thử lại";
       throw new BadRequestException(messageError);
@@ -273,7 +280,7 @@ public class RecruiterServiceImpl implements RecruiterService {
   }
 
   @Override
-  public void updateProfile(UpdateProfileRecruiterRequest request) {
+  public MessageResponse updateProfile(UpdateProfileRecruiterRequest request) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
@@ -289,7 +296,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     recruiter.setIntroduction(request.getIntroduction());
     recruiter.setWorkingDays(request.getWorkingDay());
     recruiterRepository.save(recruiter);
-    MessageResponse.builder()
+    return MessageResponse.builder()
             .status(HttpStatus.OK)
             .message("Cập nhật thông tin thành công")
             .build();
@@ -320,7 +327,7 @@ public class RecruiterServiceImpl implements RecruiterService {
   }
 
   @Override
-  public void createCompany(PostInfoCompanyRequest request) throws IOException {
+  public MessageResponse createCompany(PostInfoCompanyRequest request) throws IOException {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
@@ -361,10 +368,14 @@ public class RecruiterServiceImpl implements RecruiterService {
             .country(request.getCountry())
             .build();
     companyRepository.save(company);
+    return MessageResponse.builder()
+            .message("Tạo công ty thành công")
+            .status(HttpStatus.OK)
+            .build();
   }
 
   @Override
-  public void updateCompany(UpdateInfoCompanyRequest request) throws IOException {
+  public MessageResponse updateCompany(UpdateInfoCompanyRequest request) throws IOException {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
@@ -403,12 +414,15 @@ public class RecruiterServiceImpl implements RecruiterService {
     findCompany.setCountry(request.getCountry());
     findCompany.setLogo(companyLogo);
     companyRepository.save(findCompany);
-
+    return MessageResponse.builder()
+            .message("Cập nhật thông tin công ty thành công")
+            .status(HttpStatus.OK)
+            .build();
 
   }
 
   @Override
-  public void deleteCompany() {
+  public MessageResponse deleteCompany() {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
@@ -423,10 +437,14 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
 
     companyRepository.delete(company);
+    return MessageResponse.builder()
+            .message("Xóa công ty thành công")
+            .status(HttpStatus.OK)
+            .build();
   }
 
   @Override
-  public void postJob(PostJobRequest request) {
+  public MessageResponse postJob(PostJobRequest request) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
@@ -471,11 +489,15 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
     companyRepository.save(company);
     jobRepository.save(job);
+    return MessageResponse.builder()
+            .message("Đăng tuyển thành công")
+            .status(HttpStatus.OK)
+            .build();
   }
 
 
   @Override
-  public void updateJob(Integer jobId, UpdateJobRequest request) {
+  public MessageResponse updateJob(Integer jobId, UpdateJobRequest request) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
@@ -509,11 +531,15 @@ public class RecruiterServiceImpl implements RecruiterService {
     findJob.setJobType(jobType);
     findJob.setCompany(company);
     jobRepository.save(findJob);
+    return MessageResponse.builder()
+            .message("Cập nhật công việc thành công")
+            .status(HttpStatus.OK)
+            .build();
   }
 
 
   @Override
-  public void deleteJob(Integer jobId) {
+  public MessageResponse deleteJob(Integer jobId) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
@@ -525,10 +551,138 @@ public class RecruiterServiceImpl implements RecruiterService {
       throw new UnauthorizedException("Bạn không có quyền xóa công việc này");
     }
     jobRepository.delete(existingJob);
+    return MessageResponse.builder()
+            .message("Xóa công việc thành công")
+            .status(HttpStatus.OK)
+            .build();
   }
 
+  @Override
+  public MessageResponse updateStatusJob(Integer applicationId, UpdateApplicationRequest request) throws MessagingException {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication instanceof AnonymousAuthenticationToken) {
+      throw new UnauthorizedException("Bạn chưa đăng nhập");
+    }
 
+    var recruiter = recruiterRepository.findByUsername(authentication.getName());
+    if (recruiter.isEmpty()) {
+      throw new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng");
+    }
 
+    if (recruiter.get().getStatus().equals(RecruiterStatus.INACTIVE)) {
+      throw new UnauthorizedException("Tài khoản chưa được xác thực");
+    }
+
+    Optional<ApplicationForm> optionalApplicationForm = Optional.ofNullable(applicationFormRepository.findByIdAndCompanyRecruiter(applicationId, recruiter.get()));
+    if (optionalApplicationForm.isEmpty()) {
+      throw new NotFoundException("Không tìm thấy đơn ứng tuyển");
+    }
+
+    ApplicationForm applicationForm = optionalApplicationForm.get();
+    applicationForm.setStatus(request.getStatus());
+    applicationFormRepository.save(applicationForm);
+    emailService.sendApplicationUpdateEmail(applicationForm,request.getReason());
+
+    return MessageResponse.builder()
+            .message("Cập nhật trạng thái thành công")
+            .status(HttpStatus.OK)
+            .build();
+  }
+
+  @Override
+  public GetJobResponse getJobById(Integer jobId) {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication instanceof AnonymousAuthenticationToken) {
+      throw new UnauthorizedException("Bạn chưa đăng nhập");
+    }
+    var recruiter = recruiterRepository.findByUsername(authentication.getName());
+    if (recruiter.isEmpty()) {
+      throw new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng");
+    }
+    if(recruiter.get().getStatus().equals(RecruiterStatus.INACTIVE)){
+      throw new UnauthorizedException("Tài khoản chưa được xác thực");
+    }
+    var job = jobRepository.findByIdAndRecruiterId(jobId, recruiter.get().getId());
+    return createGetJobResponse(job);
+  }
+
+  @Override
+  public List<ApplicationFormResponse> getAppliedJob() {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication instanceof AnonymousAuthenticationToken) {
+      throw new UnauthorizedException("Bạn chưa đăng nhập");
+    }
+    var recruiter = recruiterRepository.findByUsername(authentication.getName());
+    if (recruiter.isEmpty()) {
+      throw new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng");
+    }
+
+    if (recruiter.get().getStatus().equals(RecruiterStatus.INACTIVE)) {
+      throw new UnauthorizedException("Tài khoản chưa được xác thực");
+    }
+
+    var applicationForms = applicationFormRepository.findByJobCompanyRecruiter(recruiter.get());
+
+    return applicationForms.stream()
+            .map(this::mapToApplicationFormResponse)
+            .collect(Collectors.toList());
+  }
+
+  @Override
+  public ApplicationFormResponse getApplicationById(Integer applicationId) {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication instanceof AnonymousAuthenticationToken) {
+      throw new UnauthorizedException("Bạn chưa đăng nhập");
+    }
+    var recruiter = recruiterRepository.findByUsername(authentication.getName());
+    if (recruiter.isEmpty()) {
+      throw new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng");
+    }
+
+    if (recruiter.get().getStatus().equals(RecruiterStatus.INACTIVE)) {
+      throw new UnauthorizedException("Tài khoản chưa được xác thực");
+    }
+
+    Optional<ApplicationForm> optionalApplicationForm = Optional.ofNullable(applicationFormRepository.findByIdAndCompanyRecruiter(applicationId, recruiter.get()));
+    if (optionalApplicationForm.isEmpty()) {
+      throw new NotFoundException("Không tìm đơn ứng tuyển");
+    }
+    ApplicationForm applicationForm = optionalApplicationForm.get();
+
+    return mapToApplicationFormResponse(applicationForm);
+  }
+
+  private GetJobResponse createGetJobResponse(Job job) {
+    var skills = skillRepository.findSkillByJob(job);
+    List<String> skillNames = skills.stream()
+            .map(Skill::getTitle) // Assuming 'name' is an attribute in Skill
+            .toList();
+    return GetJobResponse.builder()
+            .jobId(job.getId())
+            .title(job.getTitle())
+            .companyName(job.getCompany().getName())
+            .address(job.getCompany().getAddress())
+            .skills(skillNames)
+            .description(job.getDescription())
+            .createdDate(job.getCreatedAt().toLocalDate())
+            .expiredDate(job.getExpireAt())
+            .requirements(job.getRequirements())
+            .jobType(job.getJobType().getJobType())
+            .location(job.getLocation().getCityName())
+            .build();
+  }
+  private ApplicationFormResponse mapToApplicationFormResponse(ApplicationForm applicationForm) {
+    return ApplicationFormResponse.builder()
+            .linkCV(applicationForm.getLinkCV())
+            .jobId(applicationForm.getJob().getId())
+            .jobTitle(applicationForm.getJob().getTitle())
+            .candidateName(applicationForm.getCandidateName())
+            .submittedAt(applicationForm.getSubmittedAt())
+            .coverLetter(applicationForm.getCoverLetter())
+            .status(applicationForm.getStatus())
+            .candidateId(applicationForm.getCandidate().getId())
+            .build();
+  }
 
 
 }

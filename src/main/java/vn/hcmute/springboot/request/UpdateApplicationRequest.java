@@ -8,4 +8,5 @@ import vn.hcmute.springboot.model.ApplicationStatus;
 @Setter
 public class UpdateApplicationRequest {
   private ApplicationStatus status;
+  private String reason;
 }

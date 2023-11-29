@@ -1,13 +1,14 @@
 package vn.hcmute.springboot.service;
 
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
+
 import vn.hcmute.springboot.model.Recruiters;
 import vn.hcmute.springboot.request.*;
-import vn.hcmute.springboot.response.JwtResponse;
-import vn.hcmute.springboot.response.MessageResponse;
-import vn.hcmute.springboot.response.RecruiterProfileResponse;
+import vn.hcmute.springboot.response.*;
 
 public interface RecruiterService {
   MessageResponse registerRecruiter(RecruiterRegisterRequest recruiterRegisterRequest);
@@ -19,25 +20,32 @@ public interface RecruiterService {
   void refreshToken(HttpServletRequest request,
       HttpServletResponse response) throws IOException;
 
-  void changePassword(String currentPassword, String newPassword, String confirmPassword);
+  MessageResponse changePassword(String currentPassword, String newPassword, String confirmPassword);
 
-  void changeNickName(String newNickName);
+  MessageResponse changeNickName(String newNickName);
 
-  void resetPassword(String email,String currentPassword, String newPassword, String confirmPassword);
+  MessageResponse resetPassword(String email,String currentPassword, String newPassword, String confirmPassword);
 
   MessageResponse sendNewPasswordToEmail(String email);
 
-  void updateProfile(UpdateProfileRecruiterRequest request);
+  MessageResponse updateProfile(UpdateProfileRecruiterRequest request);
 
   RecruiterProfileResponse getProfile();
 
-  void createCompany(PostInfoCompanyRequest request) throws IOException;
-  void updateCompany(UpdateInfoCompanyRequest request) throws IOException;
-  void deleteCompany();
+  MessageResponse createCompany(PostInfoCompanyRequest request) throws IOException;
+  MessageResponse updateCompany(UpdateInfoCompanyRequest request) throws IOException;
+  MessageResponse deleteCompany();
 
-  void postJob(PostJobRequest request);
-  void updateJob(Integer jobId, UpdateJobRequest request);
-  void deleteJob(Integer jobId);
+  MessageResponse postJob(PostJobRequest request);
+  MessageResponse updateJob(Integer jobId, UpdateJobRequest request);
+  MessageResponse deleteJob(Integer jobId);
+
+  MessageResponse updateStatusJob(Integer applicationId, UpdateApplicationRequest request) throws MessagingException;
+
+  GetJobResponse getJobById(Integer jobId);
+  List<ApplicationFormResponse> getAppliedJob();
+
+  ApplicationFormResponse getApplicationById(Integer applicationId);
 
 
 }
