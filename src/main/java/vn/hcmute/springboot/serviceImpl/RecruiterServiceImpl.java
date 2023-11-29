@@ -97,12 +97,13 @@ public class RecruiterServiceImpl implements RecruiterService {
     if (!passwordEncoder.matches(request.getPassword(), recruiter.getPassword())) {
       throw new UnauthorizedException("Mật khẩu không đúng");
     }
-    recruiter.setLastSignInTime(LocalDateTime.now());
-    recruiterRepository.save(recruiter);
+
     var jwtToken = jwtService.generateToken(recruiter);
     var refreshToken = jwtService.generateRefreshToken(recruiter);
     revokeAllUserTokens(recruiter);
     saveUserToken(recruiter, jwtToken);
+    recruiter.setLastSignInTime(LocalDateTime.now());
+    recruiterRepository.save(recruiter);
     return JwtResponse.builder()
             .accessToken(jwtToken)
             .refreshToken(refreshToken)
