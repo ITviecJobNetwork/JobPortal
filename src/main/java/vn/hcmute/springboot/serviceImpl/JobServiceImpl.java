@@ -70,7 +70,7 @@ public class JobServiceImpl implements JobService {
                   .address(job.getCompany().getAddress())
                   .skills(job.getSkills().stream().map(Skill::getTitle).toList())
                   .description(job.getDescription())
-                  .createdDate(job.getCreatedAt().toLocalDate())
+                  .createdDate(job.getCreatedAt())
                   .expiredDate(job.getExpireAt())
                   .requirements(job.getRequirements())
                   .jobType(job.getJobType().getJobType())
@@ -97,7 +97,7 @@ public class JobServiceImpl implements JobService {
               .address(job.getCompany().getAddress())
               .skills(skillNames)
               .description(job.getDescription())
-              .createdDate(job.getCreatedAt().toLocalDate())
+              .createdDate(job.getCreatedAt())
               .expiredDate(job.getExpireAt())
               .requirements(job.getRequirements())
               .jobType(job.getJobType().getJobType())
@@ -151,7 +151,7 @@ public class JobServiceImpl implements JobService {
                     .address(job.getCompany().getAddress())
                     .skills(job.getSkills().stream().map(Skill::getTitle).toList())
                     .description(job.getDescription())
-                    .createdDate(job.getCreatedAt().toLocalDate())
+                    .createdDate(job.getCreatedAt())
                     .expiredDate(job.getExpireAt())
                     .requirements(job.getRequirements())
                     .jobType(job.getJobType().getJobType())
@@ -177,7 +177,7 @@ public class JobServiceImpl implements JobService {
                 .address(job.getCompany().getAddress())
                 .skills(skillNames)
                 .description(job.getDescription())
-                .createdDate(job.getCreatedAt().toLocalDate())
+                .createdDate(job.getCreatedAt())
                 .expiredDate(job.getExpireAt())
                 .requirements(job.getRequirements())
                 .jobType(job.getJobType().getJobType())
@@ -234,7 +234,7 @@ public class JobServiceImpl implements JobService {
                     .address(job.getCompany().getAddress())
                     .skills(job.getSkills().stream().map(Skill::getTitle).toList())
                     .description(job.getDescription())
-                    .createdDate(job.getCreatedAt().toLocalDate())
+                    .createdDate(job.getCreatedAt())
                     .expiredDate(job.getExpireAt())
                     .requirements(job.getRequirements())
                     .jobType(job.getJobType().getJobType())
@@ -260,7 +260,7 @@ public class JobServiceImpl implements JobService {
                 .address(job.getCompany().getAddress())
                 .skills(skillNames)
                 .description(job.getDescription())
-                .createdDate(job.getCreatedAt().toLocalDate())
+                .createdDate(job.getCreatedAt())
                 .expiredDate(job.getExpireAt())
                 .requirements(job.getRequirements())
                 .jobType(job.getJobType().getJobType())
@@ -315,7 +315,7 @@ public class JobServiceImpl implements JobService {
                     .address(job.getCompany().getAddress())
                     .skills(job.getSkills().stream().map(Skill::getTitle).toList())
                     .description(job.getDescription())
-                    .createdDate(job.getCreatedAt().toLocalDate())
+                    .createdDate(job.getCreatedAt())
                     .expiredDate(job.getExpireAt())
                     .requirements(job.getRequirements())
                     .jobType(job.getJobType().getJobType())
@@ -341,7 +341,7 @@ public class JobServiceImpl implements JobService {
                 .address(job.getCompany().getAddress())
                 .skills(skillNames)
                 .description(job.getDescription())
-                .createdDate(job.getCreatedAt().toLocalDate())
+                .createdDate(job.getCreatedAt())
                 .expiredDate(job.getExpireAt())
                 .requirements(job.getRequirements())
                 .jobType(job.getJobType().getJobType())
@@ -396,7 +396,7 @@ public class JobServiceImpl implements JobService {
                     .address(job.getCompany().getAddress())
                     .skills(job.getSkills().stream().map(Skill::getTitle).toList())
                     .description(job.getDescription())
-                    .createdDate(job.getCreatedAt().toLocalDate())
+                    .createdDate(job.getCreatedAt())
                     .expiredDate(job.getExpireAt())
                     .requirements(job.getRequirements())
                     .jobType(job.getJobType().getJobType())
@@ -422,7 +422,7 @@ public class JobServiceImpl implements JobService {
                 .address(job.getCompany().getAddress())
                 .skills(skillNames)
                 .description(job.getDescription())
-                .createdDate(job.getCreatedAt().toLocalDate())
+                .createdDate(job.getCreatedAt())
                 .expiredDate(job.getExpireAt())
                 .requirements(job.getRequirements())
                 .jobType(job.getJobType().getJobType())
@@ -500,7 +500,7 @@ public class JobServiceImpl implements JobService {
                   .address(job.getCompany().getAddress())
                   .skills(job.getSkills().stream().map(Skill::getTitle).toList())
                   .description(job.getDescription())
-                  .createdDate(job.getCreatedAt().toLocalDate())
+                  .createdDate(job.getCreatedAt())
                   .expiredDate(job.getExpireAt())
                   .requirements(job.getRequirements())
                   .jobType(job.getJobType().getJobType())
@@ -528,7 +528,7 @@ public class JobServiceImpl implements JobService {
               .address(job.getCompany().getAddress())
               .skills(skillNames)
               .description(job.getDescription())
-              .createdDate(job.getCreatedAt().toLocalDate())
+              .createdDate(job.getCreatedAt())
               .expiredDate(job.getExpireAt())
               .requirements(job.getRequirements())
               .jobType(job.getJobType().getJobType())
@@ -577,7 +577,7 @@ public class JobServiceImpl implements JobService {
               .address(job.getCompany().getAddress())
               .skills(job.getSkills().stream().map(Skill::getTitle).toList())
               .description(job.getDescription())
-              .createdDate(job.getCreatedAt().toLocalDate())
+              .createdDate(job.getCreatedAt())
               .expiredDate(job.getExpireAt())
               .requirements(job.getRequirements())
               .jobType(job.getJobType().getJobType())
@@ -676,7 +676,7 @@ public class JobServiceImpl implements JobService {
             .address(job.getCompany().getAddress())
             .skills(skillNames)
             .description(job.getDescription())
-            .createdDate(job.getCreatedAt().toLocalDate())
+            .createdDate(job.getCreatedAt())
             .expiredDate(job.getExpireAt())
             .requirements(job.getRequirements())
             .jobType(job.getJobType().getJobType())
@@ -701,7 +701,7 @@ public class JobServiceImpl implements JobService {
             .address(job.getCompany().getAddress())
             .skills(skillNames)
             .description(job.getDescription())
-            .createdDate(job.getCreatedAt().toLocalDate())
+            .createdDate(job.getCreatedAt())
             .expiredDate(job.getExpireAt())
             .requirements(job.getRequirements())
             .jobType(job.getJobType().getJobType())
@@ -719,18 +719,12 @@ public class JobServiceImpl implements JobService {
     final int SUPER_HOT_VIEW_THRESHOLD = 1000;
     final int SUPER_HOT_APPLICATION_THRESHOLD = 1000;
     final int HOT_VIEW_THRESHOLD = 500;
-    final LocalDate currentDate = LocalDate.now();
-    final LocalDateTime jobCreatedAt = job.getCreatedAt();
-    final int daysBetween = (int) java.time.temporal.ChronoUnit.HOURS.between(jobCreatedAt, currentDate);
     if (job.getViewCounts() == null) {
       job.setViewCounts(0);
 
     }
     if (job.getApplyCounts() == null) {
       job.setApplyCounts(0);
-    }
-    if(daysBetween <= 3) {
-      return JobLevel.NEW_FOR_YOU.toString();
     }
     if (job.getViewCounts() >= SUPER_HOT_VIEW_THRESHOLD && job.getApplyCounts() >= SUPER_HOT_APPLICATION_THRESHOLD) {
       return JobLevel.SUPER_HOT.toString();
@@ -760,7 +754,7 @@ public class JobServiceImpl implements JobService {
             .address(job.getCompany().getAddress())
             .skills(job.getSkills().stream().map(Skill::getTitle).toList())
             .description(job.getDescription())
-            .createdDate(job.getCreatedAt().toLocalDate())
+            .createdDate(job.getCreatedAt())
             .expiredDate(job.getExpireAt())
             .requirements(job.getRequirements())
             .jobType(job.getJobType().getJobType())

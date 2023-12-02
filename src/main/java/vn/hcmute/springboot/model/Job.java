@@ -74,7 +74,7 @@ public class Job {
   private String createdBy;
 
   @Column(name = "created_at")
-  private LocalDateTime createdAt;
+  private LocalDate createdAt;
 
   @Column(name = "expire_at")
   private LocalDate expireAt;

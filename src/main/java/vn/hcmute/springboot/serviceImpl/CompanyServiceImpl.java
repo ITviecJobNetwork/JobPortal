@@ -74,7 +74,7 @@ public class CompanyServiceImpl implements CompanyService {
             .skills(job.getSkills())
             .description(job.getDescription())
             .companyLogo(company.getLogo())
-            .createdDate(job.getCreatedAt().toLocalDate())
+            .createdDate(job.getCreatedAt())
             .build();
   }
   public CompanyWithJobsResponse mapToCompanyWithJobsResponse(Company company, List<JobOpeningResponse> jobOpeningResponses) {
