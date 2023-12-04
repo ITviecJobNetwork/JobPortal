@@ -22,9 +22,6 @@ public class CandidateSkill {
     @Column(name = "title")
     private String title;
 
-    @Column(name="level")
-    private String level;
-
 
     @ManyToMany(mappedBy = "skills",fetch = FetchType.EAGER)
     private List<User> users;

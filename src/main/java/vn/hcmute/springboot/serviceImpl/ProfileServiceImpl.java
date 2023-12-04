@@ -255,7 +255,6 @@ public class ProfileServiceImpl implements ProfileService {
       CandidateSkill candidateSkill = new CandidateSkill();
       candidateSkill.setTitle(request.getSkillName().toString());
       candidateSkill.setUsers(Collections.singletonList(user));
-      candidateSkill.setLevel(request.getLevel().toString());
       candidateSkillRepository.save(candidateSkill);
       user.getSkills().add(candidateSkill);
       userRepository.save(user);
