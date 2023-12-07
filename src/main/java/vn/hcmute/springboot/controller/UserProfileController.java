@@ -23,6 +23,7 @@ import vn.hcmute.springboot.repository.SkillRepository;
 import vn.hcmute.springboot.repository.UserRepository;
 import vn.hcmute.springboot.request.*;
 import vn.hcmute.springboot.response.MessageResponse;
+import vn.hcmute.springboot.response.SkillResponse;
 import vn.hcmute.springboot.response.UserProfileResponse;
 import vn.hcmute.springboot.serviceImpl.FileUploadServiceImpl;
 import vn.hcmute.springboot.serviceImpl.ProfileServiceImpl;
@@ -167,6 +168,13 @@ public class UserProfileController {
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<MessageResponse> addSkill(@RequestBody AddSkillRequest request) {
     var skill=profileService.addSkill(request);
+    return new ResponseEntity<>(skill,HttpStatus.OK);
+  }
+
+  @GetMapping("/get-all-skill")
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<SkillResponse> getAllSkill() {
+    var skill=profileService.getAllSkill();
     return new ResponseEntity<>(skill,HttpStatus.OK);
   }
 }
