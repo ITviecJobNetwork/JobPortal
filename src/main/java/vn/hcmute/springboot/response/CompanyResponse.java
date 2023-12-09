@@ -3,6 +3,7 @@ package vn.hcmute.springboot.response;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -24,4 +25,5 @@ public class CompanyResponse {
   private Integer companySize;
   private String country;
   private LocalDate foundedDate;
+  private List<CompanyKeySkillResponse> companyKeySkill;
 }

@@ -47,5 +47,7 @@ public interface RecruiterService {
 
   ApplicationFormResponse getApplicationById(Integer applicationId);
 
+  MessageResponse addCompanyKeySkill(AddCompanyKeySkillRequest request);
+
 
 }

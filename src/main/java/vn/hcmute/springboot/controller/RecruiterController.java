@@ -155,5 +155,10 @@ public class RecruiterController {
     var updateApplication = recruiterService.updateStatusJob(applicationId, updateRequest);
     return new ResponseEntity<>(updateApplication, HttpStatus.OK);
   }
+  @PostMapping("/addCompanyKeySkill")
+  public ResponseEntity<MessageResponse> addCompanyKeySkill(@RequestBody AddCompanyKeySkillRequest request) {
+    var addCompanyKeySkill = recruiterService.addCompanyKeySkill(request);
+    return new ResponseEntity<>(addCompanyKeySkill, HttpStatus.OK);
+  }
 
 }

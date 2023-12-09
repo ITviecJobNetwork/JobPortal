@@ -11,6 +11,7 @@ import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.exception.UnauthorizedException;
 import vn.hcmute.springboot.model.*;
 import vn.hcmute.springboot.repository.*;
+import vn.hcmute.springboot.response.CompanyKeySkillResponse;
 import vn.hcmute.springboot.response.GetJobResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.response.ViewJobResponse;
@@ -78,6 +79,7 @@ public class JobServiceImpl implements JobService {
                   .location(job.getLocation().getCityName())
                   .minSalary(job.getMinSalary())
                   .maxSalary(job.getMaxSalary())
+                  .companyKeySkill(job.getCompany().getCompanyKeySkill().stream().map(this::mapToCompanyKeySkillResponse).toList())
                   .isSaved(isSaved)
                   .isApplied(isApplied)
                   .appliedAt(submittedAt)
@@ -105,6 +107,7 @@ public class JobServiceImpl implements JobService {
               .location(job.getLocation().getCityName())
               .minSalary(job.getMinSalary())
               .maxSalary(job.getMaxSalary())
+              .companyKeySkill(job.getCompany().getCompanyKeySkill().stream().map(this::mapToCompanyKeySkillResponse).toList())
               .isSaved(isSaved)
               .isApplied(isApplied)
               .build();
@@ -511,6 +514,7 @@ public class JobServiceImpl implements JobService {
                   .location(job.getLocation().getCityName())
                   .minSalary(job.getMinSalary())
                   .maxSalary(job.getMaxSalary())
+                  .companyKeySkill(job.getCompany().getCompanyKeySkill().stream().map(this::mapToCompanyKeySkillResponse).toList())
                   .isSaved(isSaved)
                   .isApplied(isApplied)
                   .appliedAt(submittedAt)
@@ -539,6 +543,7 @@ public class JobServiceImpl implements JobService {
               .location(job.getLocation().getCityName())
               .minSalary(job.getMinSalary())
               .maxSalary(job.getMaxSalary())
+              .companyKeySkill(job.getCompany().getCompanyKeySkill().stream().map(this::mapToCompanyKeySkillResponse).toList())
               .isSaved(isSaved)
               .isApplied(isApplied)
               .appliedAt(null)
@@ -574,7 +579,7 @@ public class JobServiceImpl implements JobService {
               .map(ApplicationForm::getSubmittedAt)
               .findFirst()
               .orElse(null);
-      var response = GetJobResponse.builder()
+      return GetJobResponse.builder()
               .jobId(job.getId())
               .title(job.getTitle())
               .companyId(job.getCompany().getId())
@@ -587,13 +592,13 @@ public class JobServiceImpl implements JobService {
               .requirements(job.getRequirements())
               .jobType(job.getJobType().getJobType())
               .location(job.getLocation().getCityName())
+              .companyKeySkill(job.getCompany().getCompanyKeySkill().stream().map(this::mapToCompanyKeySkillResponse).toList())
               .minSalary(job.getMinSalary())
               .maxSalary(job.getMaxSalary())
               .isSaved(isSaved)
               .isApplied(isApplied)
               .appliedAt(submittedAt)
               .build();
-      return response;
     }
     return createGetJobResponse(job, false, false);
 
@@ -696,6 +701,7 @@ public class JobServiceImpl implements JobService {
             .location(job.getLocation().getCityName())
             .minSalary(job.getMinSalary())
             .maxSalary(job.getMaxSalary())
+            .companyKeySkill(job.getCompany().getCompanyKeySkill().stream().map(this::mapToCompanyKeySkillResponse).toList())
             .isSaved(isSaved)
             .isApplied(isApplied)
             .appliedAt(null)
@@ -721,11 +727,19 @@ public class JobServiceImpl implements JobService {
             .location(job.getLocation().getCityName())
             .minSalary(job.getMinSalary())
             .maxSalary(job.getMaxSalary())
+            .companyKeySkill(job.getCompany().getCompanyKeySkill().stream().map(this::mapToCompanyKeySkillResponse).toList())
             .level(level)
             .isSaved(false)
             .isApplied(false)
             .appliedAt(null)
             .level(level)
+            .build();
+  }
+  private CompanyKeySkillResponse mapToCompanyKeySkillResponse(CompanyKeySkill companyKeySkill) {
+
+    return CompanyKeySkillResponse.builder()
+            .id(companyKeySkill.getId())
+            .title(companyKeySkill.getCompanyKeySkill().stream().map(Skill::getTitle).toList().toString())
             .build();
   }
   private String determineJobLevel(Job job) {

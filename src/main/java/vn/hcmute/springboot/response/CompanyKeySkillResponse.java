@@ -10,5 +10,4 @@ import lombok.Getter;
 public class CompanyKeySkillResponse {
   private Integer id;
   private String title;
-  private Integer companyId;
 }

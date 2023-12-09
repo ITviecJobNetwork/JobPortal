@@ -26,4 +26,5 @@ public class CompanyWithJobsResponse {
   private Integer companySize;
   private String country;
   private LocalDate foundedDate;
+  private List<CompanyKeySkillResponse> companyKeySkill;
 }
