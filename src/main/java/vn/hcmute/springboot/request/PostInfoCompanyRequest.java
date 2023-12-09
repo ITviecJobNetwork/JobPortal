@@ -27,4 +27,5 @@ public class PostInfoCompanyRequest {
   private String country;
   private String companyType;
   private String location;
+  private List<String>companyKeySkills;
 }

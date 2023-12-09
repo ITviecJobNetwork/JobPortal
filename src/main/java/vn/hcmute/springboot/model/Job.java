@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,7 +54,7 @@ public class Job {
           joinColumns = @JoinColumn(name = "jobs_id"),
           inverseJoinColumns = @JoinColumn(name = "skill_id")
   )
-  private Set<Skill> skills = new HashSet<>();
+  private List<Skill> skills = new ArrayList<>();
 
   @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(

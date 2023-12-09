@@ -530,10 +530,8 @@ public class UserServiceImpl implements UserService {
   private List<JobType> updateJobTypes(List<String> jobTypeNames) {
     List<JobType> jobTypes = new ArrayList<>();
     for (String jobTypeStr : jobTypeNames) {
-      JobType jobType = jobTypeRepository.findByJobType(jobTypeStr);
-      if (jobType != null) {
-        jobTypes.add(jobType);
-      }
+      Optional<JobType> jobTypeOpt = jobTypeRepository.findByJobType(jobTypeStr);
+      jobTypeOpt.ifPresent(jobTypes::add);
     }
     return jobTypes;
   }

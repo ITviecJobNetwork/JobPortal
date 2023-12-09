@@ -30,9 +30,7 @@ import vn.hcmute.springboot.service.RecruiterService;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -335,8 +333,8 @@ public class RecruiterServiceImpl implements RecruiterService {
     String companyTypeName = request.getCompanyType();
     CompanyType companyType = companyTypeRepository.findByType(companyTypeName);
     String locationName = request.getLocation();
-    Location location = locationRepository.findByCityName(locationName);
-    if (location == null) {
+    var location = locationRepository.findByCityName(locationName);
+    if (location.isEmpty()) {
       Location newLocation = Location.builder()
               .cityName(locationName)
               .build();
@@ -394,8 +392,8 @@ public class RecruiterServiceImpl implements RecruiterService {
     var location =request.getLocations();
     var locationName = locationRepository.findByCityName(location);
     if (locationName != null) {
-      locationName.setCityName(request.getLocations());
-      locationRepository.save(locationName);
+      locationName.get().setCityName(location);
+      locationRepository.save(locationName.get());
     }
     if (companyType != null) {
       companyType.setType(request.getCompanyType());
@@ -451,20 +449,22 @@ public class RecruiterServiceImpl implements RecruiterService {
     var company = companyRepository.finCompanyByRecruiter(recruiter)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
 
-    JobType jobType = jobTypeRepository.findByJobType(request.getJobType());
-    if (jobType == null) {
-      jobType = JobType.builder()
-              .jobType(request.getJobType())
-              .build();
-      jobType = jobTypeRepository.save(jobType);
-    }
+    JobType jobType = jobTypeRepository.findFirstByJobType(request.getJobType())
+            .orElseGet(() -> jobTypeRepository.save(new JobType(request.getJobType())));
 
-    Location location = locationRepository.findByCityName(request.getLocation());
-    if (location == null) {
-      location = Location.builder()
-              .cityName(request.getLocation())
-              .build();
-      location = locationRepository.save(location);
+    Location location = locationRepository.findFirstByCityName(request.getLocation())
+            .orElseGet(() -> locationRepository.save(new Location(request.getLocation())));
+    List<Skill> skillsList = new ArrayList<>();
+    for (String skillName : request.getSkills()) {
+      Skill skill = skillRepository.findByName(skillName);
+      if (skill == null) {
+        skill = Skill.builder()
+                .title(skillName)
+                .build();
+        skill = skillRepository.save(skill);
+
+      }
+      skillsList.add(skill);
     }
 
     var job = Job.builder()
@@ -477,19 +477,20 @@ public class RecruiterServiceImpl implements RecruiterService {
             .createdAt(LocalDate.now())
             .jobType(jobType)
             .location(location)
+            .skills(skillsList)
             .requirements(request.getRequirements())
             .company(company)
             .build();
+
+
     var jobOpening = company.getCountJobOpening();
-    if (jobOpening == null) {
-      company.setCountJobOpening(1);
-    } else {
-      company.setCountJobOpening(company.getCountJobOpening() + 1);
-    }
+    company.setCountJobOpening(jobOpening != null ? jobOpening + 1 : 1);
+
     companyRepository.save(company);
     jobRepository.save(job);
+
     return MessageResponse.builder()
-            .message("Đăng tuyển thành công")
+            .message("Đăng bài tuyển dụng thành công")
             .status(HttpStatus.OK)
             .build();
   }
@@ -508,20 +509,29 @@ public class RecruiterServiceImpl implements RecruiterService {
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công việc"));
 
 
-    var jobType = jobTypeRepository.findByJobType(findJob.getJobType().getJobType());
-    if (jobType != null) {
-      jobType.setJobType(request.getJobType());
-      jobTypeRepository.save(jobType);
-    }
+    JobType jobType = jobTypeRepository.findFirstByJobType(request.getJobType())
+            .orElseGet(() -> jobTypeRepository.save(new JobType(request.getJobType())));
 
-    var location = locationRepository.findByCityName(findJob.getLocation().getCityName());
-    if (location != null) {
-      location.setCityName(request.getLocation());
-      locationRepository.save(location);
+    Location location = locationRepository.findFirstByCityName(request.getLocation())
+            .orElseGet(() -> locationRepository.save(new Location(request.getLocation())));
+
+    List<Skill> skillsList = new ArrayList<>();
+    for (String skillName : request.getSkills()) {
+      Skill skill = skillRepository.findByName(skillName);
+      if (skill == null) {
+        skill = Skill.builder()
+                .title(skillName)
+                .build();
+        skill = skillRepository.save(skill);
+
+      }
+      skillsList.add(skill);
     }
+    LocalDate createdDate = LocalDate.now();
+    LocalDate expiredAt = createdDate.plusDays(30);
 
     findJob.setDescription(request.getDescription());
-    findJob.setExpireAt(request.getExpireAt());
+    findJob.setExpireAt(expiredAt);
     findJob.setMinSalary(request.getMinSalary());
     findJob.setMaxSalary(request.getMaxSalary());
     findJob.setTitle(request.getJobTitle());
@@ -529,9 +539,11 @@ public class RecruiterServiceImpl implements RecruiterService {
     findJob.setLocation(location);
     findJob.setJobType(jobType);
     findJob.setCompany(company);
+    findJob.setSkills(skillsList);
     jobRepository.save(findJob);
+
     return MessageResponse.builder()
-            .message("Cập nhật công việc thành công")
+            .message("Cập nhật bài tuyển dụng thành công")
             .status(HttpStatus.OK)
             .build();
   }

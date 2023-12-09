@@ -23,6 +23,9 @@ public class Location {
 
   @Column(name="city_name")
   private String cityName;
+  public Location(String cityName) {
+    this.cityName = cityName;
+  }
 
 }
 
