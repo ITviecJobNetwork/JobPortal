@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.hcmute.springboot.response.GetJobResponse;
+import vn.hcmute.springboot.response.KeywordResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.response.ViewJobResponse;
 import vn.hcmute.springboot.serviceImpl.JobServiceImpl;
@@ -104,5 +105,11 @@ public class JobController {
           @RequestParam(value = "sort", defaultValue = "Xem gần nhất") String sort) {
     var viewJob = jobService.getViewAtJob(page, size, sort);
     return new ResponseEntity<>(viewJob, HttpStatus.OK);
+  }
+
+  @GetMapping("/suggestKeyWord")
+  public ResponseEntity<KeywordResponse> suggestKeyWord() {
+    var keyWord = jobService.suggestKeyWord();
+    return new ResponseEntity<>(keyWord, HttpStatus.OK);
   }
 }

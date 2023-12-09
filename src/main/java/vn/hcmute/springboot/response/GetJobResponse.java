@@ -35,5 +35,4 @@ public class GetJobResponse {
   private LocalDate appliedAt;
   private List<CompanyKeySkillResponse> companyKeySkill;
 
-
 }
