@@ -63,7 +63,7 @@ public class ExceptionHandlerAdvice {
           UnauthorizedException ex) {
     var errorResponse = ErrorResponse.builder()
             .timestamp(LocalDateTime.now())
-            .status(HttpStatus.BAD_REQUEST.value())
+            .status(HttpStatus.UNAUTHORIZED.value())
             .errorCode(ex.getMessage())
             .build();
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);

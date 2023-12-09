@@ -735,7 +735,7 @@ public class JobServiceImpl implements JobService {
       return JobLevel.HOT.toString();
     }
     jobRepository.save(job);
-    return JobLevel.NORMAL.toString();
+    return null;
   }
   private GetJobResponse createGetJobResponseWithUserDetails(Job job, User currentUser) {
     boolean isSaved = saveJobsRepository.findByCandidateAndJob(currentUser, job) != null;

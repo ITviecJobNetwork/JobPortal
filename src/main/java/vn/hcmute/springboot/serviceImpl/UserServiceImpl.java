@@ -138,7 +138,7 @@ public class UserServiceImpl implements UserService {
   public ApplyJobResponse applyJob(Integer jobId,ApplyJobRequest request) throws IOException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     var user = userRepository.findByUsernameIgnoreCase(authentication.getName())
-            .orElseThrow(() -> new NotFoundException("Bạn chưa đăng nhập vui lòng đăng nhập"));
+            .orElseThrow(() -> new UsernameNotFoundException("Bạn chưa đăng nhập vui lòng đăng nhập"));
     var username = user.getUsername();
     var job = jobRepository.findById(jobId).orElse(null);
     if (job == null) {

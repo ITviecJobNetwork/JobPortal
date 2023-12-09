@@ -10,10 +10,7 @@ import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.model.*;
 import vn.hcmute.springboot.repository.*;
 import vn.hcmute.springboot.request.*;
-import vn.hcmute.springboot.response.CandidateEducationResponse;
-import vn.hcmute.springboot.response.CandidateExperienceResponse;
-import vn.hcmute.springboot.response.MessageResponse;
-import vn.hcmute.springboot.response.UserProfileResponse;
+import vn.hcmute.springboot.response.*;
 import vn.hcmute.springboot.service.ProfileService;
 
 import java.io.IOException;
@@ -255,7 +252,6 @@ public class ProfileServiceImpl implements ProfileService {
       CandidateSkill candidateSkill = new CandidateSkill();
       candidateSkill.setTitle(request.getSkillName().toString());
       candidateSkill.setUsers(Collections.singletonList(user));
-      candidateSkill.setLevel(request.getLevel().toString());
       candidateSkillRepository.save(candidateSkill);
       user.getSkills().add(candidateSkill);
       userRepository.save(user);
@@ -266,6 +262,18 @@ public class ProfileServiceImpl implements ProfileService {
             .status(HttpStatus.OK)
             .build();
   }
+
+  @Override
+  public SkillResponse getAllSkill() {
+    var skills = skillRepository.findAll();
+    if(skills.isEmpty()){
+      throw new NotFoundException("Không tìm thấy kỹ năng");
+    }
+    return SkillResponse.builder()
+            .skills(skills.stream().map(Skill::getTitle).toList())
+            .build();
+  }
+
 
   public CandidateExperienceResponse convertToCandidateExperienceResponse(CandidateExperience experience) {
     return CandidateExperienceResponse.builder()

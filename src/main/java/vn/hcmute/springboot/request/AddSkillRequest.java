@@ -12,5 +12,4 @@ import java.util.List;
 @Data
 public class AddSkillRequest {
   List<String> skillName;
-  List<String> level;
 }

@@ -13,19 +13,13 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import vn.hcmute.springboot.model.CandidateEducation;
-import vn.hcmute.springboot.model.CandidateExperience;
-import vn.hcmute.springboot.model.User;
-import vn.hcmute.springboot.repository.CandidateEducationRepository;
-import vn.hcmute.springboot.repository.CandidateExperienceRepository;
-import vn.hcmute.springboot.repository.SkillRepository;
 import vn.hcmute.springboot.repository.UserRepository;
 import vn.hcmute.springboot.request.*;
 import vn.hcmute.springboot.response.MessageResponse;
+import vn.hcmute.springboot.response.SkillResponse;
 import vn.hcmute.springboot.response.UserProfileResponse;
-import vn.hcmute.springboot.serviceImpl.FileUploadServiceImpl;
-import vn.hcmute.springboot.serviceImpl.ProfileServiceImpl;
+import vn.hcmute.springboot.service.FileUploadService;
+import vn.hcmute.springboot.service.ProfileService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,11 +32,9 @@ import java.net.URL;
 @RequiredArgsConstructor
 public class UserProfileController {
 
-  private final ProfileServiceImpl profileService;
+  private final ProfileService profileService;
   private final UserRepository userRepository;
-  private final FileUploadServiceImpl fileUploadService;
-  private final CandidateEducationRepository candidateEducationRepository;
-  private final CandidateExperienceRepository candidateExperienceRepository;
+  private final FileUploadService fileUploadService;
 
   @PutMapping(value = "/updateProfile")
   public ResponseEntity<MessageResponse> updateProfile(
@@ -167,6 +159,13 @@ public class UserProfileController {
   @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<MessageResponse> addSkill(@RequestBody AddSkillRequest request) {
     var skill=profileService.addSkill(request);
+    return new ResponseEntity<>(skill,HttpStatus.OK);
+  }
+
+  @GetMapping("/get-all-skill")
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<SkillResponse> getAllSkill() {
+    var skill=profileService.getAllSkill();
     return new ResponseEntity<>(skill,HttpStatus.OK);
   }
 }

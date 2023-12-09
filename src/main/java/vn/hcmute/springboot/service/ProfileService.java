@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import vn.hcmute.springboot.request.*;
 import vn.hcmute.springboot.response.MessageResponse;
+import vn.hcmute.springboot.response.SkillResponse;
 import vn.hcmute.springboot.response.UserProfileResponse;
 
 
@@ -21,4 +22,6 @@ public interface ProfileService {
   MessageResponse writeAboutMe (AboutMeRequest request);
 
   MessageResponse addSkill (AddSkillRequest request);
+
+  SkillResponse getAllSkill();
 }
