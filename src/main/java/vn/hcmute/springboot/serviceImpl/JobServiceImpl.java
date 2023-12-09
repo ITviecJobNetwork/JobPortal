@@ -716,9 +716,9 @@ public class JobServiceImpl implements JobService {
             .build();
   }
   private String determineJobLevel(Job job) {
-    final int SUPER_HOT_VIEW_THRESHOLD = 1000;
-    final int SUPER_HOT_APPLICATION_THRESHOLD = 1000;
-    final int HOT_VIEW_THRESHOLD = 500;
+    final int SUPER_HOT_VIEW_THRESHOLD = 20;
+    final int SUPER_HOT_APPLICATION_THRESHOLD = 20;
+    final int HOT_VIEW_THRESHOLD = 10;
     if (job.getViewCounts() == null) {
       job.setViewCounts(0);
 
