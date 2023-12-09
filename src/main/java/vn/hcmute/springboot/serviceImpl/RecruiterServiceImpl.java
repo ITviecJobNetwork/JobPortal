@@ -100,10 +100,10 @@ public class RecruiterServiceImpl implements RecruiterService {
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy tài khoản"));
     var userStatus = recruiter.getStatus();
     if (userStatus.equals(RecruiterStatus.INACTIVE)) {
-      throw new UnauthorizedException("Tài khoản chưa được xác thực");
+      throw new BadRequestException("Tài khoản chưa được xác thực");
     }
     if (!passwordEncoder.matches(request.getPassword(), recruiter.getPassword())) {
-      throw new UnauthorizedException("Mật khẩu không đúng");
+      throw new BadRequestException("Mật khẩu không đúng");
     }
 
     var jwtToken = jwtService.generateToken(recruiter);

@@ -479,6 +479,9 @@ public class JobServiceImpl implements JobService {
     );
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
     List<GetJobResponse> getJobResponses = new ArrayList<>();
+    if(searchHistoryRepository.findBySearchKeyWord(keyword) == null) {
+      saveSearchHistory(keyword);
+    }
     for (Job job : result) {
       boolean isSaved = false;
       boolean isApplied = false;
@@ -496,9 +499,7 @@ public class JobServiceImpl implements JobService {
                   .map(ApplicationForm::getSubmittedAt)
                   .findFirst()
                   .orElse(null);
-          if(!searchHistoryRepository.findAll().isEmpty()) {
-            saveSearchHistory(keyword);
-          }
+
           var response = GetJobResponse.builder()
                   .jobId(job.getId())
                   .title(job.getTitle())
