@@ -8,11 +8,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,14 +24,12 @@ import vn.hcmute.springboot.request.*;
 import vn.hcmute.springboot.response.*;
 import vn.hcmute.springboot.security.JwtService;
 import vn.hcmute.springboot.service.EmailService;
-import vn.hcmute.springboot.service.FileUploadService;
 import vn.hcmute.springboot.service.OtpService;
 import vn.hcmute.springboot.service.RecruiterService;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -695,7 +691,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     if (recruiter.get().getStatus().equals(RecruiterStatus.INACTIVE)) {
       throw new UnauthorizedException("Tài khoản chưa được xác thực");
     }
-    var jobs = jobRepository.findByRecruiter(recruiter.get());
+    var jobs = jobRepository.findByRecruiter(recruiter.get()) ;
     return jobs.stream()
             .map(this::createGetJobResponse)
             .collect(Collectors.toList());
