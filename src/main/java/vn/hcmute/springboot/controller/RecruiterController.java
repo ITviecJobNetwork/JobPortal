@@ -137,7 +137,7 @@ public class RecruiterController {
   }
 
 
-  @GetMapping("getAppliedJob")
+  @GetMapping("get-application-form")
   public ResponseEntity<List<ApplicationFormResponse>> getAppliedJob() {
     var getAppliedJob = recruiterService.getAppliedJob();
     return new ResponseEntity<>(getAppliedJob, HttpStatus.OK);
@@ -159,6 +159,12 @@ public class RecruiterController {
   public ResponseEntity<MessageResponse> addCompanyKeySkill(@RequestBody AddCompanyKeySkillRequest request) {
     var addCompanyKeySkill = recruiterService.addCompanyKeySkill(request);
     return new ResponseEntity<>(addCompanyKeySkill, HttpStatus.OK);
+  }
+
+  @GetMapping("/list-all-job")
+  public ResponseEntity<List<GetJobResponse>> listAllJobResponse() {
+    var listAllJobResponse = recruiterService.listAllJobResponse();
+    return new ResponseEntity<>(listAllJobResponse, HttpStatus.OK);
   }
 
 }

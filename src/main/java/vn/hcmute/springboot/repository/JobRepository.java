@@ -83,11 +83,8 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
   );
 
 
-  @Query("SELECT j FROM Job j ORDER BY j.viewCounts DESC, j.applyCounts DESC")
-  List<Job> findSuperHotJobs(Pageable pageable);
-
-  @Query("SELECT j FROM Job j ORDER BY j.viewCounts DESC")
-  List<Job> findHotJobs(Pageable pageable);
+  @Query("SELECT j FROM Job j WHERE j.company.recruiter = :recruiter")
+  List<Job> findByRecruiter(Recruiters recruiter);
 }
 
 
