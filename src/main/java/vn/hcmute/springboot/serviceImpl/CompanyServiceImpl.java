@@ -11,10 +11,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.exception.UnauthorizedException;
-import vn.hcmute.springboot.model.Company;
-import vn.hcmute.springboot.model.Job;
-import vn.hcmute.springboot.model.Token;
+import vn.hcmute.springboot.model.*;
 import vn.hcmute.springboot.repository.*;
+import vn.hcmute.springboot.response.CompanyKeySkillResponse;
 import vn.hcmute.springboot.response.CompanyResponse;
 import vn.hcmute.springboot.response.CompanyWithJobsResponse;
 import vn.hcmute.springboot.response.JobOpeningResponse;
@@ -23,6 +22,7 @@ import vn.hcmute.springboot.service.CompanyService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +30,8 @@ public class CompanyServiceImpl implements CompanyService {
 
   private final CompanyRepository companyRepository;
   private final JobRepository jobRepository;
+  private final CompanyKeySkillRepository companyKeySkillRepository;
+
   @Override
   public Page<CompanyResponse> listAllCompany(int page,int size) {
     Pageable pageable = PageRequest.of(page, size);
@@ -64,6 +66,26 @@ public class CompanyServiceImpl implements CompanyService {
     companyRepository.save(company.get());
     return response;
   }
+
+  @Override
+  public List<CompanyKeySkillResponse> listCompanyKeySkill(Integer companyId) {
+    var company = companyRepository.findById(companyId);
+    if (company.isEmpty()) {
+      throw new NotFoundException("Không tìm thấy công ty");
+    }
+    List<CompanyKeySkill> companyKeySkills = companyKeySkillRepository.findByCompanyId(companyId);
+    if (companyKeySkills == null) {
+      throw new NotFoundException("Không tìm thấy kỹ năng");
+    }
+    for (CompanyKeySkill companyKeySkill : companyKeySkills) {
+      companyKeySkill.setCompany(company.get());
+
+    }
+    companyKeySkillRepository.saveAll(companyKeySkills);
+    return companyKeySkills.stream().map(this::mapToCompanyKeySkillResponse).collect(Collectors.toList());
+
+  }
+
   public JobOpeningResponse mapToCreateJobOpening(Job job, Company company) {
     return JobOpeningResponse.builder()
             .jobId(job.getId())
@@ -114,6 +136,15 @@ public class CompanyServiceImpl implements CompanyService {
             .foundedDate(company.getFoundedDate())
             .build();
   }
+  private CompanyKeySkillResponse mapToCompanyKeySkillResponse(CompanyKeySkill companyKeySkill) {
+
+    return CompanyKeySkillResponse.builder()
+            .id(companyKeySkill.getId())
+            .title(companyKeySkill.getCompanyKeySkill().stream().map(Skill::getTitle).toList().toString())
+            .companyId(companyKeySkill.getCompany().getId())
+            .build();
+  }
+  
 
 
 }

@@ -3,9 +3,12 @@ package vn.hcmute.springboot.service;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
+
 import vn.hcmute.springboot.model.User;
 import vn.hcmute.springboot.request.LoginRequest;
 import vn.hcmute.springboot.request.RegisterRequest;
+import vn.hcmute.springboot.response.CompanyKeySkillResponse;
 import vn.hcmute.springboot.response.JwtResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 
@@ -20,5 +23,6 @@ public interface AuthenticationService {
 
   MessageResponse verifyAccount(String email, String otp);
   MessageResponse regenerateOtp(String email);
+
 
 }

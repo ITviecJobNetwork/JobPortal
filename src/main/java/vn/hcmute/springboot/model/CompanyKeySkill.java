@@ -1,5 +1,6 @@
 package vn.hcmute.springboot.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -21,13 +22,10 @@ public class CompanyKeySkill {
   private Integer id;
 
   @ManyToOne
-  @JoinColumn(name = "recruiter_id")
-  private Recruiters recruiter;
+  @JoinColumn(name = "company_id")
+  private Company company;
 
-  @OneToMany(mappedBy = "companyKeySkill", fetch=FetchType.EAGER,cascade = CascadeType.ALL)
-  private List<Skill> skills;
-
-
-
-
+  @OneToMany(fetch = FetchType.EAGER)
+  @JoinColumn(name = "company_key_skill_id")
+  private List<Skill> companyKeySkill;
 }

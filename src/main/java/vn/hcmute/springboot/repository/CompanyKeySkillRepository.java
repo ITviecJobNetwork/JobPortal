@@ -6,7 +6,7 @@ import vn.hcmute.springboot.model.CompanyKeySkill;
 
 public interface CompanyKeySkillRepository extends JpaRepository<CompanyKeySkill, Integer>{
 
-  List<CompanyKeySkill> findByRecruiterId(Integer recruiterId);
+  List<CompanyKeySkill> findByCompanyId(Integer companyId);
 
 
 }

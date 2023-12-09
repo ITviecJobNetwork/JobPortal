@@ -18,7 +18,8 @@ public interface SkillRepository extends JpaRepository<Skill, Integer> {
   List<Skill> findSkillByJob(@Param("job") Job job);
 
 
-  Optional<Skill> findByTitle(String title);
+
+
 
 
 
