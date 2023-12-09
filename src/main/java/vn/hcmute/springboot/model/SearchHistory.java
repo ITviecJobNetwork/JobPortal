@@ -19,9 +19,9 @@ public class SearchHistory {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
-  @OneToMany
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "user_id")
-  private Set<User> user;
+  private User user;
 
   @Column(name = "search_key")
   private String searchKeyWord;

@@ -4,6 +4,7 @@ package vn.hcmute.springboot.serviceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -11,16 +12,15 @@ import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.exception.UnauthorizedException;
 import vn.hcmute.springboot.model.*;
 import vn.hcmute.springboot.repository.*;
-import vn.hcmute.springboot.response.CompanyKeySkillResponse;
-import vn.hcmute.springboot.response.GetJobResponse;
-import vn.hcmute.springboot.response.MessageResponse;
-import vn.hcmute.springboot.response.ViewJobResponse;
+import vn.hcmute.springboot.response.*;
 import vn.hcmute.springboot.service.JobService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -479,9 +479,7 @@ public class JobServiceImpl implements JobService {
     );
     var userName = SecurityContextHolder.getContext().getAuthentication().getName();
     List<GetJobResponse> getJobResponses = new ArrayList<>();
-    if(searchHistoryRepository.findBySearchKeyWord(keyword) == null) {
-      saveSearchHistory(keyword);
-    }
+
     for (Job job : result) {
       boolean isSaved = false;
       boolean isApplied = false;
@@ -499,6 +497,7 @@ public class JobServiceImpl implements JobService {
                   .map(ApplicationForm::getSubmittedAt)
                   .findFirst()
                   .orElse(null);
+          updateSearchHistory(keyword, user.get());
 
           var response = GetJobResponse.builder()
                   .jobId(job.getId())
@@ -522,13 +521,12 @@ public class JobServiceImpl implements JobService {
                   .build();
           getJobResponses.add(response);
         }
+
       }
       var skills = skillRepository.findSkillByJob(job);
       List<String> skillNames = skills.stream()
               .map(Skill::getTitle)
               .toList();
-
-
       var getJobResponse = GetJobResponse.builder()
               .jobId(job.getId())
               .title(job.getTitle())
@@ -671,14 +669,53 @@ public class JobServiceImpl implements JobService {
       return new ViewJobResponse(getJobResponsesPage);
     }
   }
+  private void updateSearchHistory(String keyword,User user) {
+    var searchHistories = searchHistoryRepository.findByUser(user);
+    if (searchHistories.isEmpty()) {
+      SearchHistory newSearchHistory = new SearchHistory();
+      newSearchHistory.setSearchKeyWord(keyword);
+      newSearchHistory.setSearchCount(1);
+      newSearchHistory.setUser(user);
+      searchHistoryRepository.save(newSearchHistory);
+    } else {
+      for (SearchHistory searchHistory : searchHistories) {
+        searchHistory.setSearchCount(searchHistory.getSearchCount() + 1);
+        searchHistoryRepository.save(searchHistory);
+      }
+    }
+  }
+
 
   @Override
-  public void saveSearchHistory(String searchKeyWord) {
-    SearchHistory saveSearchHistory = new SearchHistory();
-    saveSearchHistory.setSearchKeyWord(searchKeyWord);
-    searchHistoryRepository.save(saveSearchHistory);
+  public KeywordResponse suggestKeyWord() {
+    List<String> keyWordList = new ArrayList<>();
 
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+      String userName = authentication.getName();
+      Optional<User> user = userRepository.findByUsername(userName);
+
+      if (user.isPresent()) {
+        keyWordList = searchHistoryRepository.findTop8ByUserOrderBySearchCountDesc(user.get())
+                .stream()
+                .map(SearchHistory::getSearchKeyWord)
+                .collect(Collectors.toList());
+      } else {
+        throw new UsernameNotFoundException("Không tìm thấy người dùng");
+      }
+    } else {
+      keyWordList = searchHistoryRepository.findTop8ByOrderBySearchCountDesc()
+              .stream()
+              .map(SearchHistory::getSearchKeyWord)
+              .collect(Collectors.toList());
+    }
+
+    KeywordResponse keywordResponse = new KeywordResponse(keyWordList);
+    keywordResponse.setKeyword(keyWordList);
+    return keywordResponse;
   }
+
+
 
 
   private GetJobResponse createGetJobResponse(Job job, boolean isSaved, boolean isApplied) {

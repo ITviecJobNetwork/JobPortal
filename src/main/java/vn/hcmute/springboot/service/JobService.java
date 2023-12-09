@@ -3,6 +3,7 @@ package vn.hcmute.springboot.service;
 
 import org.springframework.data.domain.Page;
 import vn.hcmute.springboot.response.GetJobResponse;
+import vn.hcmute.springboot.response.KeywordResponse;
 import vn.hcmute.springboot.response.MessageResponse;
 import vn.hcmute.springboot.response.ViewJobResponse;
 
@@ -38,6 +39,6 @@ public interface JobService {
 
   ViewJobResponse getViewAtJob(int page, int size, String sort);
 
-  void saveSearchHistory(String searchKeyWord);
+  KeywordResponse suggestKeyWord();
 
 }

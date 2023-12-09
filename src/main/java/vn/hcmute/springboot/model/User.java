@@ -170,6 +170,8 @@ public class  User implements UserDetails {
   @ManyToOne(fetch = FetchType.EAGER)
   private CandidateEducation education;
 
+
+
   @ManyToMany (fetch = FetchType.EAGER)
   @JoinTable(
       name = "user_experience",
