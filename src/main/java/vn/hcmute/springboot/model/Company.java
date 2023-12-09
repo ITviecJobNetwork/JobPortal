@@ -2,16 +2,10 @@ package vn.hcmute.springboot.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDate;
+import java.util.Set;
 
 import lombok.*;
 
@@ -79,5 +73,9 @@ public class Company {
 
   @Column(name="company_size")
   private Integer companySize;
+
+  @OneToMany(mappedBy = "company", fetch = FetchType.EAGER)
+  @JsonIgnore
+  private Set<CompanyKeySkill> companyKeySkill;
 }
 

@@ -57,6 +57,7 @@ public class RecruiterServiceImpl implements RecruiterService {
   private final JobRepository jobRepository;
   private final ApplicationFormRepository applicationFormRepository;
   private final SkillRepository skillRepository;
+  private final CompanyKeySkillRepository companyKeySkillRepository;
 
   @Override
   public MessageResponse registerRecruiter(RecruiterRegisterRequest recruiterRegisterRequest) {
@@ -99,10 +100,12 @@ public class RecruiterServiceImpl implements RecruiterService {
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy tài khoản"));
     var userStatus = recruiter.getStatus();
     if (userStatus.equals(RecruiterStatus.INACTIVE)) {
-      throw new UnauthorizedException("Tài khoản chưa được xác thực");
+      throw new BadRequestException("Tài khoản chưa được xác thực");
     }
-    if (!passwordEncoder.matches(request.getPassword(), recruiter.getPassword())) {
-      throw new UnauthorizedException("Mật khẩu không đúng");
+    var password = recruiter.getPassword();
+    var enteredPassword = request.getPassword();
+    if (!passwordEncoder.matches(enteredPassword, password)) {
+      throw new BadRequestException("Mật khẩu không chính xác");
     }
 
     var jwtToken = jwtService.generateToken(recruiter);
@@ -650,6 +653,33 @@ public class RecruiterServiceImpl implements RecruiterService {
     ApplicationForm applicationForm = optionalApplicationForm.get();
 
     return mapToApplicationFormResponse(applicationForm);
+  }
+
+  @Override
+  public MessageResponse addCompanyKeySkill(AddCompanyKeySkillRequest request) {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication instanceof AnonymousAuthenticationToken) {
+      throw new UnauthorizedException("Bạn chưa đăng nhập");
+    }
+    var recruiter = recruiterRepository.findByUsername(authentication.getName());
+    if (recruiter.isEmpty()) {
+      throw new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng");
+    }
+    var company = companyRepository.finCompanyByRecruiter(recruiter.get())
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
+    var companyKeySkills = companyKeySkillRepository.findByCompanyId(company.getId());
+    if(companyKeySkills.isEmpty()){
+      for (String skill : request.getCompanyKeySkill()) {
+        var companyKeySkill = CompanyKeySkill.builder()
+                .company(company)
+                .build();
+        companyKeySkillRepository.save(companyKeySkill);
+      }
+    }
+    return MessageResponse.builder()
+            .message("Thêm kỹ năng thành công")
+            .status(HttpStatus.OK)
+            .build();
   }
 
   private GetJobResponse createGetJobResponse(Job job) {

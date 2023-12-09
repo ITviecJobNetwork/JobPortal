@@ -115,6 +115,7 @@ public class CompanyServiceImpl implements CompanyService {
             .companySize(company.getCompanySize())
             .country(company.getCountry())
             .foundedDate(company.getFoundedDate())
+            .companyKeySkill(company.getCompanyKeySkill().stream().map(this::mapToCompanyKeySkillResponse).toList())
             .jobOpenings(jobOpeningResponses)
             .build();
   }
@@ -134,6 +135,7 @@ public class CompanyServiceImpl implements CompanyService {
             .companySize(company.getCompanySize())
             .country(company.getCountry())
             .foundedDate(company.getFoundedDate())
+            .companyKeySkill(company.getCompanyKeySkill().stream().map(this::mapToCompanyKeySkillResponse).toList())
             .build();
   }
   private CompanyKeySkillResponse mapToCompanyKeySkillResponse(CompanyKeySkill companyKeySkill) {
@@ -141,10 +143,9 @@ public class CompanyServiceImpl implements CompanyService {
     return CompanyKeySkillResponse.builder()
             .id(companyKeySkill.getId())
             .title(companyKeySkill.getCompanyKeySkill().stream().map(Skill::getTitle).toList().toString())
-            .companyId(companyKeySkill.getCompany().getId())
             .build();
   }
-  
+
 
 
 }

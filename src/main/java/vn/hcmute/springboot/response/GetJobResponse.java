@@ -33,6 +33,7 @@ public class GetJobResponse {
   private String level;
   @JsonFormat(pattern = "dd/MM/yyyy")
   private LocalDate appliedAt;
+  private List<CompanyKeySkillResponse> companyKeySkill;
 
 
 }
