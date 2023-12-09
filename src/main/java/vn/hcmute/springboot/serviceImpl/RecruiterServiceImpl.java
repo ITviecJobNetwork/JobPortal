@@ -102,8 +102,10 @@ public class RecruiterServiceImpl implements RecruiterService {
     if (userStatus.equals(RecruiterStatus.INACTIVE)) {
       throw new BadRequestException("Tài khoản chưa được xác thực");
     }
-    if (!passwordEncoder.matches(request.getPassword(), recruiter.getPassword())) {
-      throw new BadRequestException("Mật khẩu không đúng");
+    var password = recruiter.getPassword();
+    var enteredPassword = request.getPassword();
+    if (!passwordEncoder.matches(enteredPassword, password)) {
+      throw new BadRequestException("Mật khẩu không chính xác");
     }
 
     var jwtToken = jwtService.generateToken(recruiter);
