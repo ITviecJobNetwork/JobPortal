@@ -49,5 +49,7 @@ public interface RecruiterService {
 
   MessageResponse addCompanyKeySkill(AddCompanyKeySkillRequest request);
 
+  List<GetJobResponse> listAllJobResponse();
+
 
 }

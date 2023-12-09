@@ -682,15 +682,38 @@ public class RecruiterServiceImpl implements RecruiterService {
             .build();
   }
 
+  @Override
+  public List<GetJobResponse> listAllJobResponse() {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication instanceof AnonymousAuthenticationToken) {
+      throw new UnauthorizedException("Bạn chưa đăng nhập");
+    }
+    var recruiter = recruiterRepository.findByUsername(authentication.getName());
+    if (recruiter.isEmpty()) {
+      throw new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng");
+    }
+    if (recruiter.get().getStatus().equals(RecruiterStatus.INACTIVE)) {
+      throw new UnauthorizedException("Tài khoản chưa được xác thực");
+    }
+    var jobs = jobRepository.findByRecruiter(recruiter.get());
+    return jobs.stream()
+            .map(this::createGetJobResponse)
+            .collect(Collectors.toList());
+
+  }
+
   private GetJobResponse createGetJobResponse(Job job) {
     var skills = skillRepository.findSkillByJob(job);
     List<String> skillNames = skills.stream()
             .map(Skill::getTitle) // Assuming 'name' is an attribute in Skill
             .toList();
+
+
     return GetJobResponse.builder()
             .jobId(job.getId())
             .title(job.getTitle())
             .companyName(job.getCompany().getName())
+            .companyId(job.getCompany().getId())
             .address(job.getCompany().getAddress())
             .skills(skillNames)
             .description(job.getDescription())
@@ -699,6 +722,69 @@ public class RecruiterServiceImpl implements RecruiterService {
             .requirements(job.getRequirements())
             .jobType(job.getJobType().getJobType())
             .location(job.getLocation().getCityName())
+            .minSalary(job.getMinSalary())
+            .maxSalary(job.getMaxSalary())
+            .companyKeySkill(job.getCompany().getCompanyKeySkill().stream()
+                    .map(this::mapToCompanyKeySkillResponse)
+                    .toList())
+            .level(determineJobLevel(job))
+            .build();
+  }
+  private GetJobResponse createGetJobResponseWithLevel(Job job, String level) {
+    var skills = skillRepository.findSkillByJob(job);
+    List<String> skillNames = skills.stream()
+            .map(Skill::getTitle)
+            .toList();
+    return GetJobResponse.builder()
+            .jobId(job.getId())
+            .title(job.getTitle())
+            .companyName(job.getCompany().getName())
+            .companyId(job.getCompany().getId())
+            .address(job.getCompany().getAddress())
+            .skills(skillNames)
+            .description(job.getDescription())
+            .createdDate(job.getCreatedAt())
+            .expiredDate(job.getExpireAt())
+            .requirements(job.getRequirements())
+            .jobType(job.getJobType().getJobType())
+            .location(job.getLocation().getCityName())
+            .minSalary(job.getMinSalary())
+            .maxSalary(job.getMaxSalary())
+            .companyKeySkill(job.getCompany().getCompanyKeySkill().stream().map(this::mapToCompanyKeySkillResponse).toList())
+            .level(level)
+            .isSaved(false)
+            .isApplied(false)
+            .appliedAt(null)
+            .level(level)
+            .build();
+  }
+  private String determineJobLevel(Job job) {
+    final int SUPER_HOT_VIEW_THRESHOLD = 1000;
+    final int SUPER_HOT_APPLICATION_THRESHOLD = 1000;
+    final int HOT_VIEW_THRESHOLD = 500;
+    if (job.getViewCounts() == null) {
+      job.setViewCounts(0);
+
+    }
+    if (job.getApplyCounts() == null) {
+      job.setApplyCounts(0);
+    }
+    if (job.getViewCounts() >= SUPER_HOT_VIEW_THRESHOLD && job.getApplyCounts() >= SUPER_HOT_APPLICATION_THRESHOLD) {
+      return JobLevel.SUPER_HOT.toString();
+
+    }
+
+    if (job.getViewCounts() >= HOT_VIEW_THRESHOLD) {
+      return JobLevel.HOT.toString();
+    }
+    jobRepository.save(job);
+    return null;
+  }
+  private CompanyKeySkillResponse mapToCompanyKeySkillResponse(CompanyKeySkill companyKeySkill) {
+
+    return CompanyKeySkillResponse.builder()
+            .id(companyKeySkill.getId())
+            .title(companyKeySkill.getCompanyKeySkill().stream().map(Skill::getTitle).toList().toString())
             .build();
   }
   private ApplicationFormResponse mapToApplicationFormResponse(ApplicationForm applicationForm) {
