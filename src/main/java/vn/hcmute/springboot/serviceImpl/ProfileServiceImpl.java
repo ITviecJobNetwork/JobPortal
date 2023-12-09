@@ -2,6 +2,7 @@ package vn.hcmute.springboot.serviceImpl;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -25,7 +26,7 @@ public class ProfileServiceImpl implements ProfileService {
   private final CandidateEducationRepository candidateEducationRepository;
   private final CandidateExperienceRepository candidateExperienceRepository;
   private final SkillRepository skillRepository;
-  private final CandidateSkillRepository candidateSkillRepository;
+
 
   @Override
   public MessageResponse updateUserProfile(ProfileUpdateRequest request) throws IOException {
@@ -83,7 +84,7 @@ public class ProfileServiceImpl implements ProfileService {
                       Collections.emptyList())
               .gender(user.getGender())
               .userStatus(user.getStatus())
-              .skills(user.getSkills().stream().map(CandidateSkill::getTitle).toList())
+              .skills(user.getSkills().stream().map(Skill::getTitle).toList())
               .build();
     } else {
       throw new NotFoundException("Không tìm thấy hồ sơ");
@@ -239,29 +240,32 @@ public class ProfileServiceImpl implements ProfileService {
     var userName = authentication.getName();
     var user = userRepository.findByUsername(userName)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
-    var skill = skillRepository.findByTitleIn(request.getSkillName());
-    if(skill.isEmpty()){
-      throw new NotFoundException("Không tìm thấy kỹ năng");
+    var normalizedSkillTitle = request.getSkillName().toString().trim();
+    normalizedSkillTitle = normalizedSkillTitle.replaceAll("[\\[\\]]", "");
+    String normalizedSkillTitleLowerCase = StringUtils.stripAccents(normalizedSkillTitle);
+    Skill skill = skillRepository.findByName(normalizedSkillTitleLowerCase);
+    if (skill == null) {
+      skill = new Skill();
+      skill.setTitle(normalizedSkillTitleLowerCase);
+      skillRepository.save(skill);
     }
 
-    boolean skillExist = user.getSkills().stream().anyMatch(candidateSkill -> candidateSkill.getTitle().equals(request.getSkillName().toString()));
+
+    boolean skillExist = user.getSkills().stream()
+            .anyMatch(candidateSkill -> candidateSkill.getTitle().equals(normalizedSkillTitleLowerCase));
+
     if (skillExist) {
       throw new NotFoundException("Kỹ năng đã tồn tại");
     }
-    else {
-      CandidateSkill candidateSkill = new CandidateSkill();
-      candidateSkill.setTitle(request.getSkillName().toString());
-      candidateSkill.setUsers(Collections.singletonList(user));
-      candidateSkillRepository.save(candidateSkill);
-      user.getSkills().add(candidateSkill);
-      userRepository.save(user);
-    }
+    user.getSkills().add(skill);
+    userRepository.save(user);
 
     return MessageResponse.builder()
             .message("Thêm kỹ năng thành công")
             .status(HttpStatus.OK)
             .build();
   }
+
 
   @Override
   public SkillResponse getAllSkill() {

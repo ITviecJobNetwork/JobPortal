@@ -35,6 +35,7 @@ public class JobServiceImpl implements JobService {
   private final SaveJobRepository saveJobsRepository;
   private final ApplicationFormRepository applyJobRepository;
   private final ViewJobRepository viewJobRepository;
+  private final SearchHistoryRepository searchHistoryRepository;
 
   @Override
   public Page<GetJobResponse> findAllJob(int page, int size) {
@@ -492,6 +493,9 @@ public class JobServiceImpl implements JobService {
                   .map(ApplicationForm::getSubmittedAt)
                   .findFirst()
                   .orElse(null);
+          if(!searchHistoryRepository.findAll().isEmpty()) {
+            saveSearchHistory(keyword);
+          }
           var response = GetJobResponse.builder()
                   .jobId(job.getId())
                   .title(job.getTitle())
@@ -548,6 +552,7 @@ public class JobServiceImpl implements JobService {
     }
     return new PageImpl<>(getJobResponses, PageRequest.of(page, size), result.getTotalElements());
   }
+
 
   @Override
   public GetJobResponse findJobById(Integer id) {
@@ -659,6 +664,14 @@ public class JobServiceImpl implements JobService {
       Page<GetJobResponse> getJobResponsesPage = new PageImpl<>(getJobResponses, viewJob.getPageable(), viewJob.getTotalElements());
       return new ViewJobResponse(getJobResponsesPage);
     }
+  }
+
+  @Override
+  public void saveSearchHistory(String searchKeyWord) {
+    SearchHistory saveSearchHistory = new SearchHistory();
+    saveSearchHistory.setSearchKeyWord(searchKeyWord);
+    searchHistoryRepository.save(saveSearchHistory);
+
   }
 
 

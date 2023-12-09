@@ -49,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
       UserDetails userDetails = this.userDetailsService.loadUserByUsername(userName);
       var isTokenValid = tokenRepository.findByToken(jwt)
-          .map(t -> !t.isExpired() && !t.isRevoked()).orElseThrow(() -> new UnauthorizedException("Phiên đăng nhập đã hết hạn vui lòng đăng nhập lại"));
+          .map(t -> !t.isExpired() && !t.isRevoked()).orElseThrow(() -> new UnauthorizedException("Token is invalid"));
       if (jwtService.isTokenValid(jwt, userDetails) && isTokenValid) {
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
             userDetails,
@@ -60,6 +60,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             new WebAuthenticationDetailsSource().buildDetails(request)
         );
         SecurityContextHolder.getContext().setAuthentication(authToken);
+      }
+      if(jwtService.isTokenExpired(jwt)){
+        throw new UnauthorizedException("Token is expired");
       }
     }
     filterChain.doFilter(request, response);

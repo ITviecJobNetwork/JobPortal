@@ -161,11 +161,11 @@ public class  User implements UserDetails {
 
   @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
-          name = "user_skill",
+          name = "candidate_skill",
           joinColumns = @JoinColumn(name = "user_id"),
           inverseJoinColumns = @JoinColumn(name = "skill_id")
   )
-  private List<CandidateSkill> skills;
+  private List<Skill> skills;
 
   @ManyToOne(fetch = FetchType.EAGER)
   private CandidateEducation education;

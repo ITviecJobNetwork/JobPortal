@@ -38,5 +38,6 @@ public interface JobService {
 
   ViewJobResponse getViewAtJob(int page, int size, String sort);
 
+  void saveSearchHistory(String searchKeyWord);
 
 }

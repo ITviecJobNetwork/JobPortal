@@ -50,7 +50,6 @@ public class AdminServiceImpl implements AdminService {
   private final CompanyReviewRepository companyReviewRepository;
   private final EmailService emailService;
   private final RecruiterRepository recruiterRepository;
-  private final CandidateSkillRepository candidateSkillRepository;
   private final JobRepository jobRepository;
 
   @Override
@@ -210,7 +209,7 @@ public class AdminServiceImpl implements AdminService {
     if (user.getEducation() != null) {
       educationResponse = convertToCandidateEducationResponse(user.getEducation());
     }
-    var skills = candidateSkillRepository.findByUserId(id);
+
     if(user.getBirthDate()==null){
       user.setBirthDate(null);
     }
@@ -226,7 +225,6 @@ public class AdminServiceImpl implements AdminService {
             .phoneNumber(user.getPhoneNumber())
             .birthdate(user.getBirthDate())
             .linkWebsiteProfile(user.getLinkWebsiteProfile())
-            .skills(skills.stream().map(CandidateSkill::getTitle).toList())
             .education(educationResponse)
             .experience(user.getExperiences() != null ?
                     user.getExperiences().stream().map(this::convertToCandidateExperienceResponse).toList() :

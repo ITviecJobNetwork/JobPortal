@@ -1,32 +1,23 @@
 package vn.hcmute.springboot.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-
-import java.util.HashSet;
-import java.util.Set;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "skill")
+@Table(name = "search_history")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Skill {
+public class SearchHistory {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
-  @Column(name = "title")
-  private String title;
-
-  @ManyToMany(mappedBy = "skills", fetch = FetchType.EAGER)
-  @JsonIgnore
-  private Set<Job> jobs = new HashSet<>();
+  @Column(name = "search_key")
+  private String searchKeyWord;
 
 }
