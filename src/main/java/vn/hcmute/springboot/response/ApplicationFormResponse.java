@@ -16,8 +16,12 @@ public class ApplicationFormResponse {
   private Integer jobId;
   private String jobTitle;
   private String candidateName;
+  private String phoneNumber;
+  private String email;
   private LocalDate submittedAt;
   private String coverLetter;
   private ApplicationStatus status;
   private Integer candidateId;
+  private LocalDate birthdate;
+  private String address;
 }

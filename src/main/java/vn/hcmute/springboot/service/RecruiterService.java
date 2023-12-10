@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import vn.hcmute.springboot.model.Recruiters;
 import vn.hcmute.springboot.request.*;
 import vn.hcmute.springboot.response.*;
@@ -43,7 +45,7 @@ public interface RecruiterService {
   MessageResponse updateStatusJob(Integer applicationId, UpdateApplicationRequest request) throws MessagingException;
 
   GetJobResponse getJobById(Integer jobId);
-  List<ApplicationFormResponse> getAppliedJob();
+  Page<ApplicationFormResponse> getAppliedJob(Pageable pageable);
 
   ApplicationFormResponse getApplicationById(Integer applicationId);
 
