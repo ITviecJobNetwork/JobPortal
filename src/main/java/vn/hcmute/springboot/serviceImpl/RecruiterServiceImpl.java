@@ -797,6 +797,7 @@ public class RecruiterServiceImpl implements RecruiterService {
   }
   private ApplicationFormResponse mapToApplicationFormResponse(ApplicationForm applicationForm) {
     return ApplicationFormResponse.builder()
+            .id(applicationForm.getId())
             .linkCV(applicationForm.getLinkCV())
             .jobId(applicationForm.getJob().getId())
             .jobTitle(applicationForm.getJob().getTitle())
