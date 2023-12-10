@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @Setter
 @Builder
 public class ApplicationFormResponse {
+  private Integer id;
   private String linkCV;
   private Integer jobId;
   private String jobTitle;

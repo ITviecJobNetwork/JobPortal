@@ -6,6 +6,7 @@ import lombok.Setter;
 import vn.hcmute.springboot.model.Skill;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -17,7 +18,7 @@ public class JobOpeningResponse {
   private String companyName;
   private String address;
   private String companyType;
-  private Set<Skill> skills;
+  private List<Skill> skills;
   private String description;
   private String companyLogo;
   private LocalDate createdDate;

@@ -26,5 +26,9 @@ public class JobType {
   private String jobType;
 
 
+  public JobType(String jobType) {
+    this.jobType = jobType;
+  }
+
 
 }

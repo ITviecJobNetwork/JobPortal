@@ -6,10 +6,7 @@ import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "skill")
@@ -17,6 +14,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Skill {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
