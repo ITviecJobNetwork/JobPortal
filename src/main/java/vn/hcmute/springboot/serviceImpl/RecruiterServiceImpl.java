@@ -6,6 +6,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -618,7 +621,7 @@ public class RecruiterServiceImpl implements RecruiterService {
   }
 
   @Override
-  public List<ApplicationFormResponse> getAppliedJob() {
+  public Page<ApplicationFormResponse> getAppliedJob(Pageable pageable) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication instanceof AnonymousAuthenticationToken) {
       throw new UnauthorizedException("Bạn chưa đăng nhập");
@@ -631,12 +634,9 @@ public class RecruiterServiceImpl implements RecruiterService {
     if (recruiter.get().getStatus().equals(RecruiterStatus.INACTIVE)) {
       throw new UnauthorizedException("Tài khoản chưa được xác thực");
     }
+    var applicationForms = applicationFormRepository.findByJobCompanyRecruiter(recruiter.get(),pageable);
 
-    var applicationForms = applicationFormRepository.findByJobCompanyRecruiter(recruiter.get());
-
-    return applicationForms.stream()
-            .map(this::mapToApplicationFormResponse)
-            .collect(Collectors.toList());
+    return applicationForms.map(this::mapToApplicationFormResponse);
   }
 
   @Override
@@ -798,6 +798,10 @@ public class RecruiterServiceImpl implements RecruiterService {
   private ApplicationFormResponse mapToApplicationFormResponse(ApplicationForm applicationForm) {
     return ApplicationFormResponse.builder()
             .id(applicationForm.getId())
+            .email(applicationForm.getCandidate().getUsername())
+            .phoneNumber(applicationForm.getCandidate().getPhoneNumber())
+            .birthdate(applicationForm.getCandidate().getBirthDate())
+            .address(applicationForm.getCandidate().getAddress())
             .linkCV(applicationForm.getLinkCV())
             .jobId(applicationForm.getJob().getId())
             .jobTitle(applicationForm.getJob().getTitle())

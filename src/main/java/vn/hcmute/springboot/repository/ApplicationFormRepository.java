@@ -16,7 +16,7 @@ public interface ApplicationFormRepository extends JpaRepository<ApplicationForm
 
   List<ApplicationForm> findByCandidate(User candidate);
 
-  List<ApplicationForm> findByJobCompanyRecruiter(Recruiters recruiter);
+  Page<ApplicationForm> findByJobCompanyRecruiter(Recruiters recruiter, Pageable pageable);
 
   @Query("SELECT af FROM ApplicationForm af " +
           "WHERE af.id = :id " +

@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -138,8 +140,10 @@ public class RecruiterController {
 
 
   @GetMapping("get-application-form")
-  public ResponseEntity<List<ApplicationFormResponse>> getAppliedJob() {
-    var getAppliedJob = recruiterService.getAppliedJob();
+  public ResponseEntity<Page<ApplicationFormResponse>> getAppliedJob(@RequestParam("page") Integer page,
+                                                                     @RequestParam("size") Integer size) {
+    PageRequest pageRequest = PageRequest.of(page, size);
+    var getAppliedJob = recruiterService.getAppliedJob(pageRequest);
     return new ResponseEntity<>(getAppliedJob, HttpStatus.OK);
   }
 
