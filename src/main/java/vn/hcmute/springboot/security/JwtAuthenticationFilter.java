@@ -61,9 +61,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         );
         SecurityContextHolder.getContext().setAuthentication(authToken);
       }
-      if(jwtService.isTokenExpired(jwt)){
-        throw new UnauthorizedException("Token is expired");
-      }
     }
     filterChain.doFilter(request, response);
   }
