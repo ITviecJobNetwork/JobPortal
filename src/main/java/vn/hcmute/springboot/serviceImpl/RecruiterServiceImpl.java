@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -595,7 +596,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     ApplicationForm applicationForm = optionalApplicationForm.get();
     applicationForm.setStatus(request.getStatus());
     applicationFormRepository.save(applicationForm);
-    emailService.sendApplicationUpdateEmail(applicationForm,request.getReason());
+    emailService.sendApplicationUpdateEmail(applicationForm);
 
     return MessageResponse.builder()
             .message("Cập nhật trạng thái thành công")
@@ -621,7 +622,10 @@ public class RecruiterServiceImpl implements RecruiterService {
   }
 
   @Override
-  public Page<ApplicationFormResponse> getAppliedJob(Pageable pageable) {
+  public Page<ApplicationFormResponse> getAppliedJob(Pageable pageable,String type) {
+
+    final String APPROVED = "APPROVED";
+    final String DELIVERED = "DELIVERED";
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication instanceof AnonymousAuthenticationToken) {
       throw new UnauthorizedException("Bạn chưa đăng nhập");
@@ -633,6 +637,15 @@ public class RecruiterServiceImpl implements RecruiterService {
 
     if (recruiter.get().getStatus().equals(RecruiterStatus.INACTIVE)) {
       throw new UnauthorizedException("Tài khoản chưa được xác thực");
+    }
+    if(Objects.equals(type, APPROVED)){
+      var applicationForms = applicationFormRepository.findByJobCompanyRecruiterAndStatus(recruiter.get(),ApplicationStatus.APPROVED,pageable);
+      return applicationForms.map(this::mapToApplicationFormResponse);
+
+    }
+    if(Objects.equals(type, DELIVERED)){
+      var applicationForms = applicationFormRepository.findByJobCompanyRecruiterAndStatus(recruiter.get(),ApplicationStatus.DELIVERED,pageable);
+      return applicationForms.map(this::mapToApplicationFormResponse);
     }
     var applicationForms = applicationFormRepository.findByJobCompanyRecruiter(recruiter.get(),pageable);
 

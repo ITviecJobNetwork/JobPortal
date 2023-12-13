@@ -12,7 +12,7 @@ public interface EmailService {
 
   void sendConfirmRegistrationToRecruiter(String email,String password) throws MessagingException;
 
-  void sendApplicationUpdateEmail(ApplicationForm applicationForm,String reason) throws MessagingException;
+  void sendApplicationUpdateEmail(ApplicationForm applicationForm) throws MessagingException;
 
   void sendReasonDeActiveUser(String email, String reason, UserStatus status) throws MessagingException;
 

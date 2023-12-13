@@ -170,7 +170,7 @@ public class UserServiceImpl implements UserService {
 
     applicationForm.setCandidateName(request.getCandidateName());
     applicationForm.setCoverLetter(request.getCoverLetter());
-    applicationForm.setStatus(ApplicationStatus.SUBMITTED);
+    applicationForm.setStatus(ApplicationStatus.DELIVERED);
     applicationForm.setIsApplied(true);
     applicationForm.setLinkCV(request.getLinkCv());
     applicationForm.setSubmittedAt(LocalDate.from(LocalDateTime.now()));
