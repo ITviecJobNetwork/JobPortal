@@ -140,10 +140,11 @@ public class RecruiterController {
 
 
   @GetMapping("get-application-form")
-  public ResponseEntity<Page<ApplicationFormResponse>> getAppliedJob(@RequestParam("page") Integer page,
-                                                                     @RequestParam("size") Integer size) {
+  public ResponseEntity<Page<ApplicationFormResponse>> getAppliedJob(@RequestParam(value = "page" ,defaultValue = "0") Integer page,
+                                                                     @RequestParam(value = "size", defaultValue = "20") Integer size,
+                                                                     @RequestParam(value = "type", required = false) String type) {
     PageRequest pageRequest = PageRequest.of(page, size);
-    var getAppliedJob = recruiterService.getAppliedJob(pageRequest);
+    var getAppliedJob = recruiterService.getAppliedJob(pageRequest,type);
     return new ResponseEntity<>(getAppliedJob, HttpStatus.OK);
   }
 

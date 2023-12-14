@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -30,7 +29,7 @@ public class WebSecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthFilter;
   private final LogoutHandler logoutHandler;
-
+  private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
     httpSecurity.csrf(AbstractHttpConfigurer::disable)
@@ -70,12 +69,18 @@ public class WebSecurityConfig {
 
                     .anyRequest().authenticated()
             );
-    httpSecurity.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+    httpSecurity.csrf(AbstractHttpConfigurer::disable)
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .logout(logout ->
                     logout.logoutUrl("/api/v1/auth/logout")
                             .addLogoutHandler(logoutHandler)
                             .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
-            );
+            )
+            .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+
+
 
     return httpSecurity.build();
   }

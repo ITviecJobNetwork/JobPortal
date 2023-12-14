@@ -45,7 +45,7 @@ public interface RecruiterService {
   MessageResponse updateStatusJob(Integer applicationId, UpdateApplicationRequest request) throws MessagingException;
 
   GetJobResponse getJobById(Integer jobId);
-  Page<ApplicationFormResponse> getAppliedJob(Pageable pageable);
+  Page<ApplicationFormResponse> getAppliedJob(Pageable pageable,String type);
 
   ApplicationFormResponse getApplicationById(Integer applicationId);
 
