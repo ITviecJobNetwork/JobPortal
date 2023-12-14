@@ -24,4 +24,5 @@ public interface ProfileService {
   MessageResponse addSkill (AddSkillRequest request);
 
   SkillResponse getAllSkill();
+  void deleteSkillById(Integer id);
 }

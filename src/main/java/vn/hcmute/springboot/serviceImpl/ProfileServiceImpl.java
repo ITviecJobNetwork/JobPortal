@@ -249,8 +249,6 @@ public class ProfileServiceImpl implements ProfileService {
       skill.setTitle(normalizedSkillTitleLowerCase);
       skillRepository.save(skill);
     }
-
-
     boolean skillExist = user.getSkills().stream()
             .anyMatch(candidateSkill -> candidateSkill.getTitle().equals(normalizedSkillTitleLowerCase));
 
@@ -276,6 +274,21 @@ public class ProfileServiceImpl implements ProfileService {
     return SkillResponse.builder()
             .skills(skills.stream().map(Skill::getTitle).toList())
             .build();
+  }
+
+  @Override
+  public void deleteSkillById(Integer id) {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    var userName = authentication.getName();
+    var user = userRepository.findByUsername(userName)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+    var candidateSkill = user.getSkills().stream().filter(skill -> skill.getId().equals(id)).findFirst();
+    if (candidateSkill.isPresent()) {
+      user.getSkills().remove(candidateSkill.get());
+      userRepository.save(user);
+    } else {
+      throw new NotFoundException("Không tìm thấy kỹ năng");
+    }
   }
 
 
