@@ -168,6 +168,12 @@ public class UserProfileController {
     var skill=profileService.getAllSkill();
     return new ResponseEntity<>(skill,HttpStatus.OK);
   }
+  @DeleteMapping("/delete-skill/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<?> deleteSkill(@PathVariable Integer id) {
+    profileService.deleteSkillById(id);
+    return ResponseEntity.ok().build();
+  }
 }
 
 
