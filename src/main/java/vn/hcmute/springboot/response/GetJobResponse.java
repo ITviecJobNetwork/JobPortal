@@ -18,6 +18,7 @@ public class GetJobResponse {
   private String title;
   private Integer companyId;
   private String companyName;
+  private String companyLogo;
   private String address;
   private List<String> skills;
   private String description;
