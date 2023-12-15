@@ -70,15 +70,9 @@ public class WebSecurityConfig {
                     .anyRequest().authenticated()
             );
     httpSecurity.csrf(AbstractHttpConfigurer::disable)
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-            .logout(logout ->
-                    logout.logoutUrl("/api/v1/auth/logout")
-                            .addLogoutHandler(logoutHandler)
-                            .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
-            )
             .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
+    httpSecurity.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
 
 

@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import vn.hcmute.springboot.exception.TokenExpiredException;
 import vn.hcmute.springboot.exception.UnauthorizedException;
 import vn.hcmute.springboot.repository.TokenRepository;
 
@@ -32,36 +33,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       @NonNull HttpServletResponse response,
       @NonNull FilterChain filterChain
   ) throws ServletException, IOException {
-    if (request.getServletPath().contains("/api/v1/auth")) {
-      filterChain.doFilter(request, response);
-      return;
-    }
-    final String authHeader = request.getHeader("Authorization");
-    final String jwt;
-    final String userName;
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-      filterChain.doFilter(request, response);
-      return;
-    }
-
-    jwt = authHeader.substring(7);
-    userName = jwtService.extractUsername(jwt);
-    if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-      UserDetails userDetails = this.userDetailsService.loadUserByUsername(userName);
-      var isTokenValid = tokenRepository.findByToken(jwt)
-          .map(t -> !t.isExpired() && !t.isRevoked()).orElseThrow(() -> new UnauthorizedException("Token is invalid"));
-      if (jwtService.isTokenValid(jwt, userDetails) && isTokenValid) {
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-            userDetails,
-            null,
-            userDetails.getAuthorities()
-        );
-        authToken.setDetails(
-            new WebAuthenticationDetailsSource().buildDetails(request)
-        );
-        SecurityContextHolder.getContext().setAuthentication(authToken);
+    try {
+      if (request.getServletPath().contains("/api/v1/auth")) {
+        filterChain.doFilter(request, response);
+        return;
       }
+      final String authHeader = request.getHeader("Authorization");
+      final String jwt;
+      final String userName;
+      if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        filterChain.doFilter(request, response);
+        return;
+      }
+
+      jwt = authHeader.substring(7);
+      userName = jwtService.extractUsername(jwt);
+      if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        UserDetails userDetails = this.userDetailsService.loadUserByUsername(userName);
+        var isTokenValid = tokenRepository.findByToken(jwt)
+                .map(t -> !t.isExpired() && !t.isRevoked()).orElseThrow(() -> new UnauthorizedException("Token is invalid"));
+        if (jwtService.isTokenValid(jwt, userDetails) && isTokenValid) {
+          UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                  userDetails,
+                  null,
+                  userDetails.getAuthorities()
+          );
+          authToken.setDetails(
+                  new WebAuthenticationDetailsSource().buildDetails(request)
+          );
+          SecurityContextHolder.getContext().setAuthentication(authToken);
+        }
+      }
+      filterChain.doFilter(request, response);
+    } catch (TokenExpiredException e) {
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
     }
-    filterChain.doFilter(request, response);
   }
 }
