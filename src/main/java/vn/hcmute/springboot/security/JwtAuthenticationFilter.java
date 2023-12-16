@@ -33,7 +33,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       @NonNull HttpServletResponse response,
       @NonNull FilterChain filterChain
   ) throws ServletException, IOException {
-    try {
       if (request.getServletPath().contains("/api/v1/auth")) {
         filterChain.doFilter(request, response);
         return;
@@ -51,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
         UserDetails userDetails = this.userDetailsService.loadUserByUsername(userName);
         var isTokenValid = tokenRepository.findByToken(jwt)
-                .map(t -> !t.isExpired() && !t.isRevoked()).orElseThrow(() -> new UnauthorizedException("Token is invalid"));
+                .map(t -> !t.isExpired() && !t.isRevoked()).orElse(false);
         if (jwtService.isTokenValid(jwt, userDetails) && isTokenValid) {
           UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                   userDetails,
@@ -65,8 +64,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
       }
       filterChain.doFilter(request, response);
-    } catch (TokenExpiredException e) {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
-    }
   }
 }
