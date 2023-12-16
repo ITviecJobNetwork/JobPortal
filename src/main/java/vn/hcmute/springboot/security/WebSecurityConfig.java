@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -27,14 +28,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebSecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthFilter;
-  private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+  private final AuthenticationProvider authenticationProvider;
 
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
     httpSecurity.csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(
-                    session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests((authorize) -> authorize
                     // static resources
                     .requestMatchers(
@@ -68,8 +67,15 @@ public class WebSecurityConfig {
                     ).permitAll()
 
                     .anyRequest().authenticated()
-            );
-    httpSecurity.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            )
+            .sessionManagement(
+                    session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(
+                    exception -> exception
+                            .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
+            )
+            .authenticationProvider(authenticationProvider)
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
 
 
