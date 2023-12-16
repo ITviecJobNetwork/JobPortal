@@ -93,14 +93,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     var user = repository.findByUsername(request.getUsername())
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+    if (user.getStatus().equals(UserStatus.INACTIVE)) {
+      throw new BadRequestException("Tài khoản chưa được kích hoạt");
+    }
     var password = user.getPassword();
     var enteredPassword = request.getPassword();
     if (!passwordEncoder.matches(enteredPassword, password)) {
       throw new BadRequestException("Mật khẩu không chính xác");
     }
-    if (user.getStatus().equals(UserStatus.INACTIVE)) {
-      throw new BadRequestException("Tài khoản chưa được kích hoạt");
-    }
+
     var jwtToken = jwtService.generateToken(user);
     var refreshToken = jwtService.generateRefreshToken(user);
     revokeAllUserTokens(user);

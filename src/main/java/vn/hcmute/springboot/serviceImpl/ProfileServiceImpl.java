@@ -246,21 +246,18 @@ public class ProfileServiceImpl implements ProfileService {
     for (String skillToAdd : skillsToAdd) {
       String normalizedSkillTitle = normalizeSkillTitle(skillToAdd);
 
-      Skill skill = skillRepository.findByName(normalizedSkillTitle);
+      List<Skill> skills = skillRepository.findByTitle(normalizedSkillTitle);
 
-      if (skill == null) {
-        skill = new Skill();
+      if (skills.isEmpty()) {
+        Skill skill = new Skill();
         skill.setTitle(normalizedSkillTitle);
         skillRepository.save(skill);
+        user.getSkills().add(skill);
       }
 
       boolean skillExists = user.getSkills().stream()
               .anyMatch(candidateSkill -> candidateSkill.getTitle().equals(normalizedSkillTitle));
-
-      if (!skillExists) {
-        user.getSkills().add(skill);
-      }
-      else{
+      if(skillExists){
         List<Skill> newSkills = request.getSkillName().stream()
                 .map(this::normalizeSkillTitle)
                 .map(skillRepository::findByName)
