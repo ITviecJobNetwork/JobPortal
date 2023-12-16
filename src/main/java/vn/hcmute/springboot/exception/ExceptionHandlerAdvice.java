@@ -69,4 +69,15 @@ public class ExceptionHandlerAdvice {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
   }
 
+  @ExceptionHandler(TokenExpiredException.class)
+  public ResponseEntity<ErrorResponse> TokenExpiredException(
+          TokenExpiredException ex) {
+    var errorResponse = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .status(HttpStatus.UNAUTHORIZED.value())
+            .errorCode(ex.getMessage())
+            .build();
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+  }
+
 }
