@@ -27,7 +27,7 @@ import org.hibernate.proxy.HibernateProxy;
 public class Token {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue
   public Integer id;
 
   @Column(unique = true)
