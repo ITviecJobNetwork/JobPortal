@@ -241,22 +241,36 @@ public class ProfileServiceImpl implements ProfileService {
     var userName = authentication.getName();
     var user = userRepository.findByUsername(userName)
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
-    var normalizedSkillTitle = request.getSkillName().toString().trim();
-    normalizedSkillTitle = normalizedSkillTitle.replaceAll("[\\[\\]]", "");
-    String normalizedSkillTitleLowerCase = StringUtils.stripAccents(normalizedSkillTitle);
-    Skill skill = skillRepository.findByName(normalizedSkillTitleLowerCase);
-    if (skill == null) {
-      skill = new Skill();
-      skill.setTitle(normalizedSkillTitleLowerCase);
-      skillRepository.save(skill);
-    }
-    boolean skillExist = user.getSkills().stream()
-            .anyMatch(candidateSkill -> candidateSkill.getTitle().equals(normalizedSkillTitleLowerCase));
 
-    if (skillExist) {
-      throw new BadRequestException("Kỹ năng đã tồn tại");
+    List<String> skillsToAdd = request.getSkillName();
+    for (String skillToAdd : skillsToAdd) {
+      String normalizedSkillTitle = normalizeSkillTitle(skillToAdd);
+
+      Skill skill = skillRepository.findByName(normalizedSkillTitle);
+
+      if (skill == null) {
+        skill = new Skill();
+        skill.setTitle(normalizedSkillTitle);
+        skillRepository.save(skill);
+      }
+
+      boolean skillExists = user.getSkills().stream()
+              .anyMatch(candidateSkill -> candidateSkill.getTitle().equals(normalizedSkillTitle));
+
+      if (!skillExists) {
+        user.getSkills().add(skill);
+      }
+      else{
+        List<Skill> newSkills = request.getSkillName().stream()
+                .map(this::normalizeSkillTitle)
+                .map(skillRepository::findByName)
+                .toList();
+        user.getSkills().clear();
+        user.getSkills().addAll(newSkills);
+        userRepository.save(user);
+      }
     }
-    user.getSkills().add(skill);
+
     userRepository.save(user);
 
     return MessageResponse.builder()
@@ -264,7 +278,10 @@ public class ProfileServiceImpl implements ProfileService {
             .status(HttpStatus.OK)
             .build();
   }
-
+  private String normalizeSkillTitle(String skillName) {
+    String normalizedSkillTitle = skillName.trim().replaceAll("[\\[\\]]", "");
+    return StringUtils.stripAccents(normalizedSkillTitle.toLowerCase());
+  }
 
   @Override
   public SkillResponse getAllSkill() {
