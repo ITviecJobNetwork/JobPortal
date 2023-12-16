@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import vn.hcmute.springboot.exception.BadRequestException;
 import vn.hcmute.springboot.exception.NotFoundException;
 import vn.hcmute.springboot.model.*;
 import vn.hcmute.springboot.repository.*;
@@ -87,7 +88,7 @@ public class ProfileServiceImpl implements ProfileService {
               .skills(user.getSkills().stream().map(Skill::getTitle).toList())
               .build();
     } else {
-      throw new NotFoundException("Không tìm thấy hồ sơ");
+      throw new NotFoundException("Không tìm thấy hồ sơ người dùng");
     }
   }
 
@@ -239,7 +240,7 @@ public class ProfileServiceImpl implements ProfileService {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var userName = authentication.getName();
     var user = userRepository.findByUsername(userName)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
     var normalizedSkillTitle = request.getSkillName().toString().trim();
     normalizedSkillTitle = normalizedSkillTitle.replaceAll("[\\[\\]]", "");
     String normalizedSkillTitleLowerCase = StringUtils.stripAccents(normalizedSkillTitle);
@@ -253,7 +254,7 @@ public class ProfileServiceImpl implements ProfileService {
             .anyMatch(candidateSkill -> candidateSkill.getTitle().equals(normalizedSkillTitleLowerCase));
 
     if (skillExist) {
-      throw new NotFoundException("Kỹ năng đã tồn tại");
+      throw new BadRequestException("Kỹ năng đã tồn tại");
     }
     user.getSkills().add(skill);
     userRepository.save(user);

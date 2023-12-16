@@ -181,8 +181,8 @@ public class UserServiceImpl implements UserService {
     String position = job.getTitle();
     String company = job.getCompany().getName();
     String message = String.format(
-            "Chúng tôi đã nhận được CV của bạn cho:%n\nVị trí: %s%nCông ty: %s%nCV của bạn sẽ được gửi tới nhà tuyển dụng sau khi được JobPortal xét duyệt. Vui lòng theo dõi email %s để cập nhật thông tin về tình trạng CV.",
-            position, company, username);
+            "Bạn đã nộp đơn thành công cho vị trí %s tại công ty %s. Chúc bạn may mắn!",
+            position, company);
     if (job.getApplyCounts() == null) {
       job.setApplyCounts(0);
     }
