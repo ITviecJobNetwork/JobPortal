@@ -479,6 +479,7 @@ public class RecruiterServiceImpl implements RecruiterService {
             .title(request.getJobTitle())
             .createdBy(recruiter.getUsername())
             .createdAt(LocalDate.now())
+            .expireAt(LocalDate.now().plusDays(30))
             .jobType(jobType)
             .location(location)
             .skills(skillsList)
