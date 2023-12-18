@@ -53,5 +53,7 @@ public interface RecruiterService {
 
   List<GetJobResponse> listAllJobResponse();
 
+  CompanyResponse getCompanyByRecruiter();
+
 
 }
