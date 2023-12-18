@@ -295,7 +295,8 @@ public class RecruiterServiceImpl implements RecruiterService {
     recruiter.setOvertimePolicy(request.getOverTimePolicy());
     recruiter.setRecruitmentProcedure(request.getRecruitmentProcedure());
     recruiter.setIntroduction(request.getIntroduction());
-    recruiter.setWorkingDays(request.getWorkingDay());
+    recruiter.setWorkingFrom(request.getWorkingFrom());
+    recruiter.setWorkingTo(request.getWorkingTo());
     recruiterRepository.save(recruiter);
     return MessageResponse.builder()
             .status(HttpStatus.OK)
@@ -365,7 +366,8 @@ public class RecruiterServiceImpl implements RecruiterService {
             .logo(logo)
             .companyType(companyType)
             .address(String.valueOf(location))
-            .companySize(request.getCompanySize())
+            .minCompanySize(request.getMinCompanySize())
+            .maxCompanySize(request.getMaxCompanySize())
             .country(request.getCountry())
             .build();
     companyRepository.save(company);
@@ -411,7 +413,8 @@ public class RecruiterServiceImpl implements RecruiterService {
     findCompany.setName(request.getCompanyName());
     findCompany.setPhoneNumber(request.getPhoneNumber());
     findCompany.setWebsite(request.getWebsite());
-    findCompany.setCompanySize(request.getCompanySize());
+    findCompany.setMinCompanySize(request.getMinCompanySize());
+    findCompany.setMaxCompanySize(request.getMaxCompanySize());
     findCompany.setCountry(request.getCountry());
     findCompany.setLogo(companyLogo);
     companyRepository.save(findCompany);
@@ -751,7 +754,9 @@ public class RecruiterServiceImpl implements RecruiterService {
             .industry(company.getIndustry())
             .createdDate(company.getCreatedDate())
             .countJobOpenings(company.getCountJobOpening())
-            .companySize(company.getCompanySize())
+            .minCompanySize(company.getMinCompanySize())
+            .maxCompanySize(company.getMaxCompanySize())
+            .overtimePolicy(recruiter.get().getOvertimePolicy())
             .country(company.getCountry())
             .foundedDate(company.getFoundedDate())
             .companyKeySkill(company.getCompanyKeySkill().stream().map(this::mapToCompanyKeySkillResponse).toList())

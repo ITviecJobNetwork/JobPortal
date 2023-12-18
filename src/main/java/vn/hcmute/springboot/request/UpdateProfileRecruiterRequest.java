@@ -25,7 +25,13 @@ public class UpdateProfileRecruiterRequest {
   private String websiteUrl;
   private String benefit;
   private String overTimePolicy;
-  private LocalDate workingDay;
+  private String companyType;
+  private String country;
+  private String address;
+  private String description;
+  private String foundedDate;
+  private String workingFrom;
+  private String workingTo;
   private String recruitmentProcedure;
   private String introduction;
 

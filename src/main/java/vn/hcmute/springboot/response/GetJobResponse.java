@@ -19,6 +19,13 @@ public class GetJobResponse {
   private Integer companyId;
   private String companyName;
   private String companyLogo;
+  private String companyType;
+  private Integer minCompanySize;
+  private Integer maxCompanySize;
+  private String country;
+  private String workingFrom;
+  private String workingTo;
+  private String overtimePolicy;
   private String address;
   private List<String> skills;
   private String description;

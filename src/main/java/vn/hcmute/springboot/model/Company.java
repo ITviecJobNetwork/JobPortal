@@ -71,8 +71,11 @@ public class Company {
   @Column(name="country")
   private String country;
 
-  @Column(name="company_size")
-  private Integer companySize;
+  @Column(name="max_company_size")
+  private Integer maxCompanySize;
+
+  @Column(name="min_company_size")
+  private Integer minCompanySize;
 
   @OneToMany(mappedBy = "company", fetch = FetchType.EAGER)
   @JsonIgnore

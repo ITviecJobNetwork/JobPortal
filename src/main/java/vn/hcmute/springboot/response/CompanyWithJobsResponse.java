@@ -23,7 +23,8 @@ public class CompanyWithJobsResponse {
   private String industry;
   private LocalDate createdDate;
   private Integer countJobOpenings;
-  private Integer companySize;
+  private Integer maxCompanySize;
+  private Integer minCompanySize;
   private String country;
   private LocalDate foundedDate;
   private List<CompanyKeySkillResponse> companyKeySkill;
