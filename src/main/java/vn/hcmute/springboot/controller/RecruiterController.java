@@ -172,4 +172,10 @@ public class RecruiterController {
     return new ResponseEntity<>(listAllJobResponse, HttpStatus.OK);
   }
 
+  @GetMapping("/get-company")
+  public ResponseEntity<CompanyResponse> getCompanyByRecruiter() {
+    var company = recruiterService.getCompanyByRecruiter();
+    return new ResponseEntity<>(company, HttpStatus.OK);
+  }
+
 }

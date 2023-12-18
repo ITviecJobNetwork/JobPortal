@@ -395,7 +395,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     var companyType = companyTypeRepository.findByType(company.getCompanyType().getType());
     var location =request.getLocations();
     var locationName = locationRepository.findByCityName(location);
-    if (locationName != null) {
+    if (locationName.isPresent()) {
       locationName.get().setCityName(location);
       locationRepository.save(locationName.get());
     }
@@ -479,6 +479,7 @@ public class RecruiterServiceImpl implements RecruiterService {
             .title(request.getJobTitle())
             .createdBy(recruiter.getUsername())
             .createdAt(LocalDate.now())
+            .expireAt(LocalDate.now().plusDays(30))
             .jobType(jobType)
             .location(location)
             .skills(skillsList)
@@ -721,6 +722,40 @@ public class RecruiterServiceImpl implements RecruiterService {
             .map(this::createGetJobResponse)
             .collect(Collectors.toList());
 
+  }
+
+  @Override
+  public CompanyResponse getCompanyByRecruiter() {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication instanceof AnonymousAuthenticationToken) {
+      throw new UnauthorizedException("Bạn chưa đăng nhập");
+    }
+    var recruiter = recruiterRepository.findByUsername(authentication.getName());
+    if (recruiter.isEmpty()) {
+      throw new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng");
+    }
+    if (recruiter.get().getStatus().equals(RecruiterStatus.INACTIVE)) {
+      throw new UnauthorizedException("Tài khoản chưa được xác thực");
+    }
+    var company = companyRepository.finCompanyByRecruiter(recruiter.get())
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
+    return CompanyResponse.builder()
+            .companyId(company.getId())
+            .companyName(company.getName())
+            .companyLogo(company.getLogo())
+            .companyType(company.getCompanyType().getType())
+            .address(company.getAddress())
+            .description(company.getDescription())
+            .website(company.getWebsite())
+            .phoneNumber(company.getPhoneNumber())
+            .industry(company.getIndustry())
+            .createdDate(company.getCreatedDate())
+            .countJobOpenings(company.getCountJobOpening())
+            .companySize(company.getCompanySize())
+            .country(company.getCountry())
+            .foundedDate(company.getFoundedDate())
+            .companyKeySkill(company.getCompanyKeySkill().stream().map(this::mapToCompanyKeySkillResponse).toList())
+            .build();
   }
 
   private GetJobResponse createGetJobResponse(Job job) {

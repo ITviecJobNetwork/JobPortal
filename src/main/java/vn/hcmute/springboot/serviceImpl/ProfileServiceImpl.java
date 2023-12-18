@@ -246,25 +246,15 @@ public class ProfileServiceImpl implements ProfileService {
     for (String skillToAdd : skillsToAdd) {
       String normalizedSkillTitle = normalizeSkillTitle(skillToAdd);
 
-      List<Skill> skills = skillRepository.findByTitle(normalizedSkillTitle);
+      Skill skill = skillRepository.findFirstByTitle(normalizedSkillTitle)
+              .orElseGet(() -> {
+                Skill newSkill = new Skill();
+                newSkill.setTitle(normalizedSkillTitle);
+                return skillRepository.save(newSkill);
+              });
 
-      if (skills.isEmpty()) {
-        Skill skill = new Skill();
-        skill.setTitle(normalizedSkillTitle);
-        skillRepository.save(skill);
+      if (!user.getSkills().contains(skill)) {
         user.getSkills().add(skill);
-      }
-
-      boolean skillExists = user.getSkills().stream()
-              .anyMatch(candidateSkill -> candidateSkill.getTitle().equals(normalizedSkillTitle));
-      if(skillExists){
-        List<Skill> newSkills = request.getSkillName().stream()
-                .map(this::normalizeSkillTitle)
-                .map(skillRepository::findByName)
-                .toList();
-        user.getSkills().clear();
-        user.getSkills().addAll(newSkills);
-        userRepository.save(user);
       }
     }
 
@@ -275,6 +265,7 @@ public class ProfileServiceImpl implements ProfileService {
             .status(HttpStatus.OK)
             .build();
   }
+
   private String normalizeSkillTitle(String skillName) {
     String normalizedSkillTitle = skillName.trim().replaceAll("[\\[\\]]", "");
     return StringUtils.stripAccents(normalizedSkillTitle.toLowerCase());
