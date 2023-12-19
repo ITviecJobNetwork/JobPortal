@@ -56,4 +56,5 @@ public interface RecruiterService {
   CompanyResponse getCompanyByRecruiter();
 
 
+
 }

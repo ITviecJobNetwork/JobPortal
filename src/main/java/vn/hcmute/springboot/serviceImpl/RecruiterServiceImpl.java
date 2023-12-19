@@ -385,6 +385,7 @@ public class RecruiterServiceImpl implements RecruiterService {
   }
 
     @Override
+    @Transactional
     public MessageResponse updateCompany(UpdateInfoCompanyRequest request) throws IOException {
       var authentication = SecurityContextHolder.getContext().getAuthentication();
       var recruiter = recruiterRepository.findByUsername(authentication.getName())
@@ -406,6 +407,25 @@ public class RecruiterServiceImpl implements RecruiterService {
         companyType.setType(request.getCompanyType());
         companyTypeRepository.save(companyType);
 
+      }
+
+      var companyKeySkill = company.getCompanyKeySkill();
+      companyKeySkillRepository.deleteAll(companyKeySkill);
+      company.setCompanyKeySkill(new ArrayList<>());
+      for (String skillTitle : request.getCompanyKeySkill()) {
+        Skill skill = skillRepository.findFirstByTitle(skillTitle)
+                .orElseGet(() -> {
+                  Skill newSkill = new Skill();
+                  newSkill.setTitle(skillTitle);
+                  return skillRepository.save(newSkill);
+                });
+
+        CompanyKeySkill companyKeySkillOfCompany = CompanyKeySkill.builder()
+                .company(company)
+                .companyKeySkill(List.of(skill))
+                .build();
+
+        companyKeySkillRepository.save(companyKeySkillOfCompany);
       }
       findCompany.setAddress(request.getAddress());
       findCompany.setDescription(request.getDescription());
@@ -773,13 +793,12 @@ public class RecruiterServiceImpl implements RecruiterService {
             .build();
   }
 
+
   private GetJobResponse createGetJobResponse(Job job) {
     var skills = skillRepository.findSkillByJob(job);
     List<String> skillNames = skills.stream()
-            .map(Skill::getTitle) // Assuming 'name' is an attribute in Skill
+            .map(Skill::getTitle)
             .toList();
-
-
     return GetJobResponse.builder()
             .jobId(job.getId())
             .title(job.getTitle())
