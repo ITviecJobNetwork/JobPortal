@@ -27,5 +27,7 @@ public class CompanyWithJobsResponse {
   private Integer minCompanySize;
   private String country;
   private LocalDate foundedDate;
+  private String workingFrom;
+  private String workingTo;
   private List<CompanyKeySkillResponse> companyKeySkill;
 }

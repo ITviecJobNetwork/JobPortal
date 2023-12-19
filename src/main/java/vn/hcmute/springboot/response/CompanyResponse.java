@@ -27,5 +27,7 @@ public class CompanyResponse {
   private String overtimePolicy;
   private String country;
   private LocalDate foundedDate;
+  private String workingFrom;
+  private String workingTo;
   private List<CompanyKeySkillResponse> companyKeySkill;
 }
