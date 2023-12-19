@@ -25,6 +25,5 @@ public class UpdateInfoCompanyRequest {
   private Integer maxCompanySize;
   private String country;
   private String companyType;
-  private String locations;
 
 }
