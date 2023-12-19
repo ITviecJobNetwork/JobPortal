@@ -62,15 +62,12 @@ public class Recruiters implements UserDetails {
   @Column(name = "location")
   private String location;
 
-  @Column(name = "country", length = 255)
-  private String country;
 
-  @Column(name = "company_size")
-  private Integer companySize;
+  @Column(name = "working_from")
+  private String workingFrom;
 
-
-  @Column(name = "working_days")
-  private LocalDate workingDays;
+  @Column(name = "working_to")
+  private String workingTo;
 
   @Column(name = "overtime_policy", length = 255)
   private String overtimePolicy;
@@ -84,8 +81,6 @@ public class Recruiters implements UserDetails {
   @Column(name = "introduction", length = 255)
   private String introduction;
 
-  @Column(name = "key_skills_id", length = 255)
-  private String keySkillsId;
 
 
 

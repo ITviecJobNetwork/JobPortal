@@ -270,7 +270,6 @@ public class AdminServiceImpl implements AdminService {
             .map(recruiters -> RecruiterResponse.builder()
                     .recruiterId(recruiters.getId())
                     .companyName(recruiters.getCompanyName())
-                    .companySize(recruiters.getCompanySize())
                     .phoneNumber(recruiters.getPhoneNumber())
                     .overTimePolicy(recruiters.getOvertimePolicy())
                     .recruitmentProcedure(recruiters.getRecruitmentProcedure())
