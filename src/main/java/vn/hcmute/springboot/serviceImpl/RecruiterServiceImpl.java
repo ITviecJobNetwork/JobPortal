@@ -763,6 +763,8 @@ public class RecruiterServiceImpl implements RecruiterService {
             .minCompanySize(company.getMinCompanySize())
             .maxCompanySize(company.getMaxCompanySize())
             .overtimePolicy(recruiter.get().getOvertimePolicy())
+            .workingFrom(recruiter.get().getWorkingFrom())
+            .workingTo(recruiter.get().getWorkingTo())
             .country(company.getCountry())
             .foundedDate(company.getFoundedDate())
             .companyKeySkill(company.getCompanyKeySkill().stream().map(this::mapToCompanyKeySkillResponse).toList())
