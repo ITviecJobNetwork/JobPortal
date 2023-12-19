@@ -430,15 +430,7 @@ public class RecruiterServiceImpl implements RecruiterService {
               .build();
 
     }
-  private CompanyKeySkill findCompanyKeySkillBySkillName(Company company, String skillName) {
-    return company.getCompanyKeySkill()
-            .stream()
-            .filter(companyKeySkill -> companyKeySkill.getCompanyKeySkill()
-                    .stream()
-                    .anyMatch(skill -> skill.getTitle().equals(skillName)))
-            .findFirst()
-            .orElse(null);
-  }
+
 
 
   @Override

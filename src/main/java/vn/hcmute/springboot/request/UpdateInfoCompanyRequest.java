@@ -28,5 +28,4 @@ public class UpdateInfoCompanyRequest {
   private String country;
   private String companyType;
   private String overtimePolicy;
-
 }
