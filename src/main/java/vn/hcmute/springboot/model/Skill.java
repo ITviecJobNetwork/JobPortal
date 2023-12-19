@@ -26,5 +26,4 @@ public class Skill {
   @ManyToMany(mappedBy = "skills", fetch = FetchType.EAGER)
   @JsonIgnore
   private Set<Job> jobs = new HashSet<>();
-
 }
