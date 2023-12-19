@@ -370,7 +370,14 @@ public class RecruiterServiceImpl implements RecruiterService {
             .maxCompanySize(request.getMaxCompanySize())
             .country(request.getCountry())
             .build();
+    var recruiterCompany = Recruiters.builder()
+            .company(company)
+            .workingFrom(request.getWorkingFrom())
+            .workingTo(request.getWorkingTo())
+            .overtimePolicy(request.getOvertimePolicy())
+            .build();
     companyRepository.save(company);
+    recruiterRepository.save(recruiterCompany);
     return MessageResponse.builder()
             .message("Tạo công ty thành công")
             .status(HttpStatus.OK)
@@ -395,12 +402,6 @@ public class RecruiterServiceImpl implements RecruiterService {
     var companyLogo = request.getCompanyLogo();
 
     var companyType = companyTypeRepository.findByType(company.getCompanyType().getType());
-    var location =request.getLocations();
-    var locationName = locationRepository.findByCityName(location);
-    if (locationName.isPresent()) {
-      locationName.get().setCityName(location);
-      locationRepository.save(locationName.get());
-    }
     if (companyType != null) {
       companyType.setType(request.getCompanyType());
       companyTypeRepository.save(companyType);
@@ -416,7 +417,12 @@ public class RecruiterServiceImpl implements RecruiterService {
     findCompany.setMinCompanySize(request.getMinCompanySize());
     findCompany.setMaxCompanySize(request.getMaxCompanySize());
     findCompany.setCountry(request.getCountry());
+    findCompany.setCompanyType(companyType);
     findCompany.setLogo(companyLogo);
+    recruiter.setOvertimePolicy(request.getOvertimePolicy());
+    recruiter.setWorkingFrom(request.getWorkingFrom());
+    recruiter.setWorkingTo(request.getWorkingTo());
+    recruiterRepository.save(recruiter);
     companyRepository.save(findCompany);
     return MessageResponse.builder()
             .message("Cập nhật thông tin công ty thành công")

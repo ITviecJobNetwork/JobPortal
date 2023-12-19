@@ -23,7 +23,10 @@ public class UpdateInfoCompanyRequest {
   private String website;
   private Integer minCompanySize;
   private Integer maxCompanySize;
+  private String workingFrom;
+  private String workingTo;
   private String country;
   private String companyType;
+  private String overtimePolicy;
 
 }
