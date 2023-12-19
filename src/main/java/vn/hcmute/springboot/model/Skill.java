@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import lombok.*;
@@ -26,5 +27,4 @@ public class Skill {
   @ManyToMany(mappedBy = "skills", fetch = FetchType.EAGER)
   @JsonIgnore
   private Set<Job> jobs = new HashSet<>();
-
 }

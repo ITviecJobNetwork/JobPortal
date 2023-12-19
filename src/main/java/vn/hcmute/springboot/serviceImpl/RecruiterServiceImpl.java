@@ -384,52 +384,62 @@ public class RecruiterServiceImpl implements RecruiterService {
             .build();
   }
 
-  @Override
-  public MessageResponse updateCompany(UpdateInfoCompanyRequest request) throws IOException {
-    var authentication = SecurityContextHolder.getContext().getAuthentication();
-    var recruiter = recruiterRepository.findByUsername(authentication.getName())
-            .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
-    var company = companyRepository.findById(recruiter.getCompany().getId())
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
-    if (!company.getRecruiter().getId().equals(recruiter.getId())) {
-      throw new UnauthorizedException("Bạn không có quyền cập nhật thông tin công ty này");
-    }
-    var findCompany = companyRepository.finCompanyByRecruiter(recruiter)
-            .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty của nhà tuyển dụng"));
-    if (findCompany == null) {
-      throw new NotFoundException("Bạn chưa có thông tin công ty");
-    }
-    var companyLogo = request.getCompanyLogo();
+    @Override
+    public MessageResponse updateCompany(UpdateInfoCompanyRequest request) throws IOException {
+      var authentication = SecurityContextHolder.getContext().getAuthentication();
+      var recruiter = recruiterRepository.findByUsername(authentication.getName())
+              .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy nhà tuyển dụng"));
+      var company = companyRepository.findById(recruiter.getCompany().getId())
+              .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
+      if (!company.getRecruiter().getId().equals(recruiter.getId())) {
+        throw new UnauthorizedException("Bạn không có quyền cập nhật thông tin công ty này");
+      }
+      var findCompany = companyRepository.finCompanyByRecruiter(recruiter)
+              .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty của nhà tuyển dụng"));
+      if (findCompany == null) {
+        throw new NotFoundException("Bạn chưa có thông tin công ty");
+      }
+      var companyLogo = request.getCompanyLogo();
 
-    var companyType = companyTypeRepository.findByType(company.getCompanyType().getType());
-    if (companyType != null) {
-      companyType.setType(request.getCompanyType());
-      companyTypeRepository.save(companyType);
+      var companyType = companyTypeRepository.findByType(company.getCompanyType().getType());
+      if (companyType != null) {
+        companyType.setType(request.getCompanyType());
+        companyTypeRepository.save(companyType);
+
+      }
+      findCompany.setAddress(request.getAddress());
+      findCompany.setDescription(request.getDescription());
+      findCompany.setFoundedDate(request.getFoundedDate());
+      findCompany.setIndustry(request.getIndustry());
+      findCompany.setName(request.getCompanyName());
+      findCompany.setPhoneNumber(request.getPhoneNumber());
+      findCompany.setWebsite(request.getWebsite());
+      findCompany.setMinCompanySize(request.getMinCompanySize());
+      findCompany.setMaxCompanySize(request.getMaxCompanySize());
+      findCompany.setCountry(request.getCountry());
+      findCompany.setCompanyType(companyType);
+      findCompany.setLogo(companyLogo);
+      recruiter.setOvertimePolicy(request.getOvertimePolicy());
+      recruiter.setWorkingFrom(request.getWorkingFrom());
+      recruiter.setWorkingTo(request.getWorkingTo());
+      recruiterRepository.save(recruiter);
+      companyRepository.save(findCompany);
+      return MessageResponse.builder()
+              .message("Cập nhật thông tin công ty thành công")
+              .status(HttpStatus.OK)
+              .build();
 
     }
-    findCompany.setAddress(request.getAddress());
-    findCompany.setDescription(request.getDescription());
-    findCompany.setFoundedDate(request.getFoundedDate());
-    findCompany.setIndustry(request.getIndustry());
-    findCompany.setName(request.getCompanyName());
-    findCompany.setPhoneNumber(request.getPhoneNumber());
-    findCompany.setWebsite(request.getWebsite());
-    findCompany.setMinCompanySize(request.getMinCompanySize());
-    findCompany.setMaxCompanySize(request.getMaxCompanySize());
-    findCompany.setCountry(request.getCountry());
-    findCompany.setCompanyType(companyType);
-    findCompany.setLogo(companyLogo);
-    recruiter.setOvertimePolicy(request.getOvertimePolicy());
-    recruiter.setWorkingFrom(request.getWorkingFrom());
-    recruiter.setWorkingTo(request.getWorkingTo());
-    recruiterRepository.save(recruiter);
-    companyRepository.save(findCompany);
-    return MessageResponse.builder()
-            .message("Cập nhật thông tin công ty thành công")
-            .status(HttpStatus.OK)
-            .build();
-
+  private CompanyKeySkill findCompanyKeySkillBySkillName(Company company, String skillName) {
+    return company.getCompanyKeySkill()
+            .stream()
+            .filter(companyKeySkill -> companyKeySkill.getCompanyKeySkill()
+                    .stream()
+                    .anyMatch(skill -> skill.getTitle().equals(skillName)))
+            .findFirst()
+            .orElse(null);
   }
+
 
   @Override
   public MessageResponse deleteCompany() {
@@ -856,6 +866,7 @@ public class RecruiterServiceImpl implements RecruiterService {
             .title(companyKeySkill.getCompanyKeySkill().stream().map(Skill::getTitle).toList().toString())
             .build();
   }
+
   private ApplicationFormResponse mapToApplicationFormResponse(ApplicationForm applicationForm) {
     return ApplicationFormResponse.builder()
             .id(applicationForm.getId())
