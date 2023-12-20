@@ -84,7 +84,7 @@ public interface JobRepository extends JpaRepository<Job, Integer>, JpaSpecifica
 
 
   @Query("SELECT j FROM Job j WHERE j.company.recruiter = :recruiter")
-  List<Job> findByRecruiter(Recruiters recruiter);
+  Page<Job> findByRecruiter(Recruiters recruiter, Pageable pageable);
 }
 
 

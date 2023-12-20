@@ -167,8 +167,9 @@ public class RecruiterController {
   }
 
   @GetMapping("/list-all-job")
-  public ResponseEntity<List<GetJobResponse>> listAllJobResponse() {
-    var listAllJobResponse = recruiterService.listAllJobResponse();
+  public ResponseEntity<Page<GetJobResponse>> listAllJobResponse(@RequestParam(value = "page", defaultValue = "0") Integer page,
+                                                                  @RequestParam(value = "size", defaultValue = "20") Integer size) {
+    var listAllJobResponse = recruiterService.listAllJobResponse(page, size);
     return new ResponseEntity<>(listAllJobResponse, HttpStatus.OK);
   }
 
