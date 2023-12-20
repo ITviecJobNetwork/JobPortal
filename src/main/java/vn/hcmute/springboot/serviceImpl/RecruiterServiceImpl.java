@@ -56,6 +56,7 @@ public class RecruiterServiceImpl implements RecruiterService {
   private final ApplicationFormRepository applicationFormRepository;
   private final SkillRepository skillRepository;
   private final CompanyKeySkillRepository companyKeySkillRepository;
+  private final ViewJobRepository viewJobRepository;
 
   @Override
   public MessageResponse registerRecruiter(RecruiterRegisterRequest recruiterRegisterRequest) {
@@ -613,6 +614,7 @@ public class RecruiterServiceImpl implements RecruiterService {
 
 
   @Override
+  @Transactional
   public MessageResponse deleteJob(Integer jobId) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
@@ -620,9 +622,13 @@ public class RecruiterServiceImpl implements RecruiterService {
 
     var existingJob = jobRepository.findByIdAndRecruiter(jobId, recruiter)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công việc "));
-
-    if (!existingJob.getCreatedBy().equals(recruiter.getUsername())) {
-      throw new UnauthorizedException("Bạn không có quyền xóa công việc này");
+    var viewJob = viewJobRepository.existsByJob(existingJob);
+    if(viewJob){
+      viewJobRepository.deleteByJob(existingJob);
+    }
+    var applicationForms = applicationFormRepository.existsByJob(existingJob);
+    if(applicationForms){
+      applicationFormRepository.deleteByJob(existingJob);
     }
     jobRepository.delete(existingJob);
     return MessageResponse.builder()

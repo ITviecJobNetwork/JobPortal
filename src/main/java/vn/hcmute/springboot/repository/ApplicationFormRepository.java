@@ -1,6 +1,8 @@
 package vn.hcmute.springboot.repository;
 
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,7 +16,9 @@ public interface ApplicationFormRepository extends JpaRepository<ApplicationForm
   List<ApplicationForm> findByCandidate(User candidate);
 
   Page<ApplicationForm> findByJobCompanyRecruiter(Recruiters recruiter, Pageable pageable);
+  boolean existsByJob(Job job);
 
+  void deleteByJob(Job job);
   @Query("SELECT af FROM ApplicationForm af " +
           "WHERE af.id = :id " +
           "AND af.job.company.recruiter = :recruiter")
