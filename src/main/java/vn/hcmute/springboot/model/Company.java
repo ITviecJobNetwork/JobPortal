@@ -81,5 +81,8 @@ public class Company {
   @OneToMany(mappedBy = "company", fetch = FetchType.EAGER)
   @JsonIgnore
   private List<CompanyKeySkill> companyKeySkill;
+
+  @Column(name="countReview")
+  private Integer countReview;
 }
 

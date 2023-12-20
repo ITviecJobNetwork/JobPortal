@@ -29,7 +29,7 @@ public class PostInfoCompanyRequest {
   private String companyType;
   private String location;
   private String overtimePolicy;
-  private List<String>companyKeySkills;
+  private List<String> companyKeySkills;
   private String workingFrom;
   private String workingTo;
 }
