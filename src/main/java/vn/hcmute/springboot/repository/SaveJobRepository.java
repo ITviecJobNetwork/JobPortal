@@ -17,5 +17,8 @@ public interface SaveJobRepository extends JpaRepository<SaveJobs, Integer> {
 
   Optional<SaveJobs> findByIdAndCandidate(Integer id, User candidate);
 
+  boolean existsByJob(Job job);
+  void deleteByJob(Job job);
+
 
 }

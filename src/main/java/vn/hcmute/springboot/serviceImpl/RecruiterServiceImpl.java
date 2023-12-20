@@ -57,6 +57,7 @@ public class RecruiterServiceImpl implements RecruiterService {
   private final SkillRepository skillRepository;
   private final CompanyKeySkillRepository companyKeySkillRepository;
   private final ViewJobRepository viewJobRepository;
+  private final SaveJobRepository saveJobRepository;
 
   @Override
   public MessageResponse registerRecruiter(RecruiterRegisterRequest recruiterRegisterRequest) {
@@ -629,6 +630,10 @@ public class RecruiterServiceImpl implements RecruiterService {
     var applicationForms = applicationFormRepository.existsByJob(existingJob);
     if(applicationForms){
       applicationFormRepository.deleteByJob(existingJob);
+    }
+    var saveJob = saveJobRepository.existsByJob(existingJob);
+    if(saveJob){
+      saveJobRepository.deleteByJob(existingJob);
     }
     jobRepository.delete(existingJob);
     return MessageResponse.builder()
