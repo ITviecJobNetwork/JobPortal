@@ -51,7 +51,7 @@ public interface RecruiterService {
 
   MessageResponse addCompanyKeySkill(AddCompanyKeySkillRequest request);
 
-  List<GetJobResponse> listAllJobResponse();
+  Page<GetJobResponse> listAllJobResponse(int page, int size);
 
   CompanyResponse getCompanyByRecruiter();
 

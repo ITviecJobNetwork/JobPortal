@@ -8,6 +8,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -783,7 +784,7 @@ public class RecruiterServiceImpl implements RecruiterService {
   }
 
   @Override
-  public List<GetJobResponse> listAllJobResponse() {
+  public Page<GetJobResponse> listAllJobResponse(int page,int size) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication instanceof AnonymousAuthenticationToken) {
       throw new UnauthorizedException("Bạn chưa đăng nhập");
@@ -795,11 +796,9 @@ public class RecruiterServiceImpl implements RecruiterService {
     if (recruiter.get().getStatus().equals(RecruiterStatus.INACTIVE)) {
       throw new UnauthorizedException("Tài khoản chưa được xác thực");
     }
-    var jobs = jobRepository.findByRecruiter(recruiter.get()) ;
-    return jobs.stream()
-            .map(this::createGetJobResponse)
-            .collect(Collectors.toList());
-
+    Pageable pageable = PageRequest.of(page, size);
+    var jobs = jobRepository.findByRecruiter(recruiter.get(),pageable) ;
+    return new PageImpl<>(jobs.stream().map(this::createGetJobResponse).toList(), pageable, jobs.getTotalElements());
   }
 
   @Override
@@ -852,6 +851,14 @@ public class RecruiterServiceImpl implements RecruiterService {
             .companyName(job.getCompany().getName())
             .companyId(job.getCompany().getId())
             .address(job.getCompany().getAddress())
+            .minCompanySize(job.getCompany().getMinCompanySize())
+            .maxCompanySize(job.getCompany().getMaxCompanySize())
+            .companyLogo(job.getCompany().getLogo())
+            .companyType(job.getCompany().getCompanyType().getType())
+            .country(job.getCompany().getCountry())
+            .workingFrom(job.getCompany().getRecruiter().getWorkingFrom())
+            .workingTo(job.getCompany().getRecruiter().getWorkingTo())
+            .overtimePolicy(job.getCompany().getRecruiter().getOvertimePolicy())
             .skills(skillNames)
             .description(job.getDescription())
             .createdDate(job.getCreatedAt())
