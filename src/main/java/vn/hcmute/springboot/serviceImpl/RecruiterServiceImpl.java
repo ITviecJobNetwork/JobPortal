@@ -429,7 +429,6 @@ public class RecruiterServiceImpl implements RecruiterService {
       if (findCompany == null) {
         throw new NotFoundException("Bạn chưa có thông tin công ty");
       }
-      var companyLogo = request.getCompanyLogo();
 
       var companyType = companyTypeRepository.findByType(company.getCompanyType().getType());
       if (companyType != null) {
@@ -467,7 +466,6 @@ public class RecruiterServiceImpl implements RecruiterService {
       findCompany.setMaxCompanySize(request.getMaxCompanySize());
       findCompany.setCountry(request.getCountry());
       findCompany.setCompanyType(companyType);
-      findCompany.setLogo(companyLogo);
       recruiter.setOvertimePolicy(request.getOvertimePolicy());
       recruiter.setWorkingFrom(request.getWorkingFrom());
       recruiter.setWorkingTo(request.getWorkingTo());

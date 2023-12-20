@@ -13,7 +13,6 @@ import java.util.List;
 @Getter
 @Setter
 public class UpdateInfoCompanyRequest {
-  private String companyLogo;
   private String address;
   private String description;
   private LocalDate foundedDate;
