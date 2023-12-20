@@ -56,6 +56,8 @@ public class RecruiterServiceImpl implements RecruiterService {
   private final ApplicationFormRepository applicationFormRepository;
   private final SkillRepository skillRepository;
   private final CompanyKeySkillRepository companyKeySkillRepository;
+  private final ViewJobRepository viewJobRepository;
+  private final SaveJobRepository saveJobRepository;
 
   @Override
   public MessageResponse registerRecruiter(RecruiterRegisterRequest recruiterRegisterRequest) {
@@ -363,7 +365,25 @@ public class RecruiterServiceImpl implements RecruiterService {
       companyTypeRepository.save(newCompanyType);
 
     }
-    var company = Company.builder()
+    var company = companyRepository.finCompanyByRecruiter(recruiter)
+            .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
+    var companyKeySkills = companyKeySkillRepository.findByCompanyId(company.getId());
+    for (String skillTitle : request.getCompanyKeySkills()) {
+      Skill skill = skillRepository.findFirstByTitle(skillTitle)
+              .orElseGet(() -> {
+                Skill newSkill = new Skill();
+                newSkill.setTitle(skillTitle);
+                return skillRepository.save(newSkill);
+              });
+
+      CompanyKeySkill companyKeySkillOfCompany = CompanyKeySkill.builder()
+              .company(recruiter.getCompany())
+              .companyKeySkill(List.of(skill))
+              .build();
+
+      companyKeySkillRepository.save(companyKeySkillOfCompany);
+    }
+    var createCompany = Company.builder()
             .address(request.getAddress())
             .description(request.getDescription())
             .foundedDate(request.getFoundedDate())
@@ -378,6 +398,7 @@ public class RecruiterServiceImpl implements RecruiterService {
             .minCompanySize(request.getMinCompanySize())
             .maxCompanySize(request.getMaxCompanySize())
             .phoneNumber(request.getPhoneNumber())
+            .companyKeySkill(companyKeySkills)
             .country(request.getCountry())
             .build();
     var recruiterCompany = Recruiters.builder()
@@ -386,7 +407,7 @@ public class RecruiterServiceImpl implements RecruiterService {
             .workingTo(request.getWorkingTo())
             .overtimePolicy(request.getOvertimePolicy())
             .build();
-    companyRepository.save(company);
+    companyRepository.save(createCompany);
     recruiterRepository.save(recruiterCompany);
     return MessageResponse.builder()
             .message("Tạo công ty thành công")
@@ -410,7 +431,6 @@ public class RecruiterServiceImpl implements RecruiterService {
       if (findCompany == null) {
         throw new NotFoundException("Bạn chưa có thông tin công ty");
       }
-      var companyLogo = request.getCompanyLogo();
 
       var companyType = companyTypeRepository.findByType(company.getCompanyType().getType());
       if (companyType != null) {
@@ -448,7 +468,6 @@ public class RecruiterServiceImpl implements RecruiterService {
       findCompany.setMaxCompanySize(request.getMaxCompanySize());
       findCompany.setCountry(request.getCountry());
       findCompany.setCompanyType(companyType);
-      findCompany.setLogo(companyLogo);
       recruiter.setOvertimePolicy(request.getOvertimePolicy());
       recruiter.setWorkingFrom(request.getWorkingFrom());
       recruiter.setWorkingTo(request.getWorkingTo());
@@ -596,6 +615,7 @@ public class RecruiterServiceImpl implements RecruiterService {
 
 
   @Override
+  @Transactional
   public MessageResponse deleteJob(Integer jobId) {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
@@ -603,9 +623,17 @@ public class RecruiterServiceImpl implements RecruiterService {
 
     var existingJob = jobRepository.findByIdAndRecruiter(jobId, recruiter)
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công việc "));
-
-    if (!existingJob.getCreatedBy().equals(recruiter.getUsername())) {
-      throw new UnauthorizedException("Bạn không có quyền xóa công việc này");
+    var viewJob = viewJobRepository.existsByJob(existingJob);
+    if(viewJob){
+      viewJobRepository.deleteByJob(existingJob);
+    }
+    var applicationForms = applicationFormRepository.existsByJob(existingJob);
+    if(applicationForms){
+      applicationFormRepository.deleteByJob(existingJob);
+    }
+    var saveJob = saveJobRepository.existsByJob(existingJob);
+    if(saveJob){
+      saveJobRepository.deleteByJob(existingJob);
     }
     jobRepository.delete(existingJob);
     return MessageResponse.builder()
@@ -731,14 +759,23 @@ public class RecruiterServiceImpl implements RecruiterService {
     var company = companyRepository.finCompanyByRecruiter(recruiter.get())
             .orElseThrow(() -> new NotFoundException("Không tìm thấy công ty"));
     var companyKeySkills = companyKeySkillRepository.findByCompanyId(company.getId());
-    if(companyKeySkills.isEmpty()){
-      for (String skill : request.getCompanyKeySkill()) {
-        var companyKeySkill = CompanyKeySkill.builder()
-                .company(company)
-                .build();
-        companyKeySkillRepository.save(companyKeySkill);
-      }
+    for (String skillTitle : request.getCompanyKeySkill()) {
+      Skill skill = skillRepository.findFirstByTitle(skillTitle)
+              .orElseGet(() -> {
+                Skill newSkill = new Skill();
+                newSkill.setTitle(skillTitle);
+                return skillRepository.save(newSkill);
+              });
+
+      CompanyKeySkill companyKeySkillOfCompany = CompanyKeySkill.builder()
+              .company(company)
+              .companyKeySkill(List.of(skill))
+              .build();
+
+      companyKeySkillRepository.save(companyKeySkillOfCompany);
     }
+    companyRepository.save(company);
+    company.setCompanyKeySkill(companyKeySkills);
     return MessageResponse.builder()
             .message("Thêm kỹ năng thành công")
             .status(HttpStatus.OK)
