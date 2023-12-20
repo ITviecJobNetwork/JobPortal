@@ -83,7 +83,16 @@ public class RecruiterServiceImpl implements RecruiterService {
             .location(recruiterRegisterRequest.getCompanyLocation())
             .status(RecruiterStatus.ACTIVE)
             .build();
+    var company = Company.builder()
+            .name(recruiterRegisterRequest.getCompanyName())
+            .address(recruiterRegisterRequest.getCompanyLocation())
+            .recruiter(recruiter)
+            .website(recruiterRegisterRequest.getWebsiteUrl())
+            .countJobOpening(0)
+            .countReview(0)
+            .build();
     recruiterRepository.save(recruiter);
+    companyRepository.save(company);
 
     String message = "Chúc mừng bạn đã đăng ký tài khoản thành công. Vui lòng kiểm tra email để lấy tài khoản đăng nhập";
     return MessageResponse.builder()
@@ -368,6 +377,7 @@ public class RecruiterServiceImpl implements RecruiterService {
             .address(String.valueOf(location))
             .minCompanySize(request.getMinCompanySize())
             .maxCompanySize(request.getMaxCompanySize())
+            .phoneNumber(request.getPhoneNumber())
             .country(request.getCountry())
             .build();
     var recruiterCompany = Recruiters.builder()
