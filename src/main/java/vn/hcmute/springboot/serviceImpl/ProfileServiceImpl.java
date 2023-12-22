@@ -17,7 +17,9 @@ import vn.hcmute.springboot.service.ProfileService;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -241,9 +243,9 @@ public class ProfileServiceImpl implements ProfileService {
     var userName = authentication.getName();
     var user = userRepository.findByUsername(userName)
             .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
-
-    List<String> skillsToAdd = request.getSkillName();
-    for (String skillToAdd : skillsToAdd) {
+    user.getSkills().clear();
+    Set<String> uniqueSkills = new HashSet<>(request.getSkillName());
+    for (String skillToAdd : uniqueSkills) {
       String normalizedSkillTitle = normalizeSkillTitle(skillToAdd);
 
       Skill skill = skillRepository.findFirstByTitle(normalizedSkillTitle)

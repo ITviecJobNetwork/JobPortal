@@ -5,11 +5,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Set;
 
 
 @Getter
 @Setter
 @Data
 public class AddSkillRequest {
-  List<String> skillName;
+  Set<String> skillName;
 }
