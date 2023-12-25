@@ -1,4 +1,3 @@
-FROM openjdk:17
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+FROM mysql/mysql-server:8.0.24
+
+COPY config/user.cnf /etc/mysql/my.cnf
