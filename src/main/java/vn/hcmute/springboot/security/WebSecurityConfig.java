@@ -88,7 +88,7 @@ public class WebSecurityConfig {
       @Override
       public void addCorsMappings(@NotNull CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:8080", "http://localhost:3000")
+                .allowedOrigins("http://localhost:8080", "http://localhost:3000", "https://fe69-14-191-93-73.ngrok-free.app")
                 .allowedMethods("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS", "HEAD")
                 .maxAge(3600)
                 .allowedHeaders("*")
