@@ -47,7 +47,7 @@ public class RecruiterController {
 
   @PostMapping("/change-password")
   @ResponseStatus(HttpStatus.OK)
-  public ResponseEntity<MessageResponse> resetPassword(@RequestBody ChangePasswordRequest request) {
+  public ResponseEntity<MessageResponse> changePassword(@RequestBody ChangePasswordRequest request) {
     var resetPassword = recruiterService.changePassword(request.getCurrentPassword(),
             request.getNewPassword(), request.getConfirmPassword());
 
@@ -65,6 +65,7 @@ public class RecruiterController {
 
   @PostMapping("/reset-password")
   @Valid
+  @ResponseStatus(HttpStatus.OK)
   public ResponseEntity<MessageResponse> resetPassword(@RequestBody ResetPasswordRequest request) {
     var resetPassword = recruiterService.resetPassword(request.getEmail(), request.getCurrentPassword(),
             request.getNewPassword(), request.getConfirmPassword());
