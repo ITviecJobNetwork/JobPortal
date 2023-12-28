@@ -193,7 +193,7 @@ public class RecruiterServiceImpl implements RecruiterService {
 
   @Override
   public MessageResponse changePassword(String currentPassword, String newPassword, String confirmPassword) {
-    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || !authentication.isAuthenticated()) {
       MessageResponse.builder()
               .message("Người dùng chưa đăng nhập")
@@ -203,16 +203,15 @@ public class RecruiterServiceImpl implements RecruiterService {
     var recruiter = recruiterRepository.findByUsername(authentication.getName())
             .orElseThrow(() -> new NotFoundException("Không tìm thấy nhà tuyển dụng"));
 
-    var initialPassword = recruiter.getPassword();
-    if (!passwordEncoder.matches(currentPassword, initialPassword)) {
-      var message = "Mật khẩu hiện tại không đúng";
-      throw new BadRequestException(message);
-    }
+    String initialPassword = recruiter.getPassword();
     if (Objects.equals(currentPassword, newPassword)) {
       String message = "Mật khẩu mới và mật khẩu hiện tại không được giống nhau";
       throw new BadRequestException(message);
     }
-
+    if (!passwordEncoder.matches(currentPassword, initialPassword)) {
+      var message = "Mật khẩu hiện tại không đúng";
+      throw new BadRequestException(message);
+    }
     if (!newPassword.equals(confirmPassword)) {
       var message = "Mật khẩu mới và xác nhận mật khẩu không khớp";
       throw new BadRequestException(message);
